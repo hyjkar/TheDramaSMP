@@ -19,17 +19,18 @@
         .header-container {
             background-color: #f0f0f0;
             border-bottom: 3px solid #ccc;
-            padding: 15px;
+            /* Reduced padding to save space */
+            padding: 10px;
             text-align: center;
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
             flex-shrink: 0; 
         }
 
-        h1 { font-size: 2rem; color: #333; margin: 0; }
+        h1 { font-size: 1.8rem; color: #333; margin: 0; }
 
         .history-btn-main {
             background-color: #e0e0e0; border: 2px solid #ccc;
-            padding: 8px 20px; font-size: 1.1rem; border-radius: 20px;
+            padding: 6px 20px; font-size: 1rem; border-radius: 20px;
             cursor: pointer; color: #555; font-weight: bold;
         }
 
@@ -99,52 +100,35 @@
         .reason-text { font-size: 1.4rem; font-weight: bold; color: #444; }
 
         /* --- 5. HISTORY GRID STYLES --- */
-        
-        /* NEW: Navigation Controls for History */
         .history-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 15px;
-            background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 10px;
-            box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; margin-bottom: 15px; background-color: #f9f9f9;
+            padding: 10px; border-radius: 10px; box-sizing: border-box;
         }
         .nav-btn {
-            background-color: #ddd; border: none; 
-            width: 40px; height: 40px; border-radius: 50%;
+            background-color: #ddd; border: none; width: 40px; height: 40px; border-radius: 50%;
             font-size: 1.5rem; font-weight: bold; color: #555;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
-        .date-range-label {
-            font-size: 1.1rem; font-weight: bold; color: #333;
-        }
+        .date-range-label { font-size: 1.1rem; font-weight: bold; color: #333; }
 
         .week-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr); /* 7 items side by side */
+            grid-template-columns: repeat(7, 1fr);
             gap: 5px; margin-top: 10px; margin-bottom: 20px;
         }
-        .day-slot {
-            display: flex; flex-direction: column; align-items: center;
-        }
+        .day-slot { display: flex; flex-direction: column; align-items: center; }
         .day-label { font-weight: bold; margin-bottom: 5px; color: #666; font-size: 0.9rem;}
         
         .history-reason-img {
-            width: 45px; height: 45px;
-            object-fit: contain;
+            width: 45px; height: 45px; object-fit: contain;
             filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.2));
         }
         .day-placeholder {
-            width: 45px; height: 45px;
-            background-color: #f0f0f0;
-            border-radius: 50%;
-            border: 2px solid #e0e0e0;
+            width: 45px; height: 45px; background-color: #f0f0f0;
+            border-radius: 50%; border: 2px solid #e0e0e0;
         }
 
-        /* Buttons */
         .close-btn {
             margin-top: 10px; padding: 15px 40px; font-size: 1.6rem; font-weight: bold;
             background-color: #666; color: white; border: none; cursor: pointer;
@@ -163,20 +147,23 @@
             .container {
                 flex-direction: column;
                 justify-content: center; 
-                overflow-y: hidden; 
+                overflow-y: hidden; /* No scroll */
                 gap: 15px; 
+                /* Remove top padding to close the gap to the header */
+                padding-top: 0; 
                 padding-bottom: 10px; 
             }
 
             .mood-btn {
                 flex: none;
-                height: 22vh; 
+                /* Slightly smaller to ensure fit */
+                height: 21vh; 
                 width: auto; 
                 aspect-ratio: 1 / 1;
                 max-height: 250px; 
             }
 
-            /* 2. HISTORY GRID: Break into 2 rows for Portrait */
+            /* History: 2 rows */
             .week-grid {
                 grid-template-columns: repeat(4, 1fr);
                 gap: 10px; 
@@ -188,7 +175,7 @@
 
     <div class="header-container">
         <h1 id="status-text">Miten päiväsi meni?</h1>
-        <button id="btn-open-history" class="history-btn-main">Näytä Historia</button>
+        <button id="btn-open-history" class="history-btn-main">Näytä viikko</button>
     </div>
 
     <div class="container">
@@ -265,20 +252,17 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             
-            // --- VARIABLES ---
             const STORAGE_KEY = 'moodAppHistoryV2_Images'; 
             var sessionHistory = [];
             
-            // This variable tracks which week we are currently looking at
             var currentViewDate = new Date(); 
 
-            // --- LOAD DATA ---
+            // Load Data
             var savedData = localStorage.getItem(STORAGE_KEY);
             if (savedData) {
                 sessionHistory = JSON.parse(savedData);
             }
 
-            // Get elements
             var statusText = document.getElementById('status-text');
             var modalReason = document.getElementById('modal-reason');
             var modalHistory = document.getElementById('modal-history');
@@ -301,7 +285,7 @@
 
             // Open/Close History
             document.getElementById('btn-open-history').addEventListener('click', function() {
-                 currentViewDate = new Date(); // Reset to today when opening
+                 currentViewDate = new Date(); 
                  generateWeeklyView();
                  modalHistory.style.display = 'flex';
             });
@@ -312,19 +296,15 @@
                 modalReason.style.display = "none";
             });
 
-            // --- NEW: HISTORY NAVIGATION ---
+            // History Navigation
             document.getElementById('btn-prev-week').addEventListener('click', function() {
-                // Go back 7 days
                 currentViewDate.setDate(currentViewDate.getDate() - 7);
                 generateWeeklyView();
             });
-
             document.getElementById('btn-next-week').addEventListener('click', function() {
-                // Go forward 7 days
                 currentViewDate.setDate(currentViewDate.getDate() + 7);
                 generateWeeklyView();
             });
-
 
             // Clear History
             document.getElementById('btn-clear-history').addEventListener('click', function() {
@@ -335,7 +315,7 @@
                 }
             });
 
-            // --- REASON CLICKS ---
+            // Reason Clicks
             ['pain','toilet','lonely','tired'].forEach(r => {
                 document.getElementById('btn-'+r).addEventListener('click', () => saveResult('Huono', translate(r), r + '.jpg'));
             });
@@ -343,8 +323,7 @@
                 document.getElementById('btn-'+r).addEventListener('click', () => saveResult('Hyvä', translate(r), r + '.jpg'));
             });
 
-            // --- FUNCTIONS ---
-
+            // Functions
             function openReasonModal(type) {
                 modalReason.style.display = "flex";
                 if(type === 'bad') {
@@ -388,25 +367,19 @@
                 weeklyDisplay.innerHTML = ""; 
                 var FinnishDays = ['MA', 'TI', 'KE', 'TO', 'PE', 'LA', 'SU'];
                 
-                // Calculate Monday based on the CURRENT VIEW DATE, not necessarily today
                 var monday = getMonday(new Date(currentViewDate));
-                
-                // Calculate Sunday for the label
                 var sunday = new Date(monday);
                 sunday.setDate(monday.getDate() + 6);
 
-                // Update the Label (e.g. "20.1. - 26.1.")
                 var options = { day: 'numeric', month: 'numeric' };
                 dateRangeLabel.innerText = monday.toLocaleDateString('fi-FI', options) + " - " + sunday.toLocaleDateString('fi-FI', options);
 
-                // Generate Grid
                 for(var i=0; i<7; i++) {
                     var slotDate = new Date(monday);
                     slotDate.setDate(monday.getDate() + i);
                     var slotDateStr = slotDate.toISOString().split('T')[0];
 
                     var foundImage = null;
-                    // Find the latest image for this date
                     for(var k=sessionHistory.length-1; k>=0; k--) {
                         if(sessionHistory[k].dateStr === slotDateStr) {
                             foundImage = sessionHistory[k].reasonImage;
