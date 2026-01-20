@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Päivän Mieliala</title>
+    <title>Päivän mieliala</title>
     <style>
         /* --- 1. VISUAL SETUP (TYYLIT) --- */
         body {
@@ -11,7 +11,7 @@
             color: black !important;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0; padding: 0;
-            display: flex; flex-direction: column; height: 100vh; /* Full screen height */
+            display: flex; flex-direction: column; height: 100vh;
             touch-action: manipulation; 
         }
         
@@ -22,35 +22,32 @@
             padding: 15px;
             text-align: center;
             display: flex; flex-direction: column; align-items: center; gap: 10px;
-            flex-shrink: 0; /* Header should not shrink */
+            flex-shrink: 0; 
         }
 
         h1 { font-size: 2rem; color: #333; margin: 0; }
 
-        /* History Button Style */
         .history-btn-main {
             background-color: #e0e0e0; border: 2px solid #ccc;
             padding: 8px 20px; font-size: 1.1rem; border-radius: 20px;
             cursor: pointer; color: #555; font-weight: bold;
         }
 
-        /* --- 2. MAIN SCREEN LAYOUT (DEFAULT DESKTOP/LANDSCAPE) --- */
+        /* --- 2. MAIN SCREEN LAYOUT --- */
         .container {
             display: flex; 
-            flex: 1; /* Take remaining height */
+            flex: 1; 
             width: 100%; 
             padding: 15px; 
             box-sizing: border-box;
-            align-items: center; /* Center vertically */
-            justify-content: center; /* Center horizontally */
-            gap: 15px; /* Space between buttons */
-            overflow: auto; /* Allow scrolling if needed */
+            align-items: center; 
+            justify-content: center; 
+            gap: 15px; 
+            overflow: auto; 
         }
 
         .mood-btn {
-            flex: 1; /* Share width equally */
-            aspect-ratio: 1 / 1; /* Keep them square */
-            max-width: 400px; /* Don't get too big on huge screens */
+            flex: 1; aspect-ratio: 1 / 1; max-width: 400px;
             border: none; outline: none; cursor: pointer; padding: 15px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             border-radius: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
@@ -74,7 +71,7 @@
         .bg-good { background-color: #e8f5e9; border: 4px solid #c8e6c9;}
 
 
-        /* --- 3. POPUP WINDOWS (IKKUNAT) --- */
+        /* --- 3. POPUP WINDOWS --- */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.85); 
@@ -101,10 +98,11 @@
         .reason-img { width: 90px; height: 90px; object-fit: contain; margin-bottom: 10px;}
         .reason-text { font-size: 1.4rem; font-weight: bold; color: #444; }
 
-        /* --- 5. HISTORY GRID STYLES --- */
+        /* --- 5. HISTORY GRID STYLES (Default: 1 Row of 7) --- */
+        /* This applies to desktop AND mobile landscape */
         .week-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            grid-template-columns: repeat(7, 1fr); /* 7 items side by side */
             gap: 5px; margin-top: 20px; margin-bottom: 20px;
         }
         .day-slot {
@@ -124,7 +122,7 @@
             border: 2px solid #e0e0e0;
         }
 
-        /* Buttons in modals */
+        /* Buttons */
         .close-btn {
             margin-top: 10px; padding: 15px 40px; font-size: 1.6rem; font-weight: bold;
             background-color: #666; color: white; border: none; cursor: pointer;
@@ -137,29 +135,30 @@
         }
         .clear-btn:active { background-color: #d63031; }
 
-        /* --- NEW: MOBILE PORTRAIT ADJUSTMENTS --- */
-        /* This block runs ONLY on screens narrower than 768px (phones/portrait tablets) */
-        @media (max-width: 768px) {
+        /* --- MOBILE ADJUSTMENTS (PORTRAIT MODE ONLY) --- */
+        /* This block runs ONLY if screen is < 768px AND in Portrait mode */
+        @media (max-width: 768px) and (orientation: portrait) {
+            
+            /* 1. Stack Main Buttons Vertically */
             .container {
-                /* Change direction from row to column to stack them */
                 flex-direction: column;
-                /* Start from the top */
                 justify-content: flex-start;
-                /* Allow scrolling if phone screen is short */
                 overflow-y: auto; 
-                gap: 20px; /* Slightly bigger gap on mobile stack */
-                padding-bottom: 30px; /* Extra space at bottom for scrolling */
+                gap: 20px; 
+                padding-bottom: 30px; 
             }
 
             .mood-btn {
-                /* On mobile, don't try to share height equally */
                 flex: none;
-                /* Make them wide, but not right to the edge */
                 width: 90%;
-                /* Ensure they don't get gigantic on larger phones */
                 max-width: 350px;
-                /* Keep them square-ish */
                 aspect-ratio: 1 / 1;
+            }
+
+            /* 2. HISTORY GRID: Break into 2 rows for Portrait */
+            .week-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px; 
             }
         }
     </style>
@@ -168,7 +167,7 @@
 
     <div class="header-container">
         <h1 id="status-text">Miten päiväsi meni?</h1>
-        <button id="btn-open-history" class="history-btn-main">Näytä viikko</button>
+        <button id="btn-open-history" class="history-btn-main">Näytä Historia</button>
     </div>
 
     <div class="container">
@@ -207,7 +206,7 @@
 
             <div id="grid-good" class="options-grid">
                 <button id="btn-family" class="reason-btn">
-                    <img src="family.jpg" class="reason-img"><span class="reason-text">Perhe ja ystävät</span>
+                    <img src="family.jpg" class="reason-img"><span class="reason-text">Perhe</span>
                 </button>
                 <button id="btn-food" class="reason-btn">
                     <img src="food.jpg" class="reason-img"><span class="reason-text">Ruoka</span>
@@ -226,7 +225,7 @@
 
     <div id="modal-history" class="modal-overlay">
         <div class="modal-box">
-            <h2 class="modal-title">Tämä viikko</h2>
+            <h2 class="modal-title">Viikkonäkymä</h2>
             <p style="color:#666;">(Tiedot tallentuvat tämän laitteen selaimeen)</p>
             
             <div id="weekly-display" class="week-grid">
@@ -264,7 +263,6 @@
             document.getElementById('btn-good').addEventListener('click', function() {
                 openReasonModal('good');
             });
-            // For "Okay", we save the okay.jpg image
             document.getElementById('btn-okay').addEventListener('click', function() {
                 saveResult('Tavallinen', 'Normaali', 'okay.jpg');
             });
@@ -317,7 +315,6 @@
                 var today = new Date();
                 var dateString = today.toISOString().split('T')[0];
                 
-                // Save date and the image filename
                 sessionHistory.push({
                     dateStr: dateString,
                     reasonImage: imageFilename
@@ -351,7 +348,6 @@
                     var slotDateStr = slotDate.toISOString().split('T')[0];
 
                     var foundImage = null;
-                    // Find the latest image for this date
                     for(var k=sessionHistory.length-1; k>=0; k--) {
                         if(sessionHistory[k].dateStr === slotDateStr) {
                             foundImage = sessionHistory[k].reasonImage;
