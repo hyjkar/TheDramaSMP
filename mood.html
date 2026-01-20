@@ -1,3 +1,24 @@
+This is a great request. This is the standard way to make a website "responsive" (mobile-friendly).
+
+We will add a special CSS rule called a **Media Query**. This rule basically says: *"If the screen is narrower than a typical tablet (like a phone in portrait mode), change the layout rules from side-by-side to stacked."*
+
+Here is the complete, updated code.
+
+### Key Changes (Look at the bottom of the CSS style block):
+
+1. I added a `@media (max-width: 768px)` block. This only runs on screens narrower than 768 pixels.
+2. Inside that block, I changed the `.container` to `flex-direction: column;`. This does exactly what you asked: it stacks the items vertically instead of horizontally.
+3. I added some tweaks to `.mood-btn` inside that media query to ensure the buttons look good and are centered when stacked, and that you can scroll down if the phone screen is short.
+
+### Instructions:
+
+1. Open **TextEdit**, clear the file.
+2. **Paste** the code below.
+3. **Save** and transfer to your phone.
+
+*(Note: To test this on your computer, just shrink your browser window horizontally to make it very narrow, and you will see the buttons snap into a vertical stack.)*
+
+```html
 <!DOCTYPE html>
 <html lang="fi">
 <head>
@@ -11,7 +32,7 @@
             color: black !important;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0; padding: 0;
-            display: flex; flex-direction: column; height: 100vh;
+            display: flex; flex-direction: column; height: 100vh; /* Full screen height */
             touch-action: manipulation; 
         }
         
@@ -22,6 +43,7 @@
             padding: 15px;
             text-align: center;
             display: flex; flex-direction: column; align-items: center; gap: 10px;
+            flex-shrink: 0; /* Header should not shrink */
         }
 
         h1 { font-size: 2rem; color: #333; margin: 0; }
@@ -33,14 +55,23 @@
             cursor: pointer; color: #555; font-weight: bold;
         }
 
-        /* --- 2. MAIN SCREEN LAYOUT --- */
+        /* --- 2. MAIN SCREEN LAYOUT (DEFAULT DESKTOP/LANDSCAPE) --- */
         .container {
-            display: flex; flex: 1; width: 100%; padding: 15px; box-sizing: border-box;
-            align-items: center; justify-content: center; gap: 15px;
+            display: flex; 
+            flex: 1; /* Take remaining height */
+            width: 100%; 
+            padding: 15px; 
+            box-sizing: border-box;
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
+            gap: 15px; /* Space between buttons */
+            overflow: auto; /* Allow scrolling if needed */
         }
 
         .mood-btn {
-            flex: 1; aspect-ratio: 1 / 1; max-width: 400px;
+            flex: 1; /* Share width equally */
+            aspect-ratio: 1 / 1; /* Keep them square */
+            max-width: 400px; /* Don't get too big on huge screens */
             border: none; outline: none; cursor: pointer; padding: 15px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             border-radius: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
@@ -91,7 +122,7 @@
         .reason-img { width: 90px; height: 90px; object-fit: contain; margin-bottom: 10px;}
         .reason-text { font-size: 1.4rem; font-weight: bold; color: #444; }
 
-        /* --- 5. HISTORY GRID STYLES (UPDATED) --- */
+        /* --- 5. HISTORY GRID STYLES --- */
         .week-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
@@ -102,14 +133,11 @@
         }
         .day-label { font-weight: bold; margin-bottom: 5px; color: #666; font-size: 0.9rem;}
         
-        /* --- NEW STYLES FOR HISTORY IMAGES --- */
         .history-reason-img {
             width: 45px; height: 45px;
             object-fit: contain;
-            /* Optional: add a small shadow or border to make them pop */
             filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.2));
         }
-        /* Placeholder for days with no record */
         .day-placeholder {
             width: 45px; height: 45px;
             background-color: #f0f0f0;
@@ -129,6 +157,32 @@
             border-radius: 12px; width: 100%;
         }
         .clear-btn:active { background-color: #d63031; }
+
+        /* --- NEW: MOBILE PORTRAIT ADJUSTMENTS --- */
+        /* This block runs ONLY on screens narrower than 768px (phones/portrait tablets) */
+        @media (max-width: 768px) {
+            .container {
+                /* Change direction from row to column to stack them */
+                flex-direction: column;
+                /* Start from the top */
+                justify-content: flex-start;
+                /* Allow scrolling if phone screen is short */
+                overflow-y: auto; 
+                gap: 20px; /* Slightly bigger gap on mobile stack */
+                padding-bottom: 30px; /* Extra space at bottom for scrolling */
+            }
+
+            .mood-btn {
+                /* On mobile, don't try to share height equally */
+                flex: none;
+                /* Make them wide, but not right to the edge */
+                width: 90%;
+                /* Ensure they don't get gigantic on larger phones */
+                max-width: 350px;
+                /* Keep them square-ish */
+                aspect-ratio: 1 / 1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -208,12 +262,11 @@
         document.addEventListener('DOMContentLoaded', function() {
             
             // --- LOAD DATA ---
-            const STORAGE_KEY = 'moodAppHistoryV2_Images'; // Changed key to avoid conflicts with old data
+            const STORAGE_KEY = 'moodAppHistoryV2_Images'; 
             var sessionHistory = [];
             var savedData = localStorage.getItem(STORAGE_KEY);
             if (savedData) {
                 sessionHistory = JSON.parse(savedData);
-                console.log("Historia ladattu:", sessionHistory.length);
             }
 
             // Get elements
@@ -258,8 +311,7 @@
                 }
             });
 
-            // --- REASON CLICKS (UPDATED to pass image filenames) ---
-            // The filename is just the reason name + ".jpg"
+            // --- REASON CLICKS ---
             ['pain','toilet','lonely','tired'].forEach(r => {
                 document.getElementById('btn-'+r).addEventListener('click', () => saveResult('Huono', translate(r), r + '.jpg'));
             });
@@ -280,7 +332,6 @@
                 }
             }
 
-            // UPDATED: Now accepts imageFilename instead of indicatorClass
             function saveResult(moodText, reasonText, imageFilename) {
                 modalReason.style.display = "none";
 
@@ -310,7 +361,6 @@
               return new Date(d.setDate(diff));
             }
 
-            // UPDATED: Generates images instead of colored dots
             function generateWeeklyView() {
                 weeklyDisplay.innerHTML = ""; 
                 var FinnishDays = ['MA', 'TI', 'KE', 'TO', 'PE', 'LA', 'SU'];
@@ -330,7 +380,6 @@
                         }
                     }
 
-                    // Decide what to show in the slot: an image or a placeholder
                     var slotContent = foundImage 
                         ? `<img src="${foundImage}" class="history-reason-img" alt="reason">`
                         : `<div class="day-placeholder"></div>`;
@@ -355,3 +404,5 @@
 
 </body>
 </html>
+
+```
