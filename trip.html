@@ -23,7 +23,7 @@
             color: var(--white);
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 15px;
+            padding: 10px; /* Reduced padding */
             height: 100vh;
             width: 100vw;
             overflow: hidden;
@@ -55,25 +55,27 @@
             color: var(--gold);
             text-transform: uppercase;
             letter-spacing: 2px;
-            font-size: 1.6rem;
+            font-size: 1.4rem; /* Slightly smaller */
             margin: 0;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            line-height: 1.2;
         }
 
         h2 {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: var(--gold);
-            margin-bottom: 2px;
+            margin-bottom: 1px;
             text-transform: uppercase;
             border-bottom: 1px solid var(--gold-dim);
             display: inline-block;
-            padding-bottom: 2px;
+            padding-bottom: 1px;
         }
 
         p {
-            font-size: 0.85rem;
-            margin: 2px 0; /* Reduced margin */
+            font-size: 0.8rem;
+            margin: 1px 0; /* Minimal margin */
             font-weight: 300;
+            line-height: 1.3;
         }
 
         .highlight {
@@ -86,7 +88,7 @@
             color: var(--gold);
             text-decoration: none;
             border-bottom: 1px dotted var(--gold);
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             transition: opacity 0.2s;
         }
         a:hover {
@@ -96,17 +98,16 @@
         /* Countdown Container */
         .timer-container {
             background: rgba(255, 255, 255, 0.05);
-            padding: 8px;
-            border-radius: 15px;
+            padding: 5px; /* Tighter padding */
+            border-radius: 10px;
             border: 1px solid var(--gold-dim);
-            margin-top: 5px;
-            margin-bottom: 2px; /* Minimal space below timer */
+            margin: 5px 0;
         }
 
         .timer {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             font-variant-numeric: tabular-nums;
         }
 
@@ -116,30 +117,32 @@
         }
 
         .time-val {
-            font-size: 1.4rem;
+            font-size: 1.2rem; /* Smaller numbers */
             font-weight: bold;
             color: var(--gold);
+            line-height: 1;
         }
 
         .time-label {
-            font-size: 0.6rem;
+            font-size: 0.5rem;
             text-transform: uppercase;
             opacity: 0.7;
+            margin-top: 2px;
         }
 
         /* Info Sections */
         .info-box {
             display: flex;
             flex-direction: column;
-            gap: 5px; /* Tighter gap between sections */
+            gap: 6px; /* Very tight gap */
             flex-grow: 1; 
-            justify-content: center;
+            justify-content: center; /* Centers vertically in available space */
         }
 
         /* Checklist Styles */
         .checklist {
             width: 100%;
-            max-width: 350px;
+            max-width: 320px;
             margin: 0 auto;
         }
 
@@ -147,9 +150,9 @@
             display: flex;
             align-items: center;
             background: var(--royal-lighter);
-            margin-bottom: 8px;
-            padding: 10px 15px;
-            border-radius: 8px;
+            margin-bottom: 6px; /* Tighter margin */
+            padding: 8px 12px;  /* Tighter padding */
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid transparent;
@@ -166,12 +169,12 @@
 
         /* Custom Checkbox circle */
         .checkmark {
-            height: 18px;
-            width: 18px;
+            height: 16px;
+            width: 16px;
             background-color: transparent;
             border: 2px solid var(--gold);
             border-radius: 50%;
-            margin-right: 15px;
+            margin-right: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -186,7 +189,7 @@
         .checklist-item input:checked + .checkmark::after {
             content: '✔';
             color: var(--royal-blue);
-            font-size: 10px;
+            font-size: 9px;
             font-weight: bold;
         }
 
@@ -197,14 +200,14 @@
         }
 
         .item-name {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         /* Footer */
         .footer {
             font-size: 0.6rem;
             opacity: 0.4;
-            margin-top: 5px;
+            margin-top: 2px;
         }
 
     </style>
@@ -221,12 +224,12 @@
         
         <header>
             <h1>Tallinn 2.0</h1>
-            <div style="width: 50px; height: 2px; background: var(--gold); margin: 5px auto;"></div>
-            <p>Ready for the adventure?</p>
+            <div style="width: 40px; height: 1px; background: var(--gold); margin: 3px auto;"></div>
+            <p style="font-size: 0.7rem;">Ready for the adventure?</p>
         </header>
 
         <div class="timer-container">
-            <p style="margin-bottom: 5px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;">Departure in</p>
+            <p style="margin-bottom: 2px; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px;">Departure in</p>
             <div class="timer" id="countdown">
                 <div class="time-unit"><span class="time-val" id="days">00</span><span class="time-label">Days</span></div>
                 <div class="time-unit"><span class="time-val" id="hours">00</span><span class="time-label">Hrs</span></div>
@@ -246,12 +249,12 @@
                 <h2>Accommodation</h2>
                 <p>Lai 30a, 10133, Tallinn</p>
                 <p class="highlight">Check in @ 16.00</p>
-                <p style="margin-top:2px;">
+                <p>
                     <a href="https://www.airbnb.co.uk/rooms/1028660142251462443?guests=1&adults=1&s=67&unique_share_id=03711ca3-634b-4353-a514-5ccbb5577fcd" target="_blank">View on Airbnb &rarr;</a>
                 </p>
             </div>
 
-            <div style="margin-bottom: 0;">
+            <div>
                 <h2>Restaurants</h2>
                 <p>1. [Restaurant Name Here]</p>
                 <p>2. [Restaurant Name Here]</p>
@@ -294,7 +297,7 @@
 
             if (distance < 0) {
                 clearInterval(timer);
-                document.getElementById("countdown").innerHTML = "<div class='time-val'>WE HAVE DEPARTED</div>";
+                document.getElementById("countdown").innerHTML = "<div class='time-val' style='font-size:1rem'>WE HAVE DEPARTED</div>";
                 return;
             }
 
