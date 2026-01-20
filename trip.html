@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Helsinki - Tallinn 2026</title>
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --royal-blue: #081535; /* Deep Royal Blue */
+            --royal-lighter: #122b63;
+            --gold: #D4AF37;       /* Metallic Gold */
+            --gold-dim: #8a7020;
+            --white: #f4f4f4;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--royal-blue);
+            color: var(--white);
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            height: 100vh; /* Full viewport height */
+            width: 100vw;
+            overflow: hidden; /* Prevent scrolling */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Spreads content evenly */
+            text-align: center;
+        }
+
+        /* Portrait Mode Enforcement */
+        #landscape-warning {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--royal-blue);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        @media screen and (orientation: landscape) {
+            #landscape-warning { display: flex; }
+            .main-content { display: none; }
+        }
+
+        /* Typography & Layout */
+        h1 {
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1.8rem;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            font-size: 1rem;
+            color: var(--gold);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--gold-dim);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        p {
+            font-size: 0.9rem;
+            margin: 5px 0;
+            font-weight: 300;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: var(--gold);
+        }
+
+        /* Countdown Container */
+        .timer-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid var(--gold-dim);
+        }
+
+        .timer {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .time-unit {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .time-val {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--gold);
+        }
+
+        .time-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        /* Info Sections */
+        .info-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Checklist Styles */
+        .checklist {
+            width: 100%;
+            max-width: 350px;
+            margin: 0 auto;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            background: var(--royal-lighter);
+            margin-bottom: 10px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .checklist-item:active {
+            transform: scale(0.98);
+        }
+
+        /* Hide default checkbox */
+        .checklist-item input {
+            display: none;
+        }
+
+        /* Custom Checkbox circle */
+        .checkmark {
+            height: 20px;
+            width: 20px;
+            background-color: transparent;
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        /* When Checked */
+        .checklist-item input:checked + .checkmark {
+            background-color: var(--gold);
+        }
+        
+        .checklist-item input:checked + .checkmark::after {
+            content: '✔';
+            color: var(--royal-blue);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .checklist-item input:checked ~ .item-name {
+            text-decoration: line-through;
+            opacity: 0.5;
+            color: var(--gold);
+        }
+
+        .item-name {
+            font-size: 1rem;
+        }
+
+        /* Footer */
+        .footer {
+            font-size: 0.7rem;
+            opacity: 0.4;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="landscape-warning">
+        <h1 style="font-size: 3rem;">↻</h1>
+        <p>Please rotate your device.</p>
+        <p style="color:var(--gold);">Designed for Portrait Mode</p>
+    </div>
+
+    <div class="main-content" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+        
+        <header>
+            <h1>Tallinn Trip</h1>
+            <div style="width: 50px; height: 2px; background: var(--gold); margin: 10px auto;"></div>
+            <p>Ready for the adventure?</p>
+        </header>
+
+        <div class="timer-container">
+            <p style="margin-bottom: 10px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Departure in</p>
+            <div class="timer" id="countdown">
+                <div class="time-unit"><span class="time-val" id="days">00</span><span class="time-label">Days</span></div>
+                <div class="time-unit"><span class="time-val" id="hours">00</span><span class="time-label">Hrs</span></div>
+                <div class="time-unit"><span class="time-val" id="minutes">00</span><span class="time-label">Min</span></div>
+                <div class="time-unit"><span class="time-val" id="seconds">00</span><span class="time-label">Sec</span></div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <div>
+                <h2>Departure</h2>
+                <p>Länsiterminaali 2, Helsinki</p>
+                <p class="highlight">Jan 23, 2026 @ 16:30</p>
+            </div>
+            
+            <div style="margin-top: 10px;">
+                <h2>Accommodation</h2>
+                <p>Old Town, Tallinn</p>
+                <p style="font-size: 0.8rem; opacity: 0.7;">Check-in details pending</p>
+            </div>
+        </div>
+
+        <div class="checklist">
+            <label class="checklist-item">
+                <input type="checkbox" id="check-passport" onchange="saveState('check-passport')">
+                <span class="checkmark"></span>
+                <span class="item-name">Passport</span>
+            </label>
+
+            <label class="checklist-item">
+                <input type="checkbox" id="check-clothes" onchange="saveState('check-clothes')">
+                <span class="checkmark"></span>
+                <span class="item-name">Clothes</span>
+            </label>
+
+            <label class="checklist-item">
+                <input type="checkbox" id="check-swimsuit" onchange="saveState('check-swimsuit')">
+                <span class="checkmark"></span>
+                <span class="item-name">Swimsuit</span>
+            </label>
+        </div>
+
+        <div class="footer">
+            &copy; 2026 The Boys
+        </div>
+
+    </div>
+
+    <script>
+        // 1. COUNTDOWN LOGIC
+        const departureDate = new Date("January 23, 2026 16:30:00").getTime();
+
+        const timer = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = departureDate - now;
+
+            if (distance < 0) {
+                clearInterval(timer);
+                document.getElementById("countdown").innerHTML = "<div class='time-val'>WE HAVE DEPARTED</div>";
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = days;
+            document.getElementById("hours").innerText = hours;
+            document.getElementById("minutes").innerText = minutes;
+            document.getElementById("seconds").innerText = seconds;
+        }, 1000);
+
+        // 2. CHECKLIST SAVING (LOCAL STORAGE)
+        // This keeps the boxes checked even if you refresh the page
+        function saveState(id) {
+            const checkbox = document.getElementById(id);
+            localStorage.setItem(id, checkbox.checked);
+        }
+
+        function loadState() {
+            const ids = ['check-passport', 'check-clothes', 'check-swimsuit'];
+            ids.forEach(id => {
+                const checked = localStorage.getItem(id) === 'true';
+                document.getElementById(id).checked = checked;
+            });
+        }
+
+        // Load saved checks on startup
+        loadState();
+    </script>
+</body>
+</html>
