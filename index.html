@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Treasure Vault</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0; padding: 0;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
+                        url('https://wallpaperaccess.com/full/4657154.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Press Start 2P', cursive;
+            color: white;
+            image-rendering: pixelated;
+            overflow: hidden;
+            transition: background 0.5s;
+        }
+
+        /* FLASH EFFECT ON FAIL */
+        .flash { background: white !important; }
+
+        /* CREEPER */
+        .creeper {
+            position: fixed; right: -100px; bottom: 10%;
+            width: 80px; height: 120px;
+            background: #51a03e; border: 4px solid #000;
+            z-index: 10; animation: peek 12s infinite;
+        }
+        .creeper::before {
+            content: ''; position: absolute; top: 20px; left: 15px;
+            width: 15px; height: 15px; background: #000;
+            box-shadow: 30px 0 #000, 7px 20px #000, 22px 20px #000, 15px 15px #000, 15px 25px #000;
+        }
+
+        @keyframes peek { 0%, 70%, 100% { right: -100px; } 75%, 95% { right: -20px; } }
+
+        .container {
+            background-color: #C6C6C6; border: 4px solid #000;
+            box-shadow: inset -6px -6px #555, inset 6px 6px #FFF;
+            padding: 40px; text-align: center;
+            max-width: 450px; width: 90%; z-index: 5;
+        }
+
+        h1 { font-size: 14px; color: #3f3f3f; text-shadow: 2px 2px #fff; }
+
+        input {
+            width: 85%; padding: 15px; border: 4px solid #373737;
+            background-color: #000; color: #3fe63f; 
+            font-family: 'Press Start 2P', cursive; margin: 20px 0; outline: none;
+        }
+
+        input.error { background-color: #5e1a1a !important; border-color: #ff0000 !important; }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            100% { transform: translateX(0); }
+        }
+        .shake { animation: shake 0.2s ease-in-out; }
+
+        button {
+            background-color: #AFAFAF; border: 4px solid #000;
+            box-shadow: inset -4px -4px #555, inset 4px 4px #FFF;
+            padding: 15px 30px; color: #373737;
+            font-family: 'Press Start 2P', cursive; cursor: pointer;
+        }
+
+        .coords-box {
+            background: #000; border: 4px inset #555;
+            padding: 20px; margin-top: 15px; min-height: 120px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .coord-line { color: #ffcc00; font-size: 18px; margin: 5px 0; }
+        
+        #secret-content { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="creeper"></div>
+
+<div class="container" id="vault-box">
+    <div id="login-screen">
+        <h1>DECRYPT COORDINATES</h1>
+        <input type="password" id="password" placeholder="********">
+        <br>
+        <button onclick="checkPassword()">ACCESS</button>
+    </div>
+
+    <div id="secret-content">
+        <h2 style="color: #55FF55; font-size: 12px;">DECRYPTING...</h2>
+        <div class="coords-box" id="coords-display">
+            <div class="coord-line" id="line-x"></div>
+            <div class="coord-line" id="line-y"></div>
+            <div class="coord-line" id="line-z"></div>
+        </div>
+    </div>
+</div>
+
+<audio id="snd-click" src="https://www.myinstants.com/media/sounds/button-stone.mp3"></audio>
+<audio id="snd-fail" src="https://www.myinstants.com/media/sounds/tnt-minecraft.mp3"></audio>
+<audio id="snd-success" src="https://www.myinstants.com/media/sounds/minecraft_level_up.mp3"></audio>
+<audio id="snd-decrypt" src="https://www.myinstants.com/media/sounds/xp-sound.mp3"></audio>
+
+<script>
+    let attempts = 0;
+    const finalCoords = ["X: 14,028", "Y: 64", "Z: -2,551"];
+
+    async function scrambleText(element, finalValue) {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        for (let i = 0; i < 15; i++) {
+            let randomStr = "";
+            for (let j = 0; j < finalValue.length; j++) {
+                randomStr += chars[Math.floor(Math.random() * chars.length)];
+            }
+            element.innerText = randomStr;
+            await new Promise(r => setTimeout(r, 60));
+        }
+        element.innerText = finalValue;
+        document.getElementById('snd-decrypt').play();
+    }
+
+    async function revealCoordinates() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('secret-content').style.display = 'block';
+        document.body.style.background = "#0f161e";
+
+        await new Promise(r => setTimeout(r, 500));
+        await scrambleText(document.getElementById('line-x'), finalCoords[0]);
+        await new Promise(r => setTimeout(r, 400));
+        await scrambleText(document.getElementById('line-y'), finalCoords[1]);
+        await new Promise(r => setTimeout(r, 400));
+        await scrambleText(document.getElementById('line-z'), finalCoords[2]);
+    }
+
+    function checkPassword() {
+        const passwordInput = document.getElementById('password');
+        const vaultBox = document.getElementById('vault-box');
+        const correctPass = "MINECRAFT"; 
+
+        document.getElementById('snd-click').play();
+
+        if (passwordInput.value.toUpperCase() === correctPass) {
+            document.getElementById('snd-success').play();
+            revealCoordinates();
+        } else {
+            attempts++;
+            passwordInput.classList.add('error');
+            vaultBox.classList.add('shake');
+            document.getElementById('snd-fail').play();
+
+            if (attempts >= 3) {
+                document.body.classList.add('flash');
+                setTimeout(() => {
+                    document.body.classList.remove('flash');
+                    attempts = 0;
+                }, 100);
+            }
+
+            setTimeout(() => {
+                passwordInput.classList.remove('error');
+                vaultBox.classList.remove('shake');
+                passwordInput.value = "";
+            }, 500);
+        }
+    }
+
+    document.getElementById("password").addEventListener("keyup", (e) => {
+        if (e.key === "Enter") checkPassword();
+    });
+</script>
+
+</body>
+</html>
