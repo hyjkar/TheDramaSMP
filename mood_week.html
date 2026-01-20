@@ -19,7 +19,6 @@
         .header-container {
             background-color: #f0f0f0;
             border-bottom: 3px solid #ccc;
-            /* Reduced padding to save space */
             padding: 10px;
             text-align: center;
             display: flex; flex-direction: column; align-items: center; gap: 8px;
@@ -149,14 +148,12 @@
                 justify-content: center; 
                 overflow-y: hidden; /* No scroll */
                 gap: 15px; 
-                /* Remove top padding to close the gap to the header */
                 padding-top: 0; 
                 padding-bottom: 10px; 
             }
 
             .mood-btn {
                 flex: none;
-                /* Slightly smaller to ensure fit */
                 height: 21vh; 
                 width: auto; 
                 aspect-ratio: 1 / 1;
@@ -179,18 +176,22 @@
     </div>
 
     <div class="container">
-        <button id="btn-bad" class="mood-btn bg-bad">
-            <span class="btn-title-text">Huono päivä</span>
-            <img src="bad.jpg" alt="Huono" class="main-img">
-        </button>
-        <button id="btn-okay" class="mood-btn bg-okay">
-             <span class="btn-title-text">Tavallinen päivä</span>
-            <img src="okay.jpg" alt="Normaali" class="main-img">
-        </button>
+        
         <button id="btn-good" class="mood-btn bg-good">
              <span class="btn-title-text">Hyvä päivä</span>
             <img src="good.jpg" alt="Hyvä" class="main-img">
         </button>
+
+        <button id="btn-okay" class="mood-btn bg-okay">
+             <span class="btn-title-text">Tavallinen päivä</span>
+            <img src="okay.jpg" alt="Normaali" class="main-img">
+        </button>
+
+        <button id="btn-bad" class="mood-btn bg-bad">
+            <span class="btn-title-text">Huono päivä</span>
+            <img src="bad.jpg" alt="Huono" class="main-img">
+        </button>
+
     </div>
 
     <div id="modal-reason" class="modal-overlay">
