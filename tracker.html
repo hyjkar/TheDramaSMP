@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Patient Mood Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .phone-container {
+            background-color: white;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* --- SCREEN STYLES --- */
+        .screen {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            height: 100%;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .active-screen {
+            display: flex;
+        }
+
+        /* --- HOME SCREEN --- */
+        .header {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .profile-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #4CAF50;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        /* --- TRACKER SCREEN --- */
+        .tracker-header {
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .patient-badge {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .mood-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mood-btn {
+            background: none;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 10px 0;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .mood-btn:hover {
+            background-color: #f9f9f9;
+        }
+
+        .mood-btn.selected {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+            transform: scale(1.05);
+        }
+
+        .mood-emoji { font-size: 28px; display: block; margin-bottom: 5px; }
+        .mood-label { font-size: 10px; color: #666; font-weight: bold; }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: inherit;
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .save-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* --- HISTORY LIST --- */
+        .history-section {
+            margin-top: 30px;
+            flex-grow: 1;
+        }
+        
+        .log-item {
+            background-color: #f8f9fa;
+            border-left: 4px solid #4CAF50;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        
+        .log-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .log-mood { font-weight: bold; color: #333; }
+        .log-note { font-size: 14px; color: #555; margin-top: 5px; }
+
+        /* --- FOOTER BUTTON --- */
+        .footer-nav {
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .home-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #f1f3f4;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .home-btn:hover { background-color: #e0e0e0; }
+
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+
+    <div id="home-screen" class="screen active-screen">
+        <div class="header">
+            <h1>Select Patient</h1>
+            <p style="color:#666;">Who are we tracking today?</p>
+        </div>
+
+        <div id="profile-list">
+            </div>
+    </div>
+
+    <div id="tracker-screen" class="screen">
+        <div class="tracker-header">
+            <h2 style="margin:0;">Mood Tracker</h2>
+            <span id="current-patient-name" class="patient-badge">Patient Name</span>
+        </div>
+
+        <div class="mood-grid">
+            <button class="mood-btn" onclick="selectMood('Great', this)">
+                <span class="mood-emoji">😄</span>
+                <span class="mood-label">GREAT</span>
+            </button>
+            <button class="mood-btn" onclick="selectMood('Good', this)">
+                <span class="mood-emoji">🙂</span>
+                <span class="mood-label">GOOD</span>
+            </button>
+            <button class="mood-btn" onclick="selectMood('Okay', this)">
+                <span class="mood-emoji">😐</span>
+                <span class="mood-label">OKAY</span>
+            </button>
+            <button class="mood-btn" onclick="selectMood('Bad', this)">
+                <span class="mood-emoji">🙁</span>
+                <span class="mood-label">BAD</span>
+            </button>
+            <button class="mood-btn" onclick="selectMood('Awful', this)">
+                <span class="mood-emoji">😫</span>
+                <span class="mood-label">AWFUL</span>
+            </button>
+        </div>
+
+        <label style="font-size:14px; font-weight:bold; color:#555; display:block; margin-bottom:8px;">Notes</label>
+        <textarea id="note-input" placeholder="Any triggers or comments?"></textarea>
+
+        <button id="save-button" class="save-btn" onclick="saveLog()" disabled>Log Entry</button>
+
+        <div class="history-section">
+            <h3 style="font-size:14px; color:#999; text-transform: uppercase;">History</h3>
+            <div id="history-list">
+                </div>
+        </div>
+
+        <div class="footer-nav">
+            <button class="home-btn" onclick="goToHome()">🏠 Switch Profile / Home</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- 1. DATA SETUP ---
+    
+    // We create an object to hold the data for our 3 profiles
+    const profiles = [
+        { id: 1, name: "Alex (Patient A)", initial: "A" },
+        { id: 2, name: "Sam (Patient B)", initial: "S" },
+        { id: 3, name: "Jordan (Patient C)", initial: "J" }
+    ];
+
+    // This object holds the logs. 
+    // Format: { 1: [], 2: [], 3: [] }
+    const patientLogs = {
+        1: [],
+        2: [],
+        3: []
+    };
+
+    let activeProfileId = null;
+    let selectedMood = null;
+
+    // --- 2. INITIALIZATION ---
+
+    // When the page loads, draw the profile buttons
+    window.onload = function() {
+        const list = document.getElementById('profile-list');
+        profiles.forEach(p => {
+            list.innerHTML += `
+                <div class="profile-card" onclick="openTracker(${p.id})">
+                    <div class="avatar">${p.initial}</div>
+                    <div>
+                        <div style="font-weight:bold; font-size:18px;">${p.name}</div>
+                        <div style="font-size:12px; color:#888;">ID: #${p.id}</div>
+                    </div>
+                </div>
+            `;
+        });
+    };
+
+    // --- 3. NAVIGATION FUNCTIONS ---
+
+    function openTracker(id) {
+        activeProfileId = id;
+        
+        // Find the profile name to display in header
+        const profile = profiles.find(p => p.id === id);
+        document.getElementById('current-patient-name').innerText = profile.name;
+
+        // Switch screens
+        document.getElementById('home-screen').classList.remove('active-screen');
+        document.getElementById('tracker-screen').classList.add('active-screen');
+
+        // Render that patient's specific history
+        renderHistory();
+        resetForm();
+    }
+
+    function goToHome() {
+        activeProfileId = null;
+        document.getElementById('tracker-screen').classList.remove('active-screen');
+        document.getElementById('home-screen').classList.add('active-screen');
+    }
+
+    // --- 4. TRACKER LOGIC ---
+
+    function selectMood(mood, btnElement) {
+        selectedMood = mood;
+        
+        // Visual Update: Remove 'selected' class from all buttons, add to clicked one
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+        btnElement.classList.add('selected');
+
+        // Enable save button
+        document.getElementById('save-button').disabled = false;
+    }
+
+    function saveLog() {
+        if (!selectedMood || !activeProfileId) return;
+
+        const note = document.getElementById('note-input').value;
+        const now = new Date();
+        const timestamp = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+        // Create log object
+        const newLog = {
+            mood: selectedMood,
+            note: note,
+            time: timestamp
+        };
+
+        // SAVE IT: Add to the specific patient's array (add to beginning)
+        patientLogs[activeProfileId].unshift(newLog);
+
+        // Refresh the view
+        renderHistory();
+        resetForm();
+    }
+
+    function renderHistory() {
+        const historyContainer = document.getElementById('history-list');
+        const logs = patientLogs[activeProfileId];
+
+        if (logs.length === 0) {
+            historyContainer.innerHTML = '<p style="text-align:center; color:#ccc; margin-top:20px;">No logs yet for this patient.</p>';
+            return;
+        }
+
+        let html = '';
+        logs.forEach(log => {
+            html += `
+                <div class="log-item">
+                    <div class="log-meta">
+                        <span class="log-mood">${log.mood}</span>
+                        <span>${log.time}</span>
+                    </div>
+                    ${log.note ? `<div class="log-note">${log.note}</div>` : ''}
+                </div>
+            `;
+        });
+
+        historyContainer.innerHTML = html;
+    }
+
+    function resetForm() {
+        selectedMood = null;
+        document.getElementById('note-input').value = '';
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+        document.getElementById('save-button').disabled = true;
+    }
+
+</script>
+
+</body>
+</html>
