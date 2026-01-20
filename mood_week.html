@@ -13,7 +13,6 @@
             margin: 0; padding: 0;
             display: flex; flex-direction: column; height: 100vh;
             touch-action: manipulation;
-            /* COMPLETELY DISABLE SCROLLING */
             overflow: hidden; 
             overscroll-behavior: none;
         }
@@ -46,7 +45,6 @@
             align-items: center; 
             justify-content: center; 
             gap: 15px; 
-            /* Disable scrollbars on container too */
             overflow: hidden; 
         }
 
@@ -132,6 +130,7 @@
             border-radius: 50%; border: 2px solid #e0e0e0;
         }
 
+        /* Buttons in modals */
         .close-btn {
             margin-top: 10px; padding: 15px 40px; font-size: 1.6rem; font-weight: bold;
             background-color: #666; color: white; border: none; cursor: pointer;
@@ -144,23 +143,31 @@
         }
         .clear-btn:active { background-color: #d63031; }
 
+        /* NEW: Flex container for side-by-side buttons */
+        .button-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .button-row button {
+            flex: 1; /* Make them equal width */
+            margin-top: 0; /* Reset top margin inside row */
+        }
+
         /* --- MOBILE ADJUSTMENTS (PORTRAIT MODE ONLY) --- */
         @media (max-width: 768px) and (orientation: portrait) {
             
             .container {
                 flex-direction: column;
                 justify-content: flex-start; 
-                /* Ensures no scroll bar ever appears */
                 overflow: hidden;
                 gap: 15px; 
                 padding-top: 0; 
-                /* Minimal bottom padding */
                 padding-bottom: 5px; 
             }
 
             .mood-btn {
                 flex: none;
-                /* Increased height slightly to fill the bottom space better */
                 height: 25vh; 
                 width: auto; 
                 aspect-ratio: 1 / 1;
@@ -251,8 +258,20 @@
             <div id="weekly-display" class="week-grid">
                 </div>
 
-            <button id="btn-clear-history" class="clear-btn">Tyhjennä tiedot</button>
+            <button id="btn-open-confirm" class="clear-btn">Tyhjennä tiedot</button>
             <button id="btn-close-history" class="close-btn">Sulje</button>
+        </div>
+    </div>
+
+    <div id="modal-confirm" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="modal-title" style="color: #d63031;">Oletko varma?</h2>
+            <p style="font-size: 1.2rem; color: #555;">Tämä poistaa kaiken tallennetun historian.</p>
+            
+            <div class="button-row">
+                <button id="btn-confirm-yes" class="clear-btn">Poista</button>
+                <button id="btn-confirm-no" class="close-btn">Peruuta</button>
+            </div>
         </div>
     </div>
 
@@ -261,7 +280,6 @@
             
             const STORAGE_KEY = 'moodAppHistoryV2_Images'; 
             var sessionHistory = [];
-            
             var currentViewDate = new Date(); 
 
             // Load Data
@@ -270,9 +288,12 @@
                 sessionHistory = JSON.parse(savedData);
             }
 
+            // Elements
             var statusText = document.getElementById('status-text');
             var modalReason = document.getElementById('modal-reason');
             var modalHistory = document.getElementById('modal-history');
+            var modalConfirm = document.getElementById('modal-confirm'); // New
+            
             var gridBad = document.getElementById('grid-bad');
             var gridGood = document.getElementById('grid-good');
             var reasonTitle = document.getElementById('modal-title-reason');
@@ -313,14 +334,30 @@
                 generateWeeklyView();
             });
 
-            // Clear History
-            document.getElementById('btn-clear-history').addEventListener('click', function() {
-                if (confirm("Oletko varma? Tämä poistaa kaiken historian.")) {
-                    sessionHistory = [];
-                    localStorage.removeItem(STORAGE_KEY);
-                    generateWeeklyView();
-                }
+            // --- NEW: Custom Confirm Modal Logic ---
+            
+            // 1. Click "Tyhjennä tiedot" -> Hides history, Shows Confirm
+            document.getElementById('btn-open-confirm').addEventListener('click', function() {
+                modalHistory.style.display = 'none';
+                modalConfirm.style.display = 'flex';
             });
+
+            // 2. Click "Poista" (Yes) -> Deletes data
+            document.getElementById('btn-confirm-yes').addEventListener('click', function() {
+                sessionHistory = [];
+                localStorage.removeItem(STORAGE_KEY);
+                generateWeeklyView();
+                modalConfirm.style.display = 'none';
+                // Optional: Show history again (empty) or close everything? 
+                // Let's close everything to signify "Done".
+            });
+
+            // 3. Click "Peruuta" (No) -> Go back to History
+            document.getElementById('btn-confirm-no').addEventListener('click', function() {
+                modalConfirm.style.display = 'none';
+                modalHistory.style.display = 'flex';
+            });
+
 
             // Reason Clicks
             ['pain','toilet','lonely','tired'].forEach(r => {
