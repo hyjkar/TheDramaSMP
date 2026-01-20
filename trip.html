@@ -52,7 +52,6 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            /* CHANGE: Distributes space equally between all blocks */
             justify-content: space-evenly; 
         }
 
@@ -101,7 +100,6 @@
             padding: 8px;
             border-radius: 10px;
             border: 1px solid var(--gold-dim);
-            /* Removed large margins here */
             margin: 0 auto; 
             width: 100%;
             max-width: 320px;
@@ -134,8 +132,7 @@
         .info-box {
             display: flex;
             flex-direction: column;
-            gap: 10px; /* Consistent gap between Dept/Accom/Rest */
-            /* REMOVED flex-grow: 1; This was causing the big gap */
+            gap: 10px; 
         }
 
         /* Checklist */
@@ -199,7 +196,7 @@
         </header>
 
         <div class="timer-container">
-            <p style="margin-bottom: 3px; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px;">Departure in</p>
+            <p id="timer-label" style="margin-bottom: 3px; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px;">Departure in</p>
             <div class="timer" id="countdown">
                 <div class="time-unit"><span class="time-val" id="days">00</span><span class="time-label">Days</span></div>
                 <div class="time-unit"><span class="time-val" id="hours">00</span><span class="time-label">Hrs</span></div>
@@ -210,9 +207,9 @@
 
         <div class="info-box">
             <div>
-                <h2>Departure</h2>
-                <p>Länsiterminaali 2, Helsinki</p>
-                <p class="highlight">Jan 23, 2026 @ 16:30</p>
+                <h2 id="trip-header">Departure</h2>
+                <p id="trip-loc">Länsiterminaali 2, Helsinki</p>
+                <p class="highlight" id="trip-time">Jan 23, 2026 @ 16:30</p>
             </div>
             
             <div>
@@ -252,25 +249,49 @@
         </div>
 
         <div class="footer">
-            &copy; 2026 The Boys
+            v.0.1
         </div>
 
     </div>
 
     <script>
-        // 1. COUNTDOWN LOGIC
-        const departureDate = new Date("January 23, 2026 16:30:00").getTime();
+        // 1. DYNAMIC TIMER LOGIC
+        // Date 1: Helsinki -> Tallinn
+        const startDate = new Date("January 23, 2026 16:30:00").getTime();
+        // Date 2: Tallinn -> Helsinki
+        const returnDate = new Date("January 25, 2026 13:30:00").getTime();
+        
+        let returnModeActive = false;
 
         const timer = setInterval(function() {
             const now = new Date().getTime();
-            const distance = departureDate - now;
+            let distance = startDate - now;
+            let targetMode = "START";
 
+            // If we have passed the start date, switch to return date
             if (distance < 0) {
+                distance = returnDate - now;
+                targetMode = "RETURN";
+            }
+
+            // Update UI Information only once when mode switches
+            if (targetMode === "RETURN" && !returnModeActive) {
+                returnModeActive = true;
+                // Update Text Info
+                document.getElementById("timer-label").innerText = "Return in";
+                document.getElementById("trip-header").innerText = "Return";
+                document.getElementById("trip-loc").innerText = "D-Terminal, Tallinn";
+                document.getElementById("trip-time").innerText = "Jan 25, 2026 @ 13:30";
+            }
+
+            // If we have passed the return date (Trip Over)
+            if (targetMode === "RETURN" && distance < 0) {
                 clearInterval(timer);
-                document.getElementById("countdown").innerHTML = "<div class='time-val' style='font-size:1rem'>WE HAVE DEPARTED</div>";
+                document.getElementById("countdown").innerHTML = "<div class='time-val' style='font-size:1rem'>TRIP COMPLETE</div>";
                 return;
             }
 
+            // Calculate Time
             const days = Math.floor(distance / (1000 * 60 * 60 * 24));
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
