@@ -19,17 +19,18 @@
         .header-container {
             background-color: #f0f0f0;
             border-bottom: 3px solid #ccc;
-            padding: 10px;
+            /* Tighter padding */
+            padding: 5px;
             text-align: center;
-            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
             flex-shrink: 0; 
         }
 
-        h1 { font-size: 1.8rem; color: #333; margin: 0; }
+        h1 { font-size: 1.6rem; color: #333; margin: 0; }
 
         .history-btn-main {
             background-color: #e0e0e0; border: 2px solid #ccc;
-            padding: 6px 20px; font-size: 1rem; border-radius: 20px;
+            padding: 5px 20px; font-size: 1rem; border-radius: 20px;
             cursor: pointer; color: #555; font-weight: bold;
         }
 
@@ -145,10 +146,12 @@
             
             .container {
                 flex-direction: column;
-                justify-content: center; 
-                overflow-y: hidden; /* No scroll */
+                /* KEY CHANGE: Start from the top, don't center vertically */
+                justify-content: flex-start; 
+                overflow-y: hidden;
                 gap: 15px; 
-                padding-top: 0; 
+                /* Add a tiny bit of space so it doesn't touch the line exactly */
+                padding-top: 10px; 
                 padding-bottom: 10px; 
             }
 
@@ -160,7 +163,6 @@
                 max-height: 250px; 
             }
 
-            /* History: 2 rows */
             .week-grid {
                 grid-template-columns: repeat(4, 1fr);
                 gap: 10px; 
