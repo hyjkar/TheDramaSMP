@@ -98,8 +98,7 @@
         .reason-img { width: 90px; height: 90px; object-fit: contain; margin-bottom: 10px;}
         .reason-text { font-size: 1.4rem; font-weight: bold; color: #444; }
 
-        /* --- 5. HISTORY GRID STYLES (Default: 1 Row of 7) --- */
-        /* This applies to desktop AND mobile landscape */
+        /* --- 5. HISTORY GRID STYLES --- */
         .week-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr); /* 7 items side by side */
@@ -142,17 +141,20 @@
             /* 1. Stack Main Buttons Vertically */
             .container {
                 flex-direction: column;
-                justify-content: flex-start;
-                overflow-y: auto; 
-                gap: 20px; 
-                padding-bottom: 30px; 
+                justify-content: center; /* Center them vertically */
+                overflow-y: hidden; /* Disable scroll if they fit */
+                gap: 15px; 
+                padding-bottom: 10px; 
             }
 
             .mood-btn {
                 flex: none;
-                width: 90%;
-                max-width: 350px;
+                /* --- KEY CHANGE HERE --- */
+                /* Set height to 22% of screen height to ensure 3 buttons fit perfectly */
+                height: 22vh; 
+                width: auto; /* Let width adjust to keep it square */
                 aspect-ratio: 1 / 1;
+                max-height: 250px; /* Don't get too big on tablets */
             }
 
             /* 2. HISTORY GRID: Break into 2 rows for Portrait */
