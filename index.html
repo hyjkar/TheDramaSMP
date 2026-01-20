@@ -20,7 +20,6 @@
             transition: background 0.5s;
         }
 
-        /* FLASH EFFECT ON FAIL */
         .flash { background: white !important; }
 
         /* CREEPER */
@@ -70,13 +69,23 @@
             font-family: 'Press Start 2P', cursive; cursor: pointer;
         }
 
+        /* ALIGNED COORDS BOX */
         .coords-box {
             background: #000; border: 4px inset #555;
-            padding: 20px; margin-top: 15px; min-height: 120px;
-            display: flex; flex-direction: column; justify-content: center;
+            padding: 25px; margin-top: 15px; 
+            display: flex; flex-direction: column; 
+            align-items: flex-start; /* Aligns items to the left */
+            justify-content: center;
+            padding-left: 60px; /* Centers the whole block visually */
         }
 
-        .coord-line { color: #ffcc00; font-size: 18px; margin: 5px 0; }
+        .coord-line { 
+            color: #ffcc00; 
+            font-size: 18px; 
+            margin: 8px 0; 
+            text-align: left;
+            min-height: 20px;
+        }
         
         #secret-content { display: none; }
     </style>
@@ -113,14 +122,15 @@
     const finalCoords = ["X: 14,028", "Y: 64", "Z: -2,551"];
 
     async function scrambleText(element, finalValue) {
-        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-        for (let i = 0; i < 15; i++) {
+        const chars = "0123456789!@#$%";
+        for (let i = 0; i < 12; i++) {
             let randomStr = "";
+            // Keep the prefix (X:, Y:, Z:) stable if you like, or scramble the whole thing
             for (let j = 0; j < finalValue.length; j++) {
                 randomStr += chars[Math.floor(Math.random() * chars.length)];
             }
             element.innerText = randomStr;
-            await new Promise(r => setTimeout(r, 60));
+            await new Promise(r => setTimeout(r, 70));
         }
         element.innerText = finalValue;
         document.getElementById('snd-decrypt').play();
