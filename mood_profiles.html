@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Päivän mieliala - Profiilit</title>
+    <title>Päivän mieliala - Dashboard</title>
     <style>
         /* --- 1. VISUAL SETUP (TYYLIT) --- */
         body {
@@ -12,19 +12,16 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0; padding: 0;
             display: flex; flex-direction: column; 
-            
-            /* FIX FOR MOBILE */
             height: 100vh; 
             height: 100dvh; 
-            
             touch-action: manipulation;
             overflow: hidden; 
             overscroll-behavior: none;
         }
         
-        /* VIEWS (Screen Switching) */
+        /* VIEWS */
         .view-section {
-            display: none; /* Hidden by default */
+            display: none; 
             flex: 1;
             width: 100%;
             flex-direction: column;
@@ -32,25 +29,22 @@
         }
 
         .active-view {
-            display: flex; /* Only the active view is shown */
+            display: flex; 
         }
         
-        /* Header Container */
+        /* Header */
         .header-container {
             padding: 10px 5px;
             text-align: center;
             display: flex; flex-direction: column; align-items: center; gap: 8px;
             flex-shrink: 0; 
-            background-color: #f9f9f9; /* Slight background to separate header */
+            background-color: #f9f9f9; 
             border-bottom: 1px solid #eee;
         }
 
         h1 { font-size: 1.5rem; color: #333; margin: 0; }
 
-        /* Header Buttons Row */
-        .header-controls {
-            display: flex; gap: 10px;
-        }
+        .header-controls { display: flex; gap: 10px; }
 
         .header-btn {
             background-color: white; border: 2px solid #ccc;
@@ -72,22 +66,48 @@
             overflow: hidden; 
         }
 
-        /* Profile Selection Styles */
+        /* --- NEW PROFILE BUTTON STYLES --- */
         .profile-btn {
-            width: 100%; max-width: 300px;
-            padding: 20px; margin: 5px;
+            width: 100%; max-width: 320px;
+            padding: 15px 20px; margin: 8px;
             border-radius: 20px; border: none;
-            font-size: 1.4rem; font-weight: bold; color: white;
+            color: white;
             cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            display: flex; align-items: center; justify-content: center; gap: 15px;
+            display: flex; align-items: center; gap: 20px;
+            text-align: left;
+            position: relative;
+            transition: transform 0.2s;
         }
-        .profile-icon { font-size: 2rem; background: rgba(255,255,255,0.3); width: 50px; height: 50px; border-radius: 50%; display:flex; align-items:center; justify-content:center;}
-        
-        .p-blue { background-color: #4facfe; background-image: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); }
-        .p-green { background-color: #43e97b; background-image: linear-gradient(to right, #43e97b 0%, #38f9d7 100%); }
-        .p-purple { background-color: #a18cd1; background-image: linear-gradient(to right, #a18cd1 0%, #fbc2eb 100%); }
+        .profile-btn:active { transform: scale(0.98); }
 
-        /* Mood Buttons */
+        .profile-icon { 
+            font-size: 1.8rem; 
+            background: rgba(255,255,255,0.9); 
+            color: #333;
+            width: 60px; height: 60px; 
+            border-radius: 50%; 
+            display:flex; align-items:center; justify-content:center;
+            font-weight: bold;
+            border: 5px solid transparent; /* Placeholder for mood color */
+            flex-shrink: 0;
+        }
+
+        .profile-info { display: flex; flex-direction: column; }
+        .profile-name { font-size: 1.4rem; font-weight: bold; line-height: 1.2; }
+        .profile-status { font-size: 0.9rem; opacity: 0.9; font-weight: normal;}
+
+        /* Background Gradients for Users */
+        .p-blue { background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .p-green { background-image: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        .p-purple { background-image: linear-gradient(135deg, #fc6076 0%, #ff9a44 100%); }
+
+        /* MOOD RINGS (The Status Colors) */
+        .mood-ring-good { border-color: #2ecc71 !important; color: #2ecc71 !important; }
+        .mood-ring-bad { border-color: #e74c3c !important; color: #e74c3c !important;}
+        .mood-ring-okay { border-color: #f1c40f !important; color: #f39c12 !important;}
+        .mood-ring-none { border-color: #ddd !important; color: #ccc !important; }
+
+        /* Tracker Buttons */
         .mood-btn {
             flex: 1; 
             aspect-ratio: 1 / 1; 
@@ -115,7 +135,7 @@
         .bg-good { background-color: #e8f5e9; border: 4px solid #c8e6c9;}
 
 
-        /* --- 3. POPUP WINDOWS --- */
+        /* --- 3. MODALS --- */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.85); 
@@ -142,7 +162,7 @@
         .reason-img { width: 90px; height: 90px; object-fit: contain; margin-bottom: 10px;}
         .reason-text { font-size: 1.4rem; font-weight: bold; color: #444; }
 
-        /* --- 5. HISTORY GRID STYLES --- */
+        /* --- 5. HISTORY GRID --- */
         .history-controls {
             display: flex; justify-content: space-between; align-items: center;
             width: 100%; margin-bottom: 15px; background-color: #f9f9f9;
@@ -172,7 +192,6 @@
             border-radius: 50%; border: 2px solid #e0e0e0;
         }
 
-        /* Buttons in modals */
         .close-btn {
             margin-top: 10px; padding: 15px 40px; font-size: 1.6rem; font-weight: bold;
             background-color: #666; color: white; border: none; cursor: pointer;
@@ -183,14 +202,11 @@
             background-color: #ff6b6b; color: white; border: none; cursor: pointer;
             border-radius: 12px; width: 100%;
         }
-        .clear-btn:active { background-color: #d63031; }
-
         .button-row { display: flex; gap: 15px; margin-top: 20px; }
         .button-row button { flex: 1; margin-top: 0; }
 
-        /* --- MOBILE ADJUSTMENTS (PORTRAIT MODE ONLY) --- */
+        /* --- MOBILE ADJUSTMENTS --- */
         @media (max-width: 768px) and (orientation: portrait) {
-            
             .container {
                 flex-direction: column;
                 justify-content: space-evenly; 
@@ -199,23 +215,11 @@
                 padding-top: 5px; 
                 padding-bottom: 20px; 
             }
-
             .mood-btn {
-                flex: 1; 
-                width: 85%; 
-                height: auto; 
-                max-height: 28vh; 
-                aspect-ratio: auto; 
+                flex: 1; width: 85%; height: auto; max-height: 28vh; aspect-ratio: auto; 
             }
-            
-            .main-img {
-                max-height: 55%; 
-            }
-
-            .week-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 10px; 
-            }
+            .main-img { max-height: 55%; }
+            .week-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
         }
     </style>
 </head>
@@ -228,20 +232,31 @@
         </div>
         
         <div class="container" style="flex-direction: column; justify-content: start;">
+            
             <button class="profile-btn p-blue" onclick="selectProfile('1', 'Matti')">
-                <div class="profile-icon">M</div>
-                Matti
+                <div id="icon-1" class="profile-icon">M</div>
+                <div class="profile-info">
+                    <span class="profile-name">Matti</span>
+                    <span id="status-1" class="profile-status">Ladataan...</span>
+                </div>
             </button>
             
             <button class="profile-btn p-green" onclick="selectProfile('2', 'Anna')">
-                <div class="profile-icon">A</div>
-                Anna
+                <div id="icon-2" class="profile-icon">A</div>
+                <div class="profile-info">
+                    <span class="profile-name">Anna</span>
+                    <span id="status-2" class="profile-status">Ladataan...</span>
+                </div>
             </button>
             
             <button class="profile-btn p-purple" onclick="selectProfile('3', 'Pekka')">
-                <div class="profile-icon">P</div>
-                Pekka
+                <div id="icon-3" class="profile-icon">P</div>
+                <div class="profile-info">
+                    <span class="profile-name">Pekka</span>
+                    <span id="status-3" class="profile-status">Ladataan...</span>
+                </div>
             </button>
+
         </div>
     </div>
 
@@ -263,59 +278,36 @@
         </div>
 
         <div class="container">
-            
             <button id="btn-good" class="mood-btn bg-good">
                  <span class="btn-title-text">Hyvä päivä</span>
                 <img src="good.jpg" alt="Hyvä" class="main-img">
             </button>
-
             <button id="btn-okay" class="mood-btn bg-okay">
                  <span class="btn-title-text">Tavallinen päivä</span>
                 <img src="okay.jpg" alt="Normaali" class="main-img">
             </button>
-
             <button id="btn-bad" class="mood-btn bg-bad">
                 <span class="btn-title-text">Huono päivä</span>
                 <img src="bad.jpg" alt="Huono" class="main-img">
             </button>
-
         </div>
     </div>
 
     <div id="modal-reason" class="modal-overlay">
         <div class="modal-box">
             <h2 id="modal-title-reason" class="modal-title">Miksi?</h2>
-
             <div id="grid-bad" class="options-grid">
-                <button id="btn-pain" class="reason-btn">
-                    <img src="pain.jpg" class="reason-img"><span class="reason-text">Kipu</span>
-                </button>
-                <button id="btn-toilet" class="reason-btn">
-                    <img src="toilet.jpg" class="reason-img"><span class="reason-text">Vessa</span>
-                </button>
-                <button id="btn-lonely" class="reason-btn">
-                    <img src="lonely.jpg" class="reason-img"><span class="reason-text">Yksinäinen</span>
-                </button>
-                <button id="btn-tired" class="reason-btn">
-                    <img src="tired.jpg" class="reason-img"><span class="reason-text">Väsynyt</span>
-                </button>
+                <button id="btn-pain" class="reason-btn"><img src="pain.jpg" class="reason-img"><span class="reason-text">Kipu</span></button>
+                <button id="btn-toilet" class="reason-btn"><img src="toilet.jpg" class="reason-img"><span class="reason-text">Vessa</span></button>
+                <button id="btn-lonely" class="reason-btn"><img src="lonely.jpg" class="reason-img"><span class="reason-text">Yksinäinen</span></button>
+                <button id="btn-tired" class="reason-btn"><img src="tired.jpg" class="reason-img"><span class="reason-text">Väsynyt</span></button>
             </div>
-
             <div id="grid-good" class="options-grid">
-                <button id="btn-family" class="reason-btn">
-                    <img src="family.jpg" class="reason-img"><span class="reason-text">Perhe</span>
-                </button>
-                <button id="btn-food" class="reason-btn">
-                    <img src="food.jpg" class="reason-img"><span class="reason-text">Ruoka</span>
-                </button>
-                <button id="btn-music" class="reason-btn">
-                    <img src="music.jpg" class="reason-img"><span class="reason-text">Musiikki</span>
-                </button>
-                <button id="btn-comfort" class="reason-btn">
-                    <img src="comfort.jpg" class="reason-img"><span class="reason-text">Hyvä olo</span>
-                </button>
+                <button id="btn-family" class="reason-btn"><img src="family.jpg" class="reason-img"><span class="reason-text">Perhe</span></button>
+                <button id="btn-food" class="reason-btn"><img src="food.jpg" class="reason-img"><span class="reason-text">Ruoka</span></button>
+                <button id="btn-music" class="reason-btn"><img src="music.jpg" class="reason-img"><span class="reason-text">Musiikki</span></button>
+                <button id="btn-comfort" class="reason-btn"><img src="comfort.jpg" class="reason-img"><span class="reason-text">Hyvä olo</span></button>
             </div>
-
             <button id="btn-cancel-reason" class="close-btn">Peruuta</button>
         </div>
     </div>
@@ -323,16 +315,12 @@
     <div id="modal-history" class="modal-overlay">
         <div class="modal-box">
             <h2 class="modal-title">Kalenteri</h2>
-            
             <div class="history-controls">
                 <button id="btn-prev-week" class="nav-btn">&lt;</button>
                 <span id="date-range-label" class="date-range-label">...</span>
                 <button id="btn-next-week" class="nav-btn">&gt;</button>
             </div>
-            
-            <div id="weekly-display" class="week-grid">
-                </div>
-
+            <div id="weekly-display" class="week-grid"></div>
             <button id="btn-open-confirm" class="clear-btn">Tyhjennä tiedot</button>
             <button id="btn-close-history" class="close-btn">Sulje</button>
         </div>
@@ -342,7 +330,6 @@
         <div class="modal-box">
             <h2 class="modal-title" style="color: #d63031;">Oletko varma?</h2>
             <p style="font-size: 1.2rem; color: #555;">Tämä poistaa kaiken tallennetun historian.</p>
-            
             <div class="button-row">
                 <button id="btn-confirm-yes" class="clear-btn">Poista</button>
                 <button id="btn-confirm-no" class="close-btn">Peruuta</button>
@@ -351,9 +338,15 @@
     </div>
 
     <script>
+        // --- CONSTANTS ---
+        // Lists used to categorize images into Good/Bad/Neutral
+        const LIST_GOOD = ['good.jpg', 'family.jpg', 'food.jpg', 'music.jpg', 'comfort.jpg'];
+        const LIST_BAD = ['bad.jpg', 'pain.jpg', 'toilet.jpg', 'lonely.jpg', 'tired.jpg'];
+        // Okay is default/neutral
+
         // --- GLOBAL VARIABLES ---
         let currentProfileId = null; 
-        let currentStorageKey = ''; // Will be 'moodApp_1', 'moodApp_2', etc.
+        let currentStorageKey = ''; 
         let sessionHistory = [];
         let currentViewDate = new Date(); 
 
@@ -366,42 +359,84 @@
         const modalReason = document.getElementById('modal-reason');
         const modalHistory = document.getElementById('modal-history');
         const modalConfirm = document.getElementById('modal-confirm');
-        
-        const gridBad = document.getElementById('grid-bad');
-        const gridGood = document.getElementById('grid-good');
-        const reasonTitle = document.getElementById('modal-title-reason');
         const weeklyDisplay = document.getElementById('weekly-display');
         const dateRangeLabel = document.getElementById('date-range-label');
 
-        // --- PROFILE LOGIC ---
+        // --- INITIALIZATION ---
+        // Run this when app opens to calculate mood colors
+        window.addEventListener('load', updateProfileDashboards);
 
-        // Called when clicking a profile button
+        // --- DASHBOARD LOGIC (New Feature) ---
+        function updateProfileDashboards() {
+            ['1', '2', '3'].forEach(id => {
+                const key = 'moodApp_Profile_' + id;
+                const rawData = localStorage.getItem(key);
+                const iconEl = document.getElementById('icon-' + id);
+                const statusEl = document.getElementById('status-' + id);
+                
+                // Reset classes
+                iconEl.className = 'profile-icon';
+
+                if (!rawData) {
+                    statusEl.innerText = "Ei vielä tietoja";
+                    iconEl.classList.add('mood-ring-none');
+                    return;
+                }
+
+                const history = JSON.parse(rawData);
+                if (history.length === 0) {
+                    statusEl.innerText = "Ei vielä tietoja";
+                    iconEl.classList.add('mood-ring-none');
+                    return;
+                }
+
+                // Analyze last 10 entries
+                const recent = history.slice(-10); // get last 10
+                let score = 0; // +1 for good, -1 for bad, 0 for okay
+
+                recent.forEach(log => {
+                    if (LIST_GOOD.includes(log.reasonImage)) score++;
+                    else if (LIST_BAD.includes(log.reasonImage)) score--;
+                });
+
+                // Determine dominant mood
+                if (score > 1) {
+                    statusEl.innerText = "Viime aikoina: Hyvä";
+                    iconEl.classList.add('mood-ring-good');
+                } else if (score < -1) {
+                    statusEl.innerText = "Viime aikoina: Huono";
+                    iconEl.classList.add('mood-ring-bad');
+                } else {
+                    statusEl.innerText = "Viime aikoina: Tasainen";
+                    iconEl.classList.add('mood-ring-okay');
+                }
+            });
+        }
+
+        // --- PROFILE LOGIC ---
         function selectProfile(id, name) {
             currentProfileId = id;
-            currentStorageKey = 'moodApp_Profile_' + id; // Creates unique box for each user
+            currentStorageKey = 'moodApp_Profile_' + id;
             
-            // UI Updates
             userNameDisplay.innerText = name;
             viewProfiles.classList.remove('active-view');
             viewTracker.classList.add('active-view');
 
-            // Load Data for THIS user
             loadData();
         }
 
-        // Called when clicking "Vaihda käyttäjää"
         document.getElementById('btn-switch-user').addEventListener('click', function() {
-            // Hide tracker, show profiles
             viewTracker.classList.remove('active-view');
             viewProfiles.classList.add('active-view');
             
-            // Reset state
+            // Refresh dashboards in case we just added data
+            updateProfileDashboards();
+            
             currentProfileId = null;
             sessionHistory = [];
         });
 
         // --- DATA LOGIC ---
-
         function loadData() {
             const savedData = localStorage.getItem(currentStorageKey);
             if (savedData) {
@@ -416,32 +451,20 @@
             localStorage.setItem(currentStorageKey, JSON.stringify(sessionHistory));
         }
 
-        // --- MAIN APP EVENTS ---
+        // --- BUTTON EVENTS ---
+        document.getElementById('btn-bad').addEventListener('click', () => openReasonModal('bad'));
+        document.getElementById('btn-good').addEventListener('click', () => openReasonModal('good'));
+        document.getElementById('btn-okay').addEventListener('click', () => saveResult('Tavallinen', 'Normaali', 'okay.jpg'));
 
-        document.getElementById('btn-bad').addEventListener('click', function() {
-            openReasonModal('bad');
-        });
-        document.getElementById('btn-good').addEventListener('click', function() {
-            openReasonModal('good');
-        });
-        document.getElementById('btn-okay').addEventListener('click', function() {
-            saveResult('Tavallinen', 'Normaali', 'okay.jpg');
-        });
-
-        // Open/Close History
         document.getElementById('btn-open-history').addEventListener('click', function() {
                 currentViewDate = new Date(); 
                 generateWeeklyView();
                 modalHistory.style.display = 'flex';
         });
-        document.getElementById('btn-close-history').addEventListener('click', function() {
-                modalHistory.style.display = 'none';
-        });
-        document.getElementById('btn-cancel-reason').addEventListener('click', function() {
-            modalReason.style.display = "none";
-        });
+        document.getElementById('btn-close-history').addEventListener('click', () => modalHistory.style.display = 'none');
+        document.getElementById('btn-cancel-reason').addEventListener('click', () => modalReason.style.display = "none");
 
-        // History Navigation
+        // History Nav
         document.getElementById('btn-prev-week').addEventListener('click', function() {
             currentViewDate.setDate(currentViewDate.getDate() - 7);
             generateWeeklyView();
@@ -451,26 +474,23 @@
             generateWeeklyView();
         });
 
-        // Confirm Modal Logic
+        // Confirm Delete
         document.getElementById('btn-open-confirm').addEventListener('click', function() {
             modalHistory.style.display = 'none';
             modalConfirm.style.display = 'flex';
         });
-
         document.getElementById('btn-confirm-yes').addEventListener('click', function() {
             sessionHistory = [];
-            localStorage.removeItem(currentStorageKey); // Remove only current user data
+            localStorage.removeItem(currentStorageKey);
             generateWeeklyView();
             modalConfirm.style.display = 'none';
         });
-
         document.getElementById('btn-confirm-no').addEventListener('click', function() {
             modalConfirm.style.display = 'none';
             modalHistory.style.display = 'flex';
         });
 
-
-        // Reason Clicks
+        // Reason Buttons
         ['pain','toilet','lonely','tired'].forEach(r => {
             document.getElementById('btn-'+r).addEventListener('click', () => saveResult('Huono', translate(r), r + '.jpg'));
         });
@@ -479,9 +499,12 @@
         });
 
         // --- HELPER FUNCTIONS ---
-
         function openReasonModal(type) {
             modalReason.style.display = "flex";
+            const gridBad = document.getElementById('grid-bad');
+            const gridGood = document.getElementById('grid-good');
+            const reasonTitle = document.getElementById('modal-title-reason');
+
             if(type === 'bad') {
                 gridBad.style.display = "grid"; gridGood.style.display = "none";
                 reasonTitle.innerText = "Mikä on huonosti?";
@@ -493,21 +516,18 @@
 
         function saveResult(moodText, reasonText, imageFilename) {
             modalReason.style.display = "none";
-
             var today = new Date();
             var dateString = today.toISOString().split('T')[0];
             
-            // Add to current user history
             sessionHistory.push({
                 dateStr: dateString,
                 reasonImage: imageFilename
             });
-
-            saveData(); // Save to localStorage
+            saveData();
 
             statusText.innerText = "Tallennettu: " + moodText + " (" + reasonText + ")";
             statusText.style.backgroundColor = "#d4edda"; 
-            setTimeout(function() {
+            setTimeout(() => {
                 statusText.innerText = "Miten päiväsi meni?";
                 statusText.style.backgroundColor = "transparent"; 
             }, 3000);
@@ -537,25 +557,22 @@
                 var slotDateStr = slotDate.toISOString().split('T')[0];
 
                 var foundImage = null;
-                // Search in currently loaded history
                 for(var k=sessionHistory.length-1; k>=0; k--) {
                     if(sessionHistory[k].dateStr === slotDateStr) {
                         foundImage = sessionHistory[k].reasonImage;
                         break; 
                     }
                 }
-
                 var slotContent = foundImage 
                     ? `<img src="${foundImage}" class="history-reason-img" alt="reason">`
                     : `<div class="day-placeholder"></div>`;
 
-                var slotHtml = `
+                weeklyDisplay.insertAdjacentHTML('beforeend', `
                     <div class="day-slot">
                         <span class="day-label">${FinnishDays[i]}</span>
                         ${slotContent}
                     </div>
-                `;
-                weeklyDisplay.insertAdjacentHTML('beforeend', slotHtml);
+                `);
             }
         }
 
