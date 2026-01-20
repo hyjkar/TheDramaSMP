@@ -1,0 +1,218 @@
+import React, { useState } from 'react';
+import { 
+  Smile, 
+  Meh, 
+  Frown, 
+  AlertCircle, 
+  CheckCircle2, 
+  Users, 
+  ChevronLeft, 
+  Home 
+} from 'lucide-react';
+
+// 1. Define our 3 Profiles
+const PROFILES = [
+  { id: 1, name: "Alex (Patient A)", color: "bg-blue-100 text-blue-800", iconColor: "text-blue-600" },
+  { id: 2, name: "Sam (Patient B)", color: "bg-emerald-100 text-emerald-800", iconColor: "text-emerald-600" },
+  { id: 3, name: "Jordan (Patient C)", color: "bg-purple-100 text-purple-800", iconColor: "text-purple-600" }
+];
+
+const MOODS = [
+  { value: 5, label: 'Great', icon: CheckCircle2, color: 'text-green-500' },
+  { value: 4, label: 'Good', icon: Smile, color: 'text-lime-500' },
+  { value: 3, label: 'Okay', icon: Meh, color: 'text-yellow-500' },
+  { value: 2, label: 'Bad', icon: Frown, color: 'text-orange-500' },
+  { value: 1, label: 'Awful', icon: AlertCircle, color: 'text-red-500' },
+];
+
+const MultiProfileTracker = () => {
+  // State 1: Which profile is currently active? (null = home screen)
+  const [activeProfile, setActiveProfile] = useState(null);
+
+  // State 2: Logs stored by Profile ID
+  // Structure: { 1: [logs...], 2: [logs...], 3: [logs...] }
+  const [allLogs, setAllLogs] = useState({
+    1: [],
+    2: [],
+    3: []
+  });
+
+  const [currentMood, setCurrentMood] = useState(null);
+  const [note, setNote] = useState('');
+
+  // Handle saving a log for the ACTIVE profile
+  const handleSave = () => {
+    if (!currentMood || !activeProfile) return;
+
+    const newLog = {
+      id: Date.now(),
+      mood: currentMood,
+      note: note,
+      timestamp: new Date().toLocaleString(),
+    };
+
+    setAllLogs(prev => ({
+      ...prev,
+      [activeProfile.id]: [newLog, ...(prev[activeProfile.id] || [])]
+    }));
+
+    // Reset input fields
+    setCurrentMood(null);
+    setNote('');
+  };
+
+  // Helper to return to Home
+  const goHome = () => {
+    setActiveProfile(null);
+    setCurrentMood(null);
+    setNote('');
+  };
+
+  // --- VIEW 1: PROFILE SELECTION SCREEN ---
+  if (!activeProfile) {
+    return (
+      <div className="max-w-md mx-auto p-6 bg-gray-50 min-h-screen font-sans">
+        <div className="text-center mb-8 pt-10">
+          <div className="bg-white p-4 rounded-full inline-block shadow-sm mb-4">
+            <Users size={48} className="text-indigo-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800">Select Patient</h1>
+          <p className="text-gray-500">Who are we tracking today?</p>
+        </div>
+
+        <div className="space-y-4">
+          {PROFILES.map(profile => (
+            <button
+              key={profile.id}
+              onClick={() => setActiveProfile(profile)}
+              className="w-full bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between hover:shadow-md transition-all active:scale-95"
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${profile.color}`}>
+                  {profile.name.charAt(0)}
+                </div>
+                <div className="text-left">
+                  <h3 className="font-bold text-gray-800">{profile.name}</h3>
+                  <span className="text-xs text-gray-400">ID: #{profile.id}</span>
+                </div>
+              </div>
+              <ChevronLeft className="rotate-180 text-gray-300" />
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // --- VIEW 2: TRACKER SCREEN (For Specific Patient) ---
+  const patientLogs = allLogs[activeProfile.id] || [];
+
+  return (
+    <div className="max-w-md mx-auto bg-white min-h-screen flex flex-col shadow-lg">
+      
+      {/* Header */}
+      <div className="p-4 border-b bg-white sticky top-0 z-10">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xl font-bold text-gray-800">Mood Tracker</h2>
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${activeProfile.color}`}>
+            {activeProfile.name}
+          </span>
+        </div>
+        <p className="text-gray-500 text-sm">How is the patient feeling right now?</p>
+      </div>
+
+      {/* Main Content */}
+      <div className="p-4 flex-grow overflow-y-auto pb-24"> 
+        {/* Mood Selection */}
+        <div className="grid grid-cols-5 gap-2 mb-6">
+          {MOODS.map((m) => {
+            const Icon = m.icon;
+            const isSelected = currentMood === m.value;
+            return (
+              <button
+                key={m.value}
+                onClick={() => setCurrentMood(m.value)}
+                className={`flex flex-col items-center p-2 rounded-lg transition-all ${
+                  isSelected ? 'bg-indigo-50 ring-2 ring-indigo-500 scale-110' : 'hover:bg-gray-50'
+                }`}
+              >
+                <Icon size={32} className={`${m.color} ${isSelected ? 'fill-current opacity-20' : ''}`} />
+                <span className="text-xs mt-1 font-medium text-gray-600">{m.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Note Input */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Notes / Triggers</label>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Did anything specific happen?"
+            className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none h-24 text-sm"
+          />
+        </div>
+
+        {/* Save Button */}
+        <button
+          onClick={handleSave}
+          disabled={!currentMood}
+          className={`w-full py-3 rounded-lg font-semibold text-white mb-8 transition-colors ${
+            currentMood ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-300 cursor-not-allowed'
+          }`}
+        >
+          Log Entry
+        </button>
+
+        {/* History List */}
+        <div>
+          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">
+            History for {activeProfile.name}
+          </h3>
+          
+          {patientLogs.length === 0 ? (
+            <div className="text-center py-8 text-gray-400 border-2 border-dashed rounded-lg">
+              No logs yet for this patient.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {patientLogs.map((log) => {
+                const moodObj = MOODS.find(m => m.value === log.mood);
+                const Icon = moodObj.icon;
+                return (
+                  <div key={log.id} className="flex gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                    <div className={`p-2 rounded-full h-fit bg-white shadow-sm`}>
+                      <Icon size={20} className={moodObj.color} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start mb-1">
+                        <span className={`font-bold ${moodObj.color}`}>{moodObj.label}</span>
+                        <span className="text-xs text-gray-400">{log.timestamp}</span>
+                      </div>
+                      {log.note && <p className="text-sm text-gray-600 leading-relaxed">{log.note}</p>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Footer Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 max-w-md mx-auto">
+        <button 
+          onClick={goHome}
+          className="w-full flex items-center justify-center gap-2 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+        >
+          <Home size={18} />
+          Switch Profile / Home
+        </button>
+      </div>
+
+    </div>
+  );
+};
+
+export default MultiProfileTracker;
