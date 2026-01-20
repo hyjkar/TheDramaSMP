@@ -10,14 +10,23 @@
             margin: 0; padding: 0;
             display: flex; justify-content: center; align-items: center;
             height: 100vh;
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
-                        url('https://wallpaperaccess.com/full/4657154.png') no-repeat center center fixed;
-            background-size: cover;
+            /* Changed to a very dark/black background from the start */
+            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%);
             font-family: 'Press Start 2P', cursive;
             color: white;
             image-rendering: pixelated;
             overflow: hidden;
-            transition: background 0.8s ease;
+        }
+
+        /* Adds a faint, dark texture to the background */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://wallpaperaccess.com/full/4657154.png') no-repeat center center fixed;
+            background-size: cover;
+            opacity: 0.15; /* Makes the landscape barely visible */
+            z-index: -1;
         }
 
         .flash { background: white !important; }
@@ -26,7 +35,7 @@
         .creeper {
             position: fixed; right: -100px; bottom: 10%;
             width: 80px; height: 120px;
-            background: #51a03e; border: 4px solid #000;
+            background: #478c36; border: 4px solid #000;
             z-index: 10; animation: peek 12s infinite;
         }
         .creeper::before {
@@ -35,7 +44,7 @@
             box-shadow: 30px 0 #000, 7px 20px #000, 22px 20px #000, 15px 15px #000, 15px 25px #000;
         }
 
-        @keyframes peek { 0%, 70%, 100% { right: -100px; } 75%, 95% { right: -20px; } }
+        @keyframes peek { 0%, 70%, 100% { right: -100px; } 75%, 95% { right: -15px; } }
 
         .container {
             background-color: #C6C6C6; border: 4px solid #000;
@@ -57,12 +66,11 @@
         input.error { background-color: #5e1a1a !important; border-color: #ff0000 !important; }
 
         @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            30% { transform: translate(-3px, 0px) rotate(1deg); }
-            50% { transform: translate(3px, 2px) rotate(0deg); }
-            70% { transform: translate(-1px, 1px) rotate(-1deg); }
-            100% { transform: translate(1px, -2px) rotate(0deg); }
+            0% { transform: translate(1px, 1px); }
+            10% { transform: translate(-2px, -2px); }
+            30% { transform: translate(-4px, 0px); }
+            50% { transform: translate(4px, 2px); }
+            100% { transform: translate(0px, 0px); }
         }
         .shake { animation: shake 0.3s; }
 
@@ -73,23 +81,17 @@
             font-family: 'Press Start 2P', cursive; cursor: pointer;
         }
 
-        /* FIXED COORDINATES LAYOUT */
         .coords-box {
             background: #000; 
             border: 4px inset #555;
             padding: 30px; 
             margin-top: 20px; 
-            display: block; /* Changed from flex to block to stop jitter */
             text-align: left;
         }
 
         .coord-line { 
-            color: #ffcc00; 
-            font-size: 16px; 
-            margin: 12px 0; 
-            display: block;
-            min-height: 18px;
-            white-space: pre; /* Keeps spacing consistent */
+            color: #ffcc00; font-size: 16px; margin: 12px 0; 
+            display: block; min-height: 18px; white-space: pre; 
         }
         
         #secret-content { display: none; }
@@ -101,14 +103,14 @@
 
 <div class="container" id="vault-box">
     <div id="login-screen">
-        <h1>DECRYPT DATA</h1>
+        <h1>ACCESS VAULT</h1>
         <input type="password" id="password" placeholder="PASSWORD">
         <br>
-        <button onclick="checkPassword()">ACCESS</button>
+        <button onclick="checkPassword()">UNSEAL</button>
     </div>
 
     <div id="secret-content">
-        <h2 style="color: #3f3f3f; text-shadow: 2px 2px #fff; font-size: 12px; margin-bottom: 20px;">DECRYPTED LOCATIONS:</h2>
+        <h2 style="color: #3f3f3f; text-shadow: 2px 2px #fff; font-size: 12px; margin-bottom: 20px;">TREASURE COORDS:</h2>
         <div class="coords-box" id="coords-display">
             <div class="coord-line" id="line-x"></div>
             <div class="coord-line" id="line-y"></div>
@@ -128,9 +130,7 @@
 
     async function scrambleText(element, finalValue) {
         const chars = "0123456789!?#$@";
-        // Pre-fill with spaces to prevent the box from jumping size
         element.style.visibility = "visible";
-        
         for (let i = 0; i < 10; i++) {
             let randomStr = "";
             for (let j = 0; j < finalValue.length; j++) {
@@ -146,9 +146,7 @@
     async function revealCoordinates() {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('secret-content').style.display = 'block';
-        document.body.style.background = "#121812"; // Deep forest dark green
-
-        // Hide lines initially
+        
         document.getElementById('line-x').style.visibility = "hidden";
         document.getElementById('line-y').style.visibility = "hidden";
         document.getElementById('line-z').style.visibility = "hidden";
