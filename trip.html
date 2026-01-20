@@ -23,13 +23,13 @@
             color: var(--white);
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            height: 100vh; /* Full viewport height */
+            padding: 15px; /* Reduced padding slightly to fit more content */
+            height: 100vh;
             width: 100vw;
-            overflow: hidden; /* Prevent scrolling */
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Spreads content evenly */
+            justify-content: space-between;
             text-align: center;
         }
 
@@ -55,24 +55,24 @@
             color: var(--gold);
             text-transform: uppercase;
             letter-spacing: 2px;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             margin: 0;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
         h2 {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: var(--gold);
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             text-transform: uppercase;
             border-bottom: 1px solid var(--gold-dim);
             display: inline-block;
-            padding-bottom: 5px;
+            padding-bottom: 2px;
         }
 
         p {
-            font-size: 0.9rem;
-            margin: 5px 0;
+            font-size: 0.85rem;
+            margin: 3px 0;
             font-weight: 300;
         }
 
@@ -81,12 +81,25 @@
             color: var(--gold);
         }
 
+        /* Links */
+        a {
+            color: var(--gold);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--gold);
+            font-size: 0.85rem;
+            transition: opacity 0.2s;
+        }
+        a:hover {
+            opacity: 0.7;
+        }
+
         /* Countdown Container */
         .timer-container {
             background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
+            padding: 10px;
             border-radius: 15px;
             border: 1px solid var(--gold-dim);
+            margin: 5px 0;
         }
 
         .timer {
@@ -102,7 +115,7 @@
         }
 
         .time-val {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
             color: var(--gold);
         }
@@ -117,7 +130,9 @@
         .info-box {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
+            flex-grow: 1; /* Allows this section to take available space */
+            justify-content: center;
         }
 
         /* Checklist Styles */
@@ -131,8 +146,8 @@
             display: flex;
             align-items: center;
             background: var(--royal-lighter);
-            margin-bottom: 10px;
-            padding: 12px 15px;
+            margin-bottom: 8px;
+            padding: 10px 15px;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
@@ -150,8 +165,8 @@
 
         /* Custom Checkbox circle */
         .checkmark {
-            height: 20px;
-            width: 20px;
+            height: 18px;
+            width: 18px;
             background-color: transparent;
             border: 2px solid var(--gold);
             border-radius: 50%;
@@ -170,7 +185,7 @@
         .checklist-item input:checked + .checkmark::after {
             content: '✔';
             color: var(--royal-blue);
-            font-size: 12px;
+            font-size: 10px;
             font-weight: bold;
         }
 
@@ -181,13 +196,14 @@
         }
 
         .item-name {
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
 
         /* Footer */
         .footer {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             opacity: 0.4;
+            margin-top: 5px;
         }
 
     </style>
@@ -204,12 +220,12 @@
         
         <header>
             <h1>Tallinn 2.0</h1>
-            <div style="width: 50px; height: 2px; background: var(--gold); margin: 10px auto;"></div>
+            <div style="width: 50px; height: 2px; background: var(--gold); margin: 5px auto;"></div>
             <p>Ready for the adventure?</p>
         </header>
 
         <div class="timer-container">
-            <p style="margin-bottom: 10px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Departure in</p>
+            <p style="margin-bottom: 5px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;">Departure in</p>
             <div class="timer" id="countdown">
                 <div class="time-unit"><span class="time-val" id="days">00</span><span class="time-label">Days</span></div>
                 <div class="time-unit"><span class="time-val" id="hours">00</span><span class="time-label">Hrs</span></div>
@@ -225,10 +241,19 @@
                 <p class="highlight">Jan 23, 2026 @ 16:30</p>
             </div>
             
-            <div style="margin-top: 10px;">
+            <div>
                 <h2>Accommodation</h2>
                 <p>Lai 30a, 10133, Tallinn</p>
-                <p class="highlight">Check in @ 16.00-></p>
+                <p class="highlight">Check in @ 16.00</p>
+                <p style="margin-top:2px;">
+                    <a href="https://www.airbnb.co.uk/rooms/1028660142251462443?guests=1&adults=1&s=67&unique_share_id=03711ca3-634b-4353-a514-5ccbb5577fcd" target="_blank">View on Airbnb &rarr;</a>
+                </p>
+            </div>
+
+            <div>
+                <h2>Restaurants</h2>
+                <p>1. [Restaurant Name Here]</p>
+                <p>2. [Restaurant Name Here]</p>
             </div>
         </div>
 
@@ -284,7 +309,6 @@
         }, 1000);
 
         // 2. CHECKLIST SAVING (LOCAL STORAGE)
-        // This keeps the boxes checked even if you refresh the page
         function saveState(id) {
             const checkbox = document.getElementById(id);
             localStorage.setItem(id, checkbox.checked);
@@ -298,7 +322,6 @@
             });
         }
 
-        // Load saved checks on startup
         loadState();
     </script>
 </body>
