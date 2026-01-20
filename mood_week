@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Päivän mieliala</title>
+    <style>
+        /* --- 1. VISUAL SETUP (TYYLIT) --- */
+        body {
+            background-color: white !important;
+            color: black !important;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; height: 100vh;
+            touch-action: manipulation; 
+        }
+        
+        /* Header Container */
+        .header-container {
+            background-color: #f0f0f0;
+            border-bottom: 3px solid #ccc;
+            padding: 15px;
+            text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            flex-shrink: 0; 
+        }
+
+        h1 { font-size: 2rem; color: #333; margin: 0; }
+
+        .history-btn-main {
+            background-color: #e0e0e0; border: 2px solid #ccc;
+            padding: 8px 20px; font-size: 1.1rem; border-radius: 20px;
+            cursor: pointer; color: #555; font-weight: bold;
+        }
+
+        /* --- 2. MAIN SCREEN LAYOUT --- */
+        .container {
+            display: flex; 
+            flex: 1; 
+            width: 100%; 
+            padding: 15px; 
+            box-sizing: border-box;
+            align-items: center; 
+            justify-content: center; 
+            gap: 15px; 
+            overflow: auto; 
+        }
+
+        .mood-btn {
+            flex: 1; aspect-ratio: 1 / 1; max-width: 400px;
+            border: none; outline: none; cursor: pointer; padding: 15px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+            transition: transform 0.1s;
+        }
+        .mood-btn:active { transform: scale(0.98); }
+
+        .btn-title-text {
+            font-size: 1.6rem; font-weight: bold; color: #222;
+            margin-bottom: 15px; text-align: center;
+        }
+
+        .main-img {
+            width: auto; height: auto; max-width: 80%; max-height: 65%;
+            object-fit: contain;
+        }
+
+        /* Background Colors */
+        .bg-bad { background-color: #ffeaea; border: 4px solid #ffcccc;}
+        .bg-okay { background-color: #fff8e1; border: 4px solid #ffe0b2;}
+        .bg-good { background-color: #e8f5e9; border: 4px solid #c8e6c9;}
+
+
+        /* --- 3. POPUP WINDOWS --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85); 
+            justify-content: center; align-items: center; z-index: 999;
+        }
+        .modal-box {
+            background-color: white; padding: 25px;
+            border-radius: 20px; width: 90%; max-width: 600px;
+            text-align: center; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .modal-title { font-size: 2.2rem; margin-bottom: 25px; font-weight: bold;}
+
+        /* --- 4. REASON GRID --- */
+        .options-grid {
+            display: none; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;
+        }
+        .reason-btn {
+            background-color: #f8f8f8; border: 3px solid #eee;
+            border-radius: 15px; padding: 15px;
+            cursor: pointer; display: flex; flex-direction: column; align-items: center;
+        }
+        .reason-btn:active { background-color: #e0e0e0; border-color: #ccc;}
+        .reason-img { width: 90px; height: 90px; object-fit: contain; margin-bottom: 10px;}
+        .reason-text { font-size: 1.4rem; font-weight: bold; color: #444; }
+
+        /* --- 5. HISTORY GRID STYLES --- */
+        
+        /* NEW: Navigation Controls for History */
+        .history-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+        .nav-btn {
+            background-color: #ddd; border: none; 
+            width: 40px; height: 40px; border-radius: 50%;
+            font-size: 1.5rem; font-weight: bold; color: #555;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .date-range-label {
+            font-size: 1.1rem; font-weight: bold; color: #333;
+        }
+
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr); /* 7 items side by side */
+            gap: 5px; margin-top: 10px; margin-bottom: 20px;
+        }
+        .day-slot {
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .day-label { font-weight: bold; margin-bottom: 5px; color: #666; font-size: 0.9rem;}
+        
+        .history-reason-img {
+            width: 45px; height: 45px;
+            object-fit: contain;
+            filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.2));
+        }
+        .day-placeholder {
+            width: 45px; height: 45px;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            border: 2px solid #e0e0e0;
+        }
+
+        /* Buttons */
+        .close-btn {
+            margin-top: 10px; padding: 15px 40px; font-size: 1.6rem; font-weight: bold;
+            background-color: #666; color: white; border: none; cursor: pointer;
+            border-radius: 12px; width: 100%;
+        }
+        .clear-btn {
+            margin-top: 20px; padding: 15px 40px; font-size: 1.6rem; font-weight: bold;
+            background-color: #ff6b6b; color: white; border: none; cursor: pointer;
+            border-radius: 12px; width: 100%;
+        }
+        .clear-btn:active { background-color: #d63031; }
+
+        /* --- MOBILE ADJUSTMENTS (PORTRAIT MODE ONLY) --- */
+        @media (max-width: 768px) and (orientation: portrait) {
+            
+            .container {
+                flex-direction: column;
+                justify-content: center; 
+                overflow-y: hidden; 
+                gap: 15px; 
+                padding-bottom: 10px; 
+            }
+
+            .mood-btn {
+                flex: none;
+                height: 22vh; 
+                width: auto; 
+                aspect-ratio: 1 / 1;
+                max-height: 250px; 
+            }
+
+            /* 2. HISTORY GRID: Break into 2 rows for Portrait */
+            .week-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <h1 id="status-text">Miten päiväsi meni?</h1>
+        <button id="btn-open-history" class="history-btn-main">Näytä Historia</button>
+    </div>
+
+    <div class="container">
+        <button id="btn-bad" class="mood-btn bg-bad">
+            <span class="btn-title-text">Huono päivä</span>
+            <img src="bad.jpg" alt="Huono" class="main-img">
+        </button>
+        <button id="btn-okay" class="mood-btn bg-okay">
+             <span class="btn-title-text">Tavallinen päivä</span>
+            <img src="okay.jpg" alt="Normaali" class="main-img">
+        </button>
+        <button id="btn-good" class="mood-btn bg-good">
+             <span class="btn-title-text">Hyvä päivä</span>
+            <img src="good.jpg" alt="Hyvä" class="main-img">
+        </button>
+    </div>
+
+    <div id="modal-reason" class="modal-overlay">
+        <div class="modal-box">
+            <h2 id="modal-title-reason" class="modal-title">Miksi?</h2>
+
+            <div id="grid-bad" class="options-grid">
+                <button id="btn-pain" class="reason-btn">
+                    <img src="pain.jpg" class="reason-img"><span class="reason-text">Kipu</span>
+                </button>
+                <button id="btn-toilet" class="reason-btn">
+                    <img src="toilet.jpg" class="reason-img"><span class="reason-text">Vessa</span>
+                </button>
+                <button id="btn-lonely" class="reason-btn">
+                    <img src="lonely.jpg" class="reason-img"><span class="reason-text">Yksinäinen</span>
+                </button>
+                <button id="btn-tired" class="reason-btn">
+                    <img src="tired.jpg" class="reason-img"><span class="reason-text">Väsynyt</span>
+                </button>
+            </div>
+
+            <div id="grid-good" class="options-grid">
+                <button id="btn-family" class="reason-btn">
+                    <img src="family.jpg" class="reason-img"><span class="reason-text">Perhe</span>
+                </button>
+                <button id="btn-food" class="reason-btn">
+                    <img src="food.jpg" class="reason-img"><span class="reason-text">Ruoka</span>
+                </button>
+                <button id="btn-music" class="reason-btn">
+                    <img src="music.jpg" class="reason-img"><span class="reason-text">Musiikki</span>
+                </button>
+                <button id="btn-comfort" class="reason-btn">
+                    <img src="comfort.jpg" class="reason-img"><span class="reason-text">Hyvä olo</span>
+                </button>
+            </div>
+
+            <button id="btn-cancel-reason" class="close-btn">Peruuta</button>
+        </div>
+    </div>
+
+    <div id="modal-history" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="modal-title">Historia</h2>
+            
+            <div class="history-controls">
+                <button id="btn-prev-week" class="nav-btn">&lt;</button>
+                <span id="date-range-label" class="date-range-label">...</span>
+                <button id="btn-next-week" class="nav-btn">&gt;</button>
+            </div>
+            
+            <div id="weekly-display" class="week-grid">
+                </div>
+
+            <button id="btn-clear-history" class="clear-btn">Tyhjennä tiedot</button>
+            <button id="btn-close-history" class="close-btn">Sulje</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // --- VARIABLES ---
+            const STORAGE_KEY = 'moodAppHistoryV2_Images'; 
+            var sessionHistory = [];
+            
+            // This variable tracks which week we are currently looking at
+            var currentViewDate = new Date(); 
+
+            // --- LOAD DATA ---
+            var savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                sessionHistory = JSON.parse(savedData);
+            }
+
+            // Get elements
+            var statusText = document.getElementById('status-text');
+            var modalReason = document.getElementById('modal-reason');
+            var modalHistory = document.getElementById('modal-history');
+            var gridBad = document.getElementById('grid-bad');
+            var gridGood = document.getElementById('grid-good');
+            var reasonTitle = document.getElementById('modal-title-reason');
+            var weeklyDisplay = document.getElementById('weekly-display');
+            var dateRangeLabel = document.getElementById('date-range-label');
+
+            // --- MAIN BUTTON CLICKS ---
+            document.getElementById('btn-bad').addEventListener('click', function() {
+                openReasonModal('bad');
+            });
+            document.getElementById('btn-good').addEventListener('click', function() {
+                openReasonModal('good');
+            });
+            document.getElementById('btn-okay').addEventListener('click', function() {
+                saveResult('Tavallinen', 'Normaali', 'okay.jpg');
+            });
+
+            // Open/Close History
+            document.getElementById('btn-open-history').addEventListener('click', function() {
+                 currentViewDate = new Date(); // Reset to today when opening
+                 generateWeeklyView();
+                 modalHistory.style.display = 'flex';
+            });
+             document.getElementById('btn-close-history').addEventListener('click', function() {
+                 modalHistory.style.display = 'none';
+            });
+            document.getElementById('btn-cancel-reason').addEventListener('click', function() {
+                modalReason.style.display = "none";
+            });
+
+            // --- NEW: HISTORY NAVIGATION ---
+            document.getElementById('btn-prev-week').addEventListener('click', function() {
+                // Go back 7 days
+                currentViewDate.setDate(currentViewDate.getDate() - 7);
+                generateWeeklyView();
+            });
+
+            document.getElementById('btn-next-week').addEventListener('click', function() {
+                // Go forward 7 days
+                currentViewDate.setDate(currentViewDate.getDate() + 7);
+                generateWeeklyView();
+            });
+
+
+            // Clear History
+            document.getElementById('btn-clear-history').addEventListener('click', function() {
+                if (confirm("Oletko varma? Tämä poistaa kaiken historian.")) {
+                    sessionHistory = [];
+                    localStorage.removeItem(STORAGE_KEY);
+                    generateWeeklyView();
+                }
+            });
+
+            // --- REASON CLICKS ---
+            ['pain','toilet','lonely','tired'].forEach(r => {
+                document.getElementById('btn-'+r).addEventListener('click', () => saveResult('Huono', translate(r), r + '.jpg'));
+            });
+            ['family','food','music','comfort'].forEach(r => {
+                document.getElementById('btn-'+r).addEventListener('click', () => saveResult('Hyvä', translate(r), r + '.jpg'));
+            });
+
+            // --- FUNCTIONS ---
+
+            function openReasonModal(type) {
+                modalReason.style.display = "flex";
+                if(type === 'bad') {
+                    gridBad.style.display = "grid"; gridGood.style.display = "none";
+                    reasonTitle.innerText = "Mikä on huonosti?";
+                } else {
+                    gridGood.style.display = "grid"; gridBad.style.display = "none";
+                    reasonTitle.innerText = "Mikä oli hyvin?";
+                }
+            }
+
+            function saveResult(moodText, reasonText, imageFilename) {
+                modalReason.style.display = "none";
+
+                var today = new Date();
+                var dateString = today.toISOString().split('T')[0];
+                
+                sessionHistory.push({
+                    dateStr: dateString,
+                    reasonImage: imageFilename
+                });
+
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionHistory));
+
+                statusText.innerText = "Tallennettu: " + moodText + " (" + reasonText + ")";
+                statusText.style.backgroundColor = "#d4edda"; 
+                setTimeout(function() {
+                    statusText.innerText = "Miten päiväsi meni?";
+                    statusText.style.backgroundColor = "transparent"; 
+                }, 3000);
+            }
+
+            function getMonday(d) {
+              d = new Date(d);
+              var day = d.getDay(),
+                  diff = d.getDate() - day + (day == 0 ? -6:1); 
+              return new Date(d.setDate(diff));
+            }
+
+            function generateWeeklyView() {
+                weeklyDisplay.innerHTML = ""; 
+                var FinnishDays = ['MA', 'TI', 'KE', 'TO', 'PE', 'LA', 'SU'];
+                
+                // Calculate Monday based on the CURRENT VIEW DATE, not necessarily today
+                var monday = getMonday(new Date(currentViewDate));
+                
+                // Calculate Sunday for the label
+                var sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+
+                // Update the Label (e.g. "20.1. - 26.1.")
+                var options = { day: 'numeric', month: 'numeric' };
+                dateRangeLabel.innerText = monday.toLocaleDateString('fi-FI', options) + " - " + sunday.toLocaleDateString('fi-FI', options);
+
+                // Generate Grid
+                for(var i=0; i<7; i++) {
+                    var slotDate = new Date(monday);
+                    slotDate.setDate(monday.getDate() + i);
+                    var slotDateStr = slotDate.toISOString().split('T')[0];
+
+                    var foundImage = null;
+                    // Find the latest image for this date
+                    for(var k=sessionHistory.length-1; k>=0; k--) {
+                        if(sessionHistory[k].dateStr === slotDateStr) {
+                            foundImage = sessionHistory[k].reasonImage;
+                            break; 
+                        }
+                    }
+
+                    var slotContent = foundImage 
+                        ? `<img src="${foundImage}" class="history-reason-img" alt="reason">`
+                        : `<div class="day-placeholder"></div>`;
+
+                    var slotHtml = `
+                        <div class="day-slot">
+                            <span class="day-label">${FinnishDays[i]}</span>
+                            ${slotContent}
+                        </div>
+                    `;
+                    weeklyDisplay.insertAdjacentHTML('beforeend', slotHtml);
+                }
+            }
+
+            function translate(word) {
+                const map = { 'pain':'Kipu','toilet':'Vessa','lonely':'Yksinäinen','tired':'Väsynyt','family':'Perhe','food':'Ruoka','music':'Musiikki','comfort':'Hyvä olo' };
+                return map[word] || word;
+            }
+
+        });
+    </script>
+
+</body>
+</html>
