@@ -10,14 +10,14 @@
             margin: 0; padding: 0;
             display: flex; justify-content: center; align-items: center;
             height: 100vh;
-            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), 
                         url('https://wallpaperaccess.com/full/4657154.png') no-repeat center center fixed;
             background-size: cover;
             font-family: 'Press Start 2P', cursive;
             color: white;
             image-rendering: pixelated;
             overflow: hidden;
-            transition: background 0.5s;
+            transition: background 0.8s ease;
         }
 
         .flash { background: white !important; }
@@ -41,26 +41,30 @@
             background-color: #C6C6C6; border: 4px solid #000;
             box-shadow: inset -6px -6px #555, inset 6px 6px #FFF;
             padding: 40px; text-align: center;
-            max-width: 450px; width: 90%; z-index: 5;
+            width: 420px; z-index: 5;
+            box-sizing: border-box;
         }
 
-        h1 { font-size: 14px; color: #3f3f3f; text-shadow: 2px 2px #fff; }
+        h1 { font-size: 14px; color: #3f3f3f; text-shadow: 2px 2px #fff; margin-bottom: 10px; }
 
         input {
-            width: 85%; padding: 15px; border: 4px solid #373737;
+            width: 100%; padding: 15px; border: 4px solid #373737;
             background-color: #000; color: #3fe63f; 
             font-family: 'Press Start 2P', cursive; margin: 20px 0; outline: none;
+            box-sizing: border-box;
         }
 
         input.error { background-color: #5e1a1a !important; border-color: #ff0000 !important; }
 
         @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            50% { transform: translateX(10px); }
-            100% { transform: translateX(0); }
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            30% { transform: translate(-3px, 0px) rotate(1deg); }
+            50% { transform: translate(3px, 2px) rotate(0deg); }
+            70% { transform: translate(-1px, 1px) rotate(-1deg); }
+            100% { transform: translate(1px, -2px) rotate(0deg); }
         }
-        .shake { animation: shake 0.2s ease-in-out; }
+        .shake { animation: shake 0.3s; }
 
         button {
             background-color: #AFAFAF; border: 4px solid #000;
@@ -69,22 +73,23 @@
             font-family: 'Press Start 2P', cursive; cursor: pointer;
         }
 
-        /* ALIGNED COORDS BOX */
+        /* FIXED COORDINATES LAYOUT */
         .coords-box {
-            background: #000; border: 4px inset #555;
-            padding: 25px; margin-top: 15px; 
-            display: flex; flex-direction: column; 
-            align-items: flex-start; /* Aligns items to the left */
-            justify-content: center;
-            padding-left: 60px; /* Centers the whole block visually */
+            background: #000; 
+            border: 4px inset #555;
+            padding: 30px; 
+            margin-top: 20px; 
+            display: block; /* Changed from flex to block to stop jitter */
+            text-align: left;
         }
 
         .coord-line { 
             color: #ffcc00; 
-            font-size: 18px; 
-            margin: 8px 0; 
-            text-align: left;
-            min-height: 20px;
+            font-size: 16px; 
+            margin: 12px 0; 
+            display: block;
+            min-height: 18px;
+            white-space: pre; /* Keeps spacing consistent */
         }
         
         #secret-content { display: none; }
@@ -96,14 +101,14 @@
 
 <div class="container" id="vault-box">
     <div id="login-screen">
-        <h1>DECRYPT COORDINATES</h1>
-        <input type="password" id="password" placeholder="********">
+        <h1>DECRYPT DATA</h1>
+        <input type="password" id="password" placeholder="PASSWORD">
         <br>
         <button onclick="checkPassword()">ACCESS</button>
     </div>
 
     <div id="secret-content">
-        <h2 style="color: #55FF55; font-size: 12px;">DECRYPTING...</h2>
+        <h2 style="color: #3f3f3f; text-shadow: 2px 2px #fff; font-size: 12px; margin-bottom: 20px;">DECRYPTED LOCATIONS:</h2>
         <div class="coords-box" id="coords-display">
             <div class="coord-line" id="line-x"></div>
             <div class="coord-line" id="line-y"></div>
@@ -122,15 +127,17 @@
     const finalCoords = ["X: 14,028", "Y: 64", "Z: -2,551"];
 
     async function scrambleText(element, finalValue) {
-        const chars = "0123456789!@#$%";
-        for (let i = 0; i < 12; i++) {
+        const chars = "0123456789!?#$@";
+        // Pre-fill with spaces to prevent the box from jumping size
+        element.style.visibility = "visible";
+        
+        for (let i = 0; i < 10; i++) {
             let randomStr = "";
-            // Keep the prefix (X:, Y:, Z:) stable if you like, or scramble the whole thing
             for (let j = 0; j < finalValue.length; j++) {
                 randomStr += chars[Math.floor(Math.random() * chars.length)];
             }
             element.innerText = randomStr;
-            await new Promise(r => setTimeout(r, 70));
+            await new Promise(r => setTimeout(r, 60));
         }
         element.innerText = finalValue;
         document.getElementById('snd-decrypt').play();
@@ -139,13 +146,18 @@
     async function revealCoordinates() {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('secret-content').style.display = 'block';
-        document.body.style.background = "#0f161e";
+        document.body.style.background = "#121812"; // Deep forest dark green
 
-        await new Promise(r => setTimeout(r, 500));
+        // Hide lines initially
+        document.getElementById('line-x').style.visibility = "hidden";
+        document.getElementById('line-y').style.visibility = "hidden";
+        document.getElementById('line-z').style.visibility = "hidden";
+
+        await new Promise(r => setTimeout(r, 600));
         await scrambleText(document.getElementById('line-x'), finalCoords[0]);
-        await new Promise(r => setTimeout(r, 400));
+        await new Promise(r => setTimeout(r, 300));
         await scrambleText(document.getElementById('line-y'), finalCoords[1]);
-        await new Promise(r => setTimeout(r, 400));
+        await new Promise(r => setTimeout(r, 300));
         await scrambleText(document.getElementById('line-z'), finalCoords[2]);
     }
 
@@ -170,7 +182,7 @@
                 setTimeout(() => {
                     document.body.classList.remove('flash');
                     attempts = 0;
-                }, 100);
+                }, 150);
             }
 
             setTimeout(() => {
