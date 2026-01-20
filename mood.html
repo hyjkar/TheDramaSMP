@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fi">
 <head>
@@ -16,32 +15,22 @@
             touch-action: manipulation; 
         }
         
-        /* Header Container to hold Title and History Button */
+        /* Header Container */
         .header-container {
             background-color: #f0f0f0;
             border-bottom: 3px solid #ccc;
             padding: 15px;
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
         }
 
-        h1 {
-            font-size: 2rem; color: #333; margin: 0;
-        }
+        h1 { font-size: 2rem; color: #333; margin: 0; }
 
-        /* New History Button Style */
+        /* History Button Style */
         .history-btn-main {
-            background-color: #e0e0e0;
-            border: 2px solid #ccc;
-            padding: 8px 20px;
-            font-size: 1.1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            color: #555;
-            font-weight: bold;
+            background-color: #e0e0e0; border: 2px solid #ccc;
+            padding: 8px 20px; font-size: 1.1rem; border-radius: 20px;
+            cursor: pointer; color: #555; font-weight: bold;
         }
 
         /* --- 2. MAIN SCREEN LAYOUT --- */
@@ -76,13 +65,10 @@
 
 
         /* --- 3. POPUP WINDOWS (IKKUNAT) --- */
-        /* Shared styles for both modals */
         .modal-overlay {
-            display: none; /* Hidden by default */
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.85); 
-            justify-content: center; align-items: center;
-            z-index: 999;
+            justify-content: center; align-items: center; z-index: 999;
         }
         .modal-box {
             background-color: white; padding: 25px;
@@ -90,7 +76,6 @@
             text-align: center; max-height: 90vh; overflow-y: auto;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        
         .modal-title { font-size: 2.2rem; margin-bottom: 25px; font-weight: bold;}
 
         /* --- 4. REASON GRID --- */
@@ -106,28 +91,31 @@
         .reason-img { width: 90px; height: 90px; object-fit: contain; margin-bottom: 10px;}
         .reason-text { font-size: 1.4rem; font-weight: bold; color: #444; }
 
-        /* --- 5. HISTORY GRID STYLES --- */
+        /* --- 5. HISTORY GRID STYLES (UPDATED) --- */
         .week-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr); /* 7 columns for Mon-Sun */
-            gap: 5px;
-            margin-top: 20px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px; margin-top: 20px; margin-bottom: 20px;
         }
         .day-slot {
             display: flex; flex-direction: column; align-items: center;
         }
         .day-label { font-weight: bold; margin-bottom: 5px; color: #666; font-size: 0.9rem;}
-        .day-indicator {
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            background-color: #eee; /* Default gray */
-            border: 3px solid #ddd;
+        
+        /* --- NEW STYLES FOR HISTORY IMAGES --- */
+        .history-reason-img {
+            width: 45px; height: 45px;
+            object-fit: contain;
+            /* Optional: add a small shadow or border to make them pop */
+            filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.2));
         }
-        /* Small indicators for history */
-        .ind-bad { background-color: #ff6b6b; border-color: #d63031; }
-        .ind-okay { background-color: #feca57; border-color: #ff9f43; }
-        .ind-good { background-color: #1dd1a1; border-color: #10ac84; }
+        /* Placeholder for days with no record */
+        .day-placeholder {
+            width: 45px; height: 45px;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            border: 2px solid #e0e0e0;
+        }
 
         /* Buttons in modals */
         .close-btn {
@@ -135,13 +123,9 @@
             background-color: #666; color: white; border: none; cursor: pointer;
             border-radius: 12px; width: 100%;
         }
-        
-        /* --- NEW: Clear History Button Style --- */
         .clear-btn {
-            margin-top: 20px; /* Space above it */
-            padding: 15px 40px; font-size: 1.6rem; font-weight: bold;
-            background-color: #ff6b6b; /* Reddish color for "delete" action */
-            color: white; border: none; cursor: pointer;
+            margin-top: 20px; padding: 15px 40px; font-size: 1.6rem; font-weight: bold;
+            background-color: #ff6b6b; color: white; border: none; cursor: pointer;
             border-radius: 12px; width: 100%;
         }
         .clear-btn:active { background-color: #d63031; }
@@ -216,24 +200,20 @@
                 </div>
 
             <button id="btn-clear-history" class="clear-btn">Tyhjennä historia</button>
-
             <button id="btn-close-history" class="close-btn">Sulje</button>
         </div>
     </div>
 
     <script>
-        // --- SCRIPT ---
         document.addEventListener('DOMContentLoaded', function() {
             
-            // --- LOAD DATA ON STARTUP ---
-            const STORAGE_KEY = 'moodAppHistoryV1';
+            // --- LOAD DATA ---
+            const STORAGE_KEY = 'moodAppHistoryV2_Images'; // Changed key to avoid conflicts with old data
             var sessionHistory = [];
             var savedData = localStorage.getItem(STORAGE_KEY);
             if (savedData) {
                 sessionHistory = JSON.parse(savedData);
-                console.log("Historia ladattu muistista:", sessionHistory.length, "merkintää.");
-            } else {
-                console.log("Ei aiempaa historiaa muistissa.");
+                console.log("Historia ladattu:", sessionHistory.length);
             }
 
             // Get elements
@@ -252,8 +232,9 @@
             document.getElementById('btn-good').addEventListener('click', function() {
                 openReasonModal('good');
             });
+            // For "Okay", we save the okay.jpg image
             document.getElementById('btn-okay').addEventListener('click', function() {
-                saveResult('Tavallinen', 'Normaali', 'ind-okay');
+                saveResult('Tavallinen', 'Normaali', 'okay.jpg');
             });
 
             // Open/Close History
@@ -264,33 +245,26 @@
              document.getElementById('btn-close-history').addEventListener('click', function() {
                  modalHistory.style.display = 'none';
             });
-
-            // Close Reason Modal
             document.getElementById('btn-cancel-reason').addEventListener('click', function() {
                 modalReason.style.display = "none";
             });
 
-            // --- NEW: CLEAR HISTORY BUTTON ---
+            // Clear History
             document.getElementById('btn-clear-history').addEventListener('click', function() {
-                // Ask for confirmation first
-                if (confirm("Oletko varma? Tämä poistaa kaiken tallennetun historian tältä laitteelta.")) {
-                    // 1. Empty RAM array
+                if (confirm("Oletko varma? Tämä poistaa kaiken historian.")) {
                     sessionHistory = [];
-                    // 2. Remove from Local Storage cupboard
                     localStorage.removeItem(STORAGE_KEY);
-                    // 3. Redraw the grid immediately so dots turn grey
                     generateWeeklyView();
-                    console.log("Historia tyhjennetty.");
                 }
             });
 
-
-            // --- REASON CLICKS (Attach Handlers) ---
+            // --- REASON CLICKS (UPDATED to pass image filenames) ---
+            // The filename is just the reason name + ".jpg"
             ['pain','toilet','lonely','tired'].forEach(r => {
-                document.getElementById('btn-'+r).addEventListener('click', () => saveResult('Huono', translate(r), 'ind-bad'));
+                document.getElementById('btn-'+r).addEventListener('click', () => saveResult('Huono', translate(r), r + '.jpg'));
             });
             ['family','food','music','comfort'].forEach(r => {
-                document.getElementById('btn-'+r).addEventListener('click', () => saveResult('Hyvä', translate(r), 'ind-good'));
+                document.getElementById('btn-'+r).addEventListener('click', () => saveResult('Hyvä', translate(r), r + '.jpg'));
             });
 
             // --- FUNCTIONS ---
@@ -306,25 +280,23 @@
                 }
             }
 
-            function saveResult(moodText, reasonText, indicatorClass) {
+            // UPDATED: Now accepts imageFilename instead of indicatorClass
+            function saveResult(moodText, reasonText, imageFilename) {
                 modalReason.style.display = "none";
 
                 var today = new Date();
                 var dateString = today.toISOString().split('T')[0];
                 
-                // Add to current list
+                // Save date and the image filename
                 sessionHistory.push({
                     dateStr: dateString,
-                    moodClass: indicatorClass
+                    reasonImage: imageFilename
                 });
 
-                // SAVE TO LOCAL STORAGE
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionHistory));
 
-                // Update status text
                 statusText.innerText = "Tallennettu: " + moodText + " (" + reasonText + ")";
                 statusText.style.backgroundColor = "#d4edda"; 
-                
                 setTimeout(function() {
                     statusText.innerText = "Miten päiväsi meni?";
                     statusText.style.backgroundColor = "transparent"; 
@@ -338,10 +310,10 @@
               return new Date(d.setDate(diff));
             }
 
+            // UPDATED: Generates images instead of colored dots
             function generateWeeklyView() {
                 weeklyDisplay.innerHTML = ""; 
                 var FinnishDays = ['MA', 'TI', 'KE', 'TO', 'PE', 'LA', 'SU'];
-                
                 var monday = getMonday(new Date());
 
                 for(var i=0; i<7; i++) {
@@ -349,19 +321,24 @@
                     slotDate.setDate(monday.getDate() + i);
                     var slotDateStr = slotDate.toISOString().split('T')[0];
 
-                    var foundMoodClass = ""; 
-                    // Search backwards to find the most recent one for that day
+                    var foundImage = null;
+                    // Find the latest image for this date
                     for(var k=sessionHistory.length-1; k>=0; k--) {
                         if(sessionHistory[k].dateStr === slotDateStr) {
-                            foundMoodClass = sessionHistory[k].moodClass;
+                            foundImage = sessionHistory[k].reasonImage;
                             break; 
                         }
                     }
 
+                    // Decide what to show in the slot: an image or a placeholder
+                    var slotContent = foundImage 
+                        ? `<img src="${foundImage}" class="history-reason-img" alt="reason">`
+                        : `<div class="day-placeholder"></div>`;
+
                     var slotHtml = `
                         <div class="day-slot">
                             <span class="day-label">${FinnishDays[i]}</span>
-                            <div class="day-indicator ${foundMoodClass}"></div>
+                            ${slotContent}
                         </div>
                     `;
                     weeklyDisplay.insertAdjacentHTML('beforeend', slotHtml);
