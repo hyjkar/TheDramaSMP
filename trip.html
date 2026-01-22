@@ -12,6 +12,7 @@
             --gold: #D4AF37;
             --gold-dim: #8a7020;
             --white: #f4f4f4;
+            --alert-red: rgba(220, 20, 60, 0.6);
         }
 
         * { box-sizing: border-box; }
@@ -66,7 +67,6 @@
             pointer-events: none; 
         }
 
-        /* Classes for the Intro Animation */
         .run-intro {
             animation: fadeOutOverlay 1s ease-in-out forwards;
             animation-delay: 2.5s; 
@@ -102,7 +102,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Burst Particle Styles */
         .burst-particle {
             position: absolute;
             left: 50%; top: 50%;
@@ -188,6 +187,18 @@
             width: 100%;
             max-width: 320px;
             backdrop-filter: blur(2px);
+            transition: background-color 0.5s ease; /* Smooth transition for color change */
+        }
+
+        /* FLASHING RED ANIMATION */
+        @keyframes urgentFlash {
+            0% { background-color: rgba(255, 255, 255, 0.05); border-color: var(--gold-dim); box-shadow: none; }
+            50% { background-color: var(--alert-red); border-color: red; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); }
+            100% { background-color: rgba(255, 255, 255, 0.05); border-color: var(--gold-dim); box-shadow: none; }
+        }
+
+        .timer-urgent {
+            animation: urgentFlash 1.5s infinite ease-in-out;
         }
 
         .timer {
@@ -217,11 +228,10 @@
         .info-box {
             display: flex;
             flex-direction: column;
-            /* TIGHTENED GAP from 10px to 6px to allow space inside the restaurant block */
             gap: 6px; 
             background: rgba(8, 21, 53, 0.6);
             border-radius: 10px;
-            padding: 5px; /* Added small padding to container */
+            padding: 5px; 
         }
 
         /* Checklist */
@@ -291,7 +301,7 @@
             <p style="font-size: 0.75rem;">Ready for the adventure?</p>
         </header>
 
-        <div class="timer-container">
+        <div class="timer-container" id="timer-box">
             <p id="timer-label" style="margin-bottom: 3px; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px;">Departure in</p>
             <div class="timer" id="countdown">
                 <div class="time-unit"><span class="time-val" id="days">00</span><span class="time-label">Days</span></div>
@@ -365,8 +375,6 @@
 
     <script>
         // --- 1. INTRO & BACKGROUND EFFECTS ---
-        
-        // A. Floating Background Bubbles (Always Run)
         const bgContainer = document.getElementById('bg-bubbles');
         for (let i = 0; i < 15; i++) {
             const b = document.createElement('div');
@@ -380,12 +388,9 @@
             bgContainer.appendChild(b);
         }
 
-        // B. Smart Intro (Runs once per session)
         if (sessionStorage.getItem('introShown')) {
-            // Already shown this session, hide overlay immediately
             document.getElementById('intro-overlay').style.display = 'none';
         } else {
-            // New session, run the show
             runIntro();
             sessionStorage.setItem('introShown', 'true');
         }
@@ -395,14 +400,12 @@
             const title = document.getElementById('intro-title');
             const sub = document.getElementById('intro-sub');
 
-            // Add animation classes
             overlay.classList.add('run-intro');
             title.classList.add('animate-text');
             title.style.animationDelay = '0.3s';
             sub.classList.add('animate-text');
             sub.style.animationDelay = '0.8s';
 
-            // Generate Burst Particles
             for (let i = 0; i < 40; i++) {
                 const p = document.createElement('div');
                 p.classList.add('burst-particle');
@@ -427,6 +430,7 @@
 
         const startDate = new Date("January 23, 2026 16:30:00").getTime();
         const returnDate = new Date("January 25, 2026 13:30:00").getTime();
+        const timerBox = document.getElementById("timer-box");
         
         let returnModeActive = false;
 
@@ -440,6 +444,13 @@
                 targetMode = "RETURN";
             }
 
+            // URGENT MODE LOGIC (Flash Red if < 1 Hour)
+            if (distance > 0 && distance < (1000 * 60 * 60)) {
+                timerBox.classList.add("timer-urgent");
+            } else {
+                timerBox.classList.remove("timer-urgent");
+            }
+
             if (targetMode === "RETURN" && !returnModeActive) {
                 returnModeActive = true;
                 document.getElementById("timer-label").innerText = "Return in";
@@ -451,6 +462,7 @@
             if (targetMode === "RETURN" && distance < 0) {
                 clearInterval(timer);
                 document.getElementById("countdown").innerHTML = "<div class='time-val' style='font-size:1rem'>TRIP COMPLETE</div>";
+                timerBox.classList.remove("timer-urgent");
                 return;
             }
 
