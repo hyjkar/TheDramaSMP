@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tallin 2.0</title>
+    <title>Tallinn 2.0</title>
     <style>
         /* --- CSS STYLES --- */
         :root {
@@ -63,7 +63,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            /* Animation applied by JS only if needed */
             pointer-events: none; 
         }
 
@@ -218,9 +217,11 @@
         .info-box {
             display: flex;
             flex-direction: column;
-            gap: 10px; 
+            /* TIGHTENED GAP from 10px to 6px to allow space inside the restaurant block */
+            gap: 6px; 
             background: rgba(8, 21, 53, 0.6);
             border-radius: 10px;
+            padding: 5px; /* Added small padding to container */
         }
 
         /* Checklist */
@@ -318,18 +319,21 @@
 
             <div>
                 <h2>Restaurants</h2>
-                <p>Vixen</p>
-                <p class="highlight">Jan 23 @ 19:30</p>
-                <p>
-                    <a href="https://www.vixen.ee/steakhouse/menu/" target="_blank">View menu &rarr;</a>
-                </p>
-                <p>
-                </p>
-                <p>Kurze</p>
-                <p class="highlight">Jan 24 @ 20:00</p>
-                <p>
-                    <a href="https://menu.kurze.ee/the-kurze-ou/kurze" target="_blank">View menu &rarr;</a>
-                </p>
+                <div style="margin-bottom: 12px;"> 
+                    <p>Vixen</p>
+                    <p class="highlight">Jan 23 @ 19:30</p>
+                    <p>
+                        <a href="https://www.vixen.ee/steakhouse/menu/" target="_blank">View menu &rarr;</a>
+                    </p>
+                </div>
+                
+                <div>
+                    <p>Kurze</p>
+                    <p class="highlight">Jan 24 @ 20:00</p>
+                    <p>
+                        <a href="https://menu.kurze.ee/the-kurze-ou/kurze" target="_blank">View menu &rarr;</a>
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -351,6 +355,10 @@
                 <span class="checkmark"></span>
                 <span class="item-name">Swimsuit</span>
             </label>
+        </div>
+
+        <div class="footer">
+            &copy; 2026 The Boys
         </div>
 
     </div>
