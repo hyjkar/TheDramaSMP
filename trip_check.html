@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tallinn 2.0</title>
+    <style>
+        /* --- CSS STYLES --- */
+        :root {
+            --royal-blue: #081535;
+            --royal-lighter: #122b63;
+            --gold: #D4AF37;
+            --gold-dim: #8a7020;
+            --white: #f4f4f4;
+            --alert-red: rgba(220, 20, 60, 0.6);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Main screen locked */
+            overscroll-behavior: none;
+        }
+
+        body {
+            background-color: var(--royal-blue);
+            color: var(--white);
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        /* --- BACKGROUND BUBBLES --- */
+        #bg-bubbles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .float-bubble {
+            position: absolute;
+            bottom: -20px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: floatUp linear infinite;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 0; }
+            10% { opacity: 0.15; }
+            90% { opacity: 0.15; }
+            100% { transform: translateY(-110vh); opacity: 0; }
+        }
+
+        /* --- INTRO OVERLAY --- */
+        #intro-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--royal-blue);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none; 
+        }
+
+        .run-intro {
+            animation: fadeOutOverlay 1s ease-in-out forwards;
+            animation-delay: 2.5s; 
+        }
+
+        .intro-text {
+            font-size: 2rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(20px);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            z-index: 2;
+        }
+        
+        .intro-sub {
+            font-size: 1rem;
+            color: #fff;
+            opacity: 0;
+            z-index: 2;
+        }
+
+        .animate-text {
+            animation: textFadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeOutOverlay {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        @keyframes textFadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .burst-particle {
+            position: absolute;
+            left: 50%; top: 50%;
+            width: 8px; height: 8px;
+            background: var(--gold);
+            border-radius: 50%;
+            box-shadow: 0 0 6px var(--gold);
+            opacity: 0;
+            z-index: 1;
+        }
+
+        /* Portrait Mode Enforcement */
+        #landscape-warning {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--royal-blue);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        @media screen and (orientation: landscape) {
+            #landscape-warning { display: flex; }
+            .main-content { display: none; }
+        }
+
+        /* Main Layout Wrapper */
+        .main-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly; 
+        }
+
+        /* Typography */
+        h1 {
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1.5rem;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 0.85rem;
+            color: var(--gold);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--gold-dim);
+            display: inline-block;
+            padding-bottom: 1px;
+        }
+
+        p {
+            font-size: 0.85rem;
+            margin: 2px 0;
+            font-weight: 300;
+            line-height: 1.3;
+        }
+
+        .highlight { font-weight: bold; color: var(--gold); }
+
+        a {
+            color: var(--gold);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--gold);
+            font-size: 0.75rem;
+            transition: opacity 0.2s;
+        }
+        a:hover { opacity: 0.7; }
+
+        /* Countdown */
+        .timer-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 10px;
+            border: 1px solid var(--gold-dim);
+            margin: 0 auto; 
+            width: 100%;
+            max-width: 320px;
+            backdrop-filter: blur(2px);
+            transition: background-color 0.5s ease;
+        }
+
+        @keyframes urgentFlash {
+            0% { background-color: rgba(255, 255, 255, 0.05); border-color: var(--gold-dim); box-shadow: none; }
+            50% { background-color: var(--alert-red); border-color: red; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); }
+            100% { background-color: rgba(255, 255, 255, 0.05); border-color: var(--gold-dim); box-shadow: none; }
+        }
+
+        .timer-urgent {
+            animation: urgentFlash 1.5s infinite ease-in-out;
+        }
+
+        .timer {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .time-unit { display: flex; flex-direction: column; }
+
+        .time-val {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--gold);
+            line-height: 1;
+        }
+
+        .time-label {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-top: 3px;
+        }
+
+        /* Info Sections Container */
+        .info-box {
+            display: flex;
+            flex-direction: column;
+            gap: 6px; 
+            background: rgba(8, 21, 53, 0.6);
+            border-radius: 10px;
+            padding: 5px; 
+        }
+
+        /* --- CHECKLIST TRIGGER BUTTON --- */
+        #checklist-trigger {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
+            transition: all 0.2s;
+        }
+        
+        #checklist-trigger:active {
+            background: var(--gold);
+            color: var(--royal-blue);
+            transform: scale(0.98);
+        }
+
+        /* --- CHECKLIST MODAL VIEW --- */
+        #checklist-modal {
+            position: fixed;
+            top: 0; left: 0; 
+            width: 100%; height: 100%;
+            background: var(--royal-blue);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            transform: translateY(100%); /* Start hidden (slid down) */
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #checklist-modal.visible {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--gold);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        /* Checklist Internals */
+        .checklist-wrapper {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; 
+            overflow: hidden; 
+        }
+
+        .input-group {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        #item-input {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-bottom: 1px solid var(--gold);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            flex-grow: 1;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        #item-input::placeholder { color: rgba(255,255,255,0.5); }
+
+        #add-btn {
+            background: var(--gold);
+            color: var(--royal-blue);
+            border: none;
+            border-radius: 4px;
+            padding: 0 15px;
+            font-weight: bold;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        #checklist-container {
+            overflow-y: auto; /* SCROLL ENABLED INSIDE MODAL */
+            padding-right: 5px;
+            flex-grow: 1;
+        }
+        
+        /* Modal Scrollbar */
+        #checklist-container::-webkit-scrollbar { width: 4px; }
+        #checklist-container::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            background: var(--royal-lighter);
+            margin-bottom: 8px;
+            padding: 12px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            justify-content: space-between;
+        }
+
+        .checklist-left {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+        
+        .checkmark {
+            height: 20px; width: 20px;
+            min-width: 20px; 
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .checklist-item.checked .checkmark { background-color: var(--gold); }
+        .checklist-item.checked .checkmark::after {
+            content: '✔'; color: var(--royal-blue);
+            font-size: 12px; font-weight: bold;
+        }
+        .checklist-item.checked .item-name {
+            text-decoration: line-through; opacity: 0.5; color: var(--gold);
+        }
+        
+        .item-name { font-size: 1rem; text-align: left; word-break: break-word;}
+
+        .delete-btn {
+            color: rgba(255,255,255,0.3);
+            font-size: 1.2rem;
+            padding: 0 10px;
+            margin-left: 10px;
+        }
+        .delete-btn:hover { color: red; }
+
+        .footer { font-size: 0.6rem; opacity: 0.4; margin-top: 5px; flex-shrink: 0;}
+    </style>
+</head>
+<body>
+
+    <div id="intro-overlay">
+        <div class="intro-text" id="intro-title">Tallinn 2.0</div>
+        <div class="intro-sub" id="intro-sub">Ready for the adventure?</div>
+    </div>
+
+    <div id="bg-bubbles"></div>
+
+    <div id="landscape-warning">
+        <h1 style="font-size: 3rem;">↻</h1>
+        <p>Please rotate your device.</p>
+        <p style="color:var(--gold);">Designed for Portrait Mode</p>
+    </div>
+
+    <div class="main-content">
+        
+        <header>
+            <h1>Tallinn 2.0</h1>
+            <div style="width: 40px; height: 1px; background: var(--gold); margin: 3px auto;"></div>
+            <p style="font-size: 0.75rem;">Ready for the adventure?</p>
+        </header>
+
+        <div class="timer-container" id="timer-box">
+            <p id="timer-label" style="margin-bottom: 3px; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px;">Departure in</p>
+            <div class="timer" id="countdown">
+                <div class="time-unit"><span class="time-val" id="days">00</span><span class="time-label">Days</span></div>
+                <div class="time-unit"><span class="time-val" id="hours">00</span><span class="time-label">Hrs</span></div>
+                <div class="time-unit"><span class="time-val" id="minutes">00</span><span class="time-label">Min</span></div>
+                <div class="time-unit"><span class="time-val" id="seconds">00</span><span class="time-label">Sec</span></div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <div>
+                <h2 id="trip-header">Departure</h2>
+                <p id="trip-loc">Länsiterminaali 2, Helsinki</p>
+                <p class="highlight" id="trip-time">Jan 23 @ 16:30</p>
+            </div>
+            
+            <div>
+                <h2>Accommodation</h2>
+                <p>Lai 30a, 10133, Tallinn</p>
+                <p class="highlight">Check in @ 16:00</p>
+                <p>
+                    <a href="https://www.airbnb.co.uk/rooms/1028660142251462443?guests=1&adults=1&s=67&unique_share_id=03711ca3-634b-4353-a514-5ccbb5577fcd" target="_blank">View on Airbnb &rarr;</a>
+                </p>
+            </div>
+
+            <div>
+                <h2>Restaurants</h2>
+                <div style="margin-bottom: 12px;"> 
+                    <p>Vixen</p>
+                    <p class="highlight">Jan 23 @ 19:30</p>
+                    <p>
+                        <a href="https://www.vixen.ee/steakhouse/menu/" target="_blank">View menu &rarr;</a>
+                    </p>
+                </div>
+                
+                <div>
+                    <p>Kurze</p>
+                    <p class="highlight">Jan 24 @ 20:00</p>
+                    <p>
+                        <a href="https://menu.kurze.ee/the-kurze-ou/kurze" target="_blank">View menu &rarr;</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div id="checklist-trigger" onclick="openChecklist()">
+            Open Checklist &rarr;
+        </div>
+
+        <div class="footer">
+            &copy; 2026 The Boys
+        </div>
+
+    </div>
+
+    <div id="checklist-modal">
+        <div class="modal-header">
+            <h1 style="font-size: 1.5rem;">Packing List</h1>
+            <button class="close-btn" onclick="closeChecklist()">✕</button>
+        </div>
+
+        <div class="checklist-wrapper">
+            <div class="input-group">
+                <input type="text" id="item-input" placeholder="Add item (e.g. Passport)...">
+                <button id="add-btn" onclick="addItem()">+</button>
+            </div>
+            <div id="checklist-container">
+                </div>
+        </div>
+        
+        <div class="footer">
+            &copy; 2026 The Boys
+        </div>
+    </div>
+
+    <script>
+        // --- 1. INTRO & BACKGROUND EFFECTS ---
+        const bgContainer = document.getElementById('bg-bubbles');
+        for (let i = 0; i < 15; i++) {
+            const b = document.createElement('div');
+            b.classList.add('float-bubble');
+            const size = Math.random() * 20 + 5 + 'px';
+            b.style.width = size;
+            b.style.height = size;
+            b.style.left = Math.random() * 100 + '%';
+            b.style.animationDuration = Math.random() * 10 + 10 + 's';
+            b.style.animationDelay = Math.random() * 10 + 's';
+            bgContainer.appendChild(b);
+        }
+
+        if (sessionStorage.getItem('introShown')) {
+            document.getElementById('intro-overlay').style.display = 'none';
+        } else {
+            runIntro();
+            sessionStorage.setItem('introShown', 'true');
+        }
+
+        function runIntro() {
+            const overlay = document.getElementById('intro-overlay');
+            const title = document.getElementById('intro-title');
+            const sub = document.getElementById('intro-sub');
+
+            overlay.classList.add('run-intro');
+            title.classList.add('animate-text');
+            title.style.animationDelay = '0.3s';
+            sub.classList.add('animate-text');
+            sub.style.animationDelay = '0.8s';
+
+            for (let i = 0; i < 40; i++) {
+                const p = document.createElement('div');
+                p.classList.add('burst-particle');
+                
+                const angle = Math.random() * 360;
+                const dist = Math.random() * 150 + 50;
+                
+                p.animate([
+                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                    { transform: `translate(calc(-50% + ${Math.cos(angle * Math.PI / 180) * dist}px), calc(-50% + ${Math.sin(angle * Math.PI / 180) * dist}px)) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 1500,
+                    easing: 'cubic-bezier(0, .9, .57, 1)',
+                    fill: 'forwards'
+                });
+
+                overlay.appendChild(p);
+            }
+        }
+
+        // --- 2. TIMER & APP LOGIC ---
+
+        const startDate = new Date("January 23, 2026 16:30:00").getTime();
+        const returnDate = new Date("January 25, 2026 13:30:00").getTime();
+        const timerBox = document.getElementById("timer-box");
+        
+        let returnModeActive = false;
+
+        const timer = setInterval(function() {
+            const now = new Date().getTime();
+            let distance = startDate - now;
+            let targetMode = "START";
+
+            if (distance < 0) {
+                distance = returnDate - now;
+                targetMode = "RETURN";
+            }
+
+            if (distance > 0 && distance < (1000 * 60 * 60)) {
+                timerBox.classList.add("timer-urgent");
+            } else {
+                timerBox.classList.remove("timer-urgent");
+            }
+
+            if (targetMode === "RETURN" && !returnModeActive) {
+                returnModeActive = true;
+                document.getElementById("timer-label").innerText = "Return in";
+                document.getElementById("trip-header").innerText = "Return";
+                document.getElementById("trip-loc").innerText = "D-Terminal, Tallinn";
+                document.getElementById("trip-time").innerText = "Jan 25, 2026 @ 13:30";
+            }
+
+            if (targetMode === "RETURN" && distance < 0) {
+                clearInterval(timer);
+                document.getElementById("countdown").innerHTML = "<div class='time-val' style='font-size:1rem'>TRIP COMPLETE</div>";
+                timerBox.classList.remove("timer-urgent");
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = days;
+            document.getElementById("hours").innerText = hours;
+            document.getElementById("minutes").innerText = minutes;
+            document.getElementById("seconds").innerText = seconds;
+        }, 1000);
+
+        // --- 3. DYNAMIC CHECKLIST LOGIC ---
+        
+        let checklistItems = [];
+
+        function loadItems() {
+            const stored = localStorage.getItem('tallinnPackList');
+            if (stored) {
+                checklistItems = JSON.parse(stored);
+            } else {
+                // Default items for first run
+                checklistItems = [
+                    { text: "Passport", checked: false },
+                    { text: "Clothes", checked: false },
+                    { text: "Swimsuit", checked: false }
+                ];
+            }
+            renderItems();
+        }
+
+        function saveItems() {
+            localStorage.setItem('tallinnPackList', JSON.stringify(checklistItems));
+        }
+
+        function renderItems() {
+            const container = document.getElementById('checklist-container');
+            container.innerHTML = ''; 
+
+            checklistItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `checklist-item ${item.checked ? 'checked' : ''}`;
+                div.onclick = (e) => toggleCheck(index, e);
+
+                div.innerHTML = `
+                    <div class="checklist-left">
+                        <span class="checkmark"></span>
+                        <span class="item-name">${item.text}</span>
+                    </div>
+                    <div class="delete-btn" onclick="deleteItem(${index}, event)">✕</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addItem() {
+            const input = document.getElementById('item-input');
+            const text = input.value.trim();
+            if (text) {
+                checklistItems.push({ text: text, checked: false });
+                saveItems();
+                renderItems();
+                input.value = '';
+                // Scroll to bottom
+                const container = document.getElementById('checklist-container');
+                setTimeout(() => container.scrollTop = container.scrollHeight, 50);
+            }
+        }
+
+        document.getElementById('item-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                addItem();
+            }
+        });
+
+        function toggleCheck(index, event) {
+            if(event.target.classList.contains('delete-btn')) return;
+            checklistItems[index].checked = !checklistItems[index].checked;
+            saveItems();
+            renderItems();
+        }
+
+        function deleteItem(index, event) {
+            event.stopPropagation();
+            if(confirm("Remove '" + checklistItems[index].text + "'?")) {
+                checklistItems.splice(index, 1);
+                saveItems();
+                renderItems();
+            }
+        }
+
+        // --- MODAL FUNCTIONS ---
+        function openChecklist() {
+            document.getElementById('checklist-modal').classList.add('visible');
+        }
+
+        function closeChecklist() {
+            document.getElementById('checklist-modal').classList.remove('visible');
+        }
+
+        // Initialize
+        loadItems();
+    </script>
+</body>
+</html>
