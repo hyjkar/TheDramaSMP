@@ -271,7 +271,7 @@
             display: flex;
             flex-direction: column;
             padding: 20px;
-            transform: translateY(100%); /* Start hidden (slid down) */
+            transform: translateY(100%); /* Start hidden */
             transition: transform 0.3s ease-in-out;
         }
 
@@ -672,11 +672,10 @@
 
         function deleteItem(index, event) {
             event.stopPropagation();
-            if(confirm("Remove '" + checklistItems[index].text + "'?")) {
-                checklistItems.splice(index, 1);
-                saveItems();
-                renderItems();
-            }
+            // Immediate deletion, no confirmation
+            checklistItems.splice(index, 1);
+            saveItems();
+            renderItems();
         }
 
         // --- MODAL FUNCTIONS ---
