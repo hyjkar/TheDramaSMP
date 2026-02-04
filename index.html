@@ -42,6 +42,17 @@
             color: #9CA3AF;
         }
         
+        /* Editor Styles */
+        .rich-editor {
+            min-height: 80px;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: white;
+        }
+        .rich-editor:focus {
+            outline: 2px solid #C5A059;
+        }
+
         #landscape-warning { display: none; }
         @media screen and (orientation: landscape) {
             #app-container { display: none; }
@@ -168,39 +179,83 @@
             <button onclick="document.getElementById('editor-panel').classList.add('hidden')" class="text-xs bg-black/20 px-3 py-1 rounded hover:bg-black/40">Close</button>
         </div>
         
-        <div class="bg-gray-200 py-2 px-4 text-[10px] text-gray-600 text-center border-b border-gray-300 font-mono">
-            <span>&lt;s&gt;<s>strike</s>&lt;/s&gt;</span> • 
-            <span>&lt;b&gt;<b>bold</b>&lt;/b&gt;</span> • 
-            <span>&lt;i&gt;<i>italic</i>&lt;/i&gt;</span>
+        <div class="bg-yellow-50 p-2 text-[10px] text-center text-gray-500 border-b border-yellow-100">
+            Highlight text and click a button to format.
         </div>
 
-        <div class="flex-1 overflow-y-auto p-6 space-y-4">
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            
             <div>
-                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Flight Plan</label>
-                <textarea id="edit-flight" rows="3" class="w-full p-3 text-sm border rounded font-mono"></textarea>
+                <div class="flex justify-between items-end mb-1">
+                    <label class="text-xs font-bold text-golf-dark uppercase">Flight Plan</label>
+                    <div class="flex gap-1">
+                        <button onmousedown="event.preventDefault(); format('bold')" class="bg-gray-200 px-2 rounded text-xs font-bold hover:bg-gray-300">B</button>
+                        <button onmousedown="event.preventDefault(); format('italic')" class="bg-gray-200 px-2 rounded text-xs italic hover:bg-gray-300">I</button>
+                        <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-gray-200 px-2 rounded text-xs line-through hover:bg-gray-300">S</button>
+                    </div>
+                </div>
+                <div id="edit-flight" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
+
             <div>
-                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Golf Rounds</label>
-                <textarea id="edit-rounds" rows="3" class="w-full p-3 text-sm border rounded font-mono"></textarea>
+                <div class="flex justify-between items-end mb-1">
+                    <label class="text-xs font-bold text-golf-dark uppercase">Golf Rounds</label>
+                    <div class="flex gap-1">
+                        <button onmousedown="event.preventDefault(); format('bold')" class="bg-gray-200 px-2 rounded text-xs font-bold hover:bg-gray-300">B</button>
+                        <button onmousedown="event.preventDefault(); format('italic')" class="bg-gray-200 px-2 rounded text-xs italic hover:bg-gray-300">I</button>
+                        <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-gray-200 px-2 rounded text-xs line-through hover:bg-gray-300">S</button>
+                    </div>
+                </div>
+                <div id="edit-rounds" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
+
             <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 1</label>
-                    <textarea id="edit-team1" rows="4" class="w-full p-3 text-sm border rounded font-mono"></textarea>
+                    <div class="flex justify-between items-end mb-1">
+                        <label class="text-xs font-bold text-golf-dark uppercase">Team 1</label>
+                         <div class="flex gap-1">
+                            <button onmousedown="event.preventDefault(); format('bold')" class="bg-gray-200 px-1 rounded text-[10px] font-bold">B</button>
+                            <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-gray-200 px-1 rounded text-[10px] line-through">S</button>
+                        </div>
+                    </div>
+                    <div id="edit-team1" contenteditable="true" class="rich-editor w-full p-2 text-sm border rounded"></div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 2</label>
-                    <textarea id="edit-team2" rows="4" class="w-full p-3 text-sm border rounded font-mono"></textarea>
+                    <div class="flex justify-between items-end mb-1">
+                        <label class="text-xs font-bold text-golf-dark uppercase">Team 2</label>
+                        <div class="flex gap-1">
+                            <button onmousedown="event.preventDefault(); format('bold')" class="bg-gray-200 px-1 rounded text-[10px] font-bold">B</button>
+                            <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-gray-200 px-1 rounded text-[10px] line-through">S</button>
+                        </div>
+                    </div>
+                    <div id="edit-team2" contenteditable="true" class="rich-editor w-full p-2 text-sm border rounded"></div>
                 </div>
             </div>
+
             <div>
-                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Accommodation</label>
-                <textarea id="edit-hotel" rows="3" class="w-full p-3 text-sm border rounded font-mono"></textarea>
+                <div class="flex justify-between items-end mb-1">
+                    <label class="text-xs font-bold text-golf-dark uppercase">Accommodation</label>
+                    <div class="flex gap-1">
+                        <button onmousedown="event.preventDefault(); format('bold')" class="bg-gray-200 px-2 rounded text-xs font-bold hover:bg-gray-300">B</button>
+                        <button onmousedown="event.preventDefault(); format('italic')" class="bg-gray-200 px-2 rounded text-xs italic hover:bg-gray-300">I</button>
+                        <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-gray-200 px-2 rounded text-xs line-through hover:bg-gray-300">S</button>
+                    </div>
+                </div>
+                <div id="edit-hotel" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
+
             <div>
-                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Dining</label>
-                <textarea id="edit-dinner" rows="3" class="w-full p-3 text-sm border rounded font-mono"></textarea>
+                <div class="flex justify-between items-end mb-1">
+                    <label class="text-xs font-bold text-golf-dark uppercase">Dining</label>
+                    <div class="flex gap-1">
+                        <button onmousedown="event.preventDefault(); format('bold')" class="bg-gray-200 px-2 rounded text-xs font-bold hover:bg-gray-300">B</button>
+                        <button onmousedown="event.preventDefault(); format('italic')" class="bg-gray-200 px-2 rounded text-xs italic hover:bg-gray-300">I</button>
+                        <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-gray-200 px-2 rounded text-xs line-through hover:bg-gray-300">S</button>
+                    </div>
+                </div>
+                <div id="edit-dinner" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
+
             <button id="btn-save" class="w-full bg-golf-gold text-golf-dark font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest mt-4 mb-10">
                 Save Updates Live
             </button>
@@ -228,6 +283,11 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const auth = getAuth(app);
         const tripRef = doc(db, "trip", "details");
 
+        // GLOBAL FUNCTION FOR FORMATTING
+        window.format = function(command) {
+            document.execCommand(command, false, null);
+        };
+
         // 1. DATA LISTENER
         onSnapshot(tripRef, (doc) => {
             if (doc.exists()) {
@@ -236,7 +296,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 const now = new Date();
                 document.getElementById('last-sync').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-                // innerHTML allows tags like <b> and <s>
+                // View Mode
                 document.getElementById('view-flight').innerHTML = data.flights || "Details pending...";
                 document.getElementById('view-rounds').innerHTML = data.rounds || "Course details pending...";
                 document.getElementById('view-team1').innerHTML = data.team1 || "Roster pending...";
@@ -244,13 +304,13 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 document.getElementById('view-hotel').innerHTML = data.hotel || "Details pending...";
                 document.getElementById('view-dinner').innerHTML = data.dinner || "Details pending...";
                 
-                // Editor inputs
-                document.getElementById('edit-flight').value = data.flights || "";
-                document.getElementById('edit-rounds').value = data.rounds || "";
-                document.getElementById('edit-team1').value = data.team1 || "";
-                document.getElementById('edit-team2').value = data.team2 || "";
-                document.getElementById('edit-hotel').value = data.hotel || "";
-                document.getElementById('edit-dinner').value = data.dinner || "";
+                // Edit Mode - Now uses innerHTML for the visual boxes
+                document.getElementById('edit-flight').innerHTML = data.flights || "";
+                document.getElementById('edit-rounds').innerHTML = data.rounds || "";
+                document.getElementById('edit-team1').innerHTML = data.team1 || "";
+                document.getElementById('edit-team2').innerHTML = data.team2 || "";
+                document.getElementById('edit-hotel').innerHTML = data.hotel || "";
+                document.getElementById('edit-dinner').innerHTML = data.dinner || "";
             }
         });
 
@@ -267,18 +327,18 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             }
         });
 
-        // 3. SAVE
+        // 3. SAVE - Updated to grab innerHTML
         document.getElementById('btn-save').addEventListener('click', async () => {
             const btn = document.getElementById('btn-save');
             btn.innerText = "Saving...";
             try {
                 await updateDoc(tripRef, {
-                    flights: document.getElementById('edit-flight').value,
-                    rounds: document.getElementById('edit-rounds').value,
-                    team1: document.getElementById('edit-team1').value,
-                    team2: document.getElementById('edit-team2').value,
-                    hotel: document.getElementById('edit-hotel').value,
-                    dinner: document.getElementById('edit-dinner').value
+                    flights: document.getElementById('edit-flight').innerHTML,
+                    rounds: document.getElementById('edit-rounds').innerHTML,
+                    team1: document.getElementById('edit-team1').innerHTML,
+                    team2: document.getElementById('edit-team2').innerHTML,
+                    hotel: document.getElementById('edit-hotel').innerHTML,
+                    dinner: document.getElementById('edit-dinner').innerHTML
                 });
                 document.getElementById('editor-panel').classList.add('hidden');
             } catch (error) {
