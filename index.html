@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Invitational 2026</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        golf: {
+                            dark: '#0A2615',   /* Augusta Green */
+                            deep: '#1B4D3E',   /* Secondary Green */
+                            gold: '#C5A059',   /* Trophy Gold */
+                            cream: '#F5F5F0',  /* Card Stock */
+                            white: '#FFFFFF'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Lato"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Hide scrollbars for sleek look */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Force Portrait Mode Logic */
+        #landscape-warning { display: none; }
+        @media screen and (orientation: landscape) {
+            #app-container { display: none; }
+            #landscape-warning { display: flex; }
+        }
+    </style>
+</head>
+<body class="bg-golf-cream text-gray-800 font-sans antialiased h-screen overflow-hidden">
+
+    <div id="landscape-warning" class="fixed inset-0 bg-golf-dark z-[100] flex flex-col items-center justify-center text-golf-gold p-10 text-center">
+        <div class="text-6xl mb-4">⟳</div>
+        <h2 class="font-serif text-3xl mb-2">Portrait Mode Only</h2>
+        <p class="font-sans text-golf-cream opacity-80">Please rotate your device to access the clubhouse.</p>
+    </div>
+
+    <div id="app-container" class="h-full flex flex-col max-w-md mx-auto bg-golf-cream shadow-2xl relative overflow-hidden">
+
+        <header class="bg-golf-dark pt-12 pb-8 px-6 text-center rounded-b-[30px] shadow-lg shrink-0 z-10 relative">
+            <div class="w-16 h-1 bg-golf-gold mx-auto mb-4"></div>
+            <h1 class="font-serif text-3xl text-white tracking-wide">THE INVITATIONAL</h1>
+            <p class="text-golf-gold text-xs font-bold tracking-[0.2em] uppercase mt-2">Official Itinerary • 2026</p>
+        </header>
+
+        <main class="flex-1 overflow-y-auto no-scrollbar p-6 space-y-6 pb-20">
+            
+            <div class="bg-white p-6 rounded-sm border-t-4 border-golf-gold shadow-sm">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
+                    <h3 class="font-serif text-xl text-golf-deep font-bold">Flight Plan</h3>
+                    <span class="text-2xl">✈️</span>
+                </div>
+                <p id="view-flight" class="whitespace-pre-line text-sm leading-relaxed text-gray-600">Loading flight details...</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-sm border-t-4 border-golf-deep shadow-sm">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
+                    <h3 class="font-serif text-xl text-golf-deep font-bold">Accommodation</h3>
+                    <span class="text-2xl">🏨</span>
+                </div>
+                <p id="view-hotel" class="whitespace-pre-line text-sm leading-relaxed text-gray-600">Loading hotel details...</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-sm border-t-4 border-golf-gold shadow-sm">
+                <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
+                    <h3 class="font-serif text-xl text-golf-deep font-bold">Dining & Events</h3>
+                    <span class="text-2xl">🍽️</span>
+                </div>
+                <p id="view-dinner" class="whitespace-pre-line text-sm leading-relaxed text-gray-600">Loading reservations...</p>
+            </div>
+
+            <div class="text-center pt-8">
+                <button onclick="document.getElementById('login-modal').classList.remove('hidden')" class="text-[10px] text-gray-300 hover:text-golf-gold uppercase tracking-widest">
+                    Chairman Access
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <div id="login-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-xs p-8 rounded-sm shadow-2xl text-center">
+            <h2 class="font-serif text-2xl text-golf-dark mb-6">Chairman Login</h2>
+            <input type="email" id="email" placeholder="Email" class="w-full bg-gray-50 border-b-2 border-gray-200 p-3 mb-4 outline-none focus:border-golf-gold transition">
+            <input type="password" id="password" placeholder="Password" class="w-full bg-gray-50 border-b-2 border-gray-200 p-3 mb-6 outline-none focus:border-golf-gold transition">
+            <button id="btn-login" class="w-full bg-golf-dark text-golf-gold font-bold py-3 uppercase tracking-wider text-sm hover:bg-black transition">
+                Authenticate
+            </button>
+            <button onclick="document.getElementById('login-modal').classList.add('hidden')" class="mt-4 text-xs text-gray-400 underline">Cancel</button>
+        </div>
+    </div>
+
+    <div id="editor-panel" class="hidden fixed inset-0 bg-gray-100 z-[60] flex flex-col">
+        <div class="bg-golf-deep text-white p-4 flex justify-between items-center shadow-md">
+            <h2 class="font-serif font-bold">Edit Itinerary</h2>
+            <button onclick="document.getElementById('editor-panel').classList.add('hidden')" class="text-xs bg-black/20 px-3 py-1 rounded hover:bg-black/40">Close</button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            <div>
+                <label class="block text-xs font-bold text-golf-dark uppercase tracking-wide mb-2">Flight Plan</label>
+                <textarea id="edit-flight" rows="5" class="w-full p-4 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-golf-gold outline-none"></textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-golf-dark uppercase tracking-wide mb-2">Accommodation</label>
+                <textarea id="edit-hotel" rows="5" class="w-full p-4 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-golf-gold outline-none"></textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-golf-dark uppercase tracking-wide mb-2">Dining & Events</label>
+                <textarea id="edit-dinner" rows="5" class="w-full p-4 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-golf-gold outline-none"></textarea>
+            </div>
+            <button id="btn-save" class="w-full bg-golf-gold text-golf-dark font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest hover:brightness-110">
+                Save Updates Live
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // 🔥🔥🔥 PASTE FIREBASE CONFIG HERE 🔥🔥🔥
+        // Replace the code below with the code you copied from Project Settings
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQZPcQ6FcnglNHg10d__6PQDdd_OjT74U",
+  authDomain: "golfapp-10c53.firebaseapp.com",
+  projectId: "golfapp-10c53",
+  storageBucket: "golfapp-10c53.firebasestorage.app",
+  messagingSenderId: "251112200135",
+  appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2",
+  measurementId: "G-JRN0YXJGHS
+        };
+        // 🔥🔥🔥 END PASTE 🔥🔥🔥
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // --- 1. REAL-TIME DATA LISTENER ---
+        // This makes the app update instantly for everyone when you save
+        const tripRef = doc(db, "trip", "details");
+        
+        onSnapshot(tripRef, (doc) => {
+            if (doc.exists()) {
+                const data = doc.data();
+                // Update Viewer
+                document.getElementById('view-flight').innerText = data.flights || "No flight info yet.";
+                document.getElementById('view-hotel').innerText = data.hotel || "No hotel info yet.";
+                document.getElementById('view-dinner').innerText = data.dinner || "No dinner info yet.";
+                
+                // Update Editor Inputs
+                document.getElementById('edit-flight').value = data.flights || "";
+                document.getElementById('edit-hotel').value = data.hotel || "";
+                document.getElementById('edit-dinner').value = data.dinner || "";
+            }
+        });
+
+        // --- 2. LOGIN FUNCTION ---
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                // Success: Hide login, Show editor
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('editor-panel').classList.remove('hidden');
+            } catch (error) {
+                alert("Access Denied. Incorrect credentials.");
+            }
+        });
+
+        // --- 3. SAVE FUNCTION ---
+        document.getElementById('btn-save').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-save');
+            const originalText = btn.innerText;
+            btn.innerText = "Saving...";
+            
+            try {
+                await updateDoc(tripRef, {
+                    flights: document.getElementById('edit-flight').value,
+                    hotel: document.getElementById('edit-hotel').value,
+                    dinner: document.getElementById('edit-dinner').value
+                });
+                alert("Itinerary updated for all users.");
+                document.getElementById('editor-panel').classList.add('hidden');
+            } catch (error) {
+                alert("Error saving: " + error.message);
+            }
+            btn.innerText = originalText;
+        });
+
+    </script>
+</body>
+</html>
