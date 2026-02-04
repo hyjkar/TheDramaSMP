@@ -40,6 +40,23 @@
     </script>
 
     <style>
+        /* --- SCROLL LOCKING MAGIC --- */
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Stop the whole page from scrolling */
+            overscroll-behavior-y: none; /* Kill the "bounce" / pull-to-refresh */
+            background-color: #F5F5F0;
+        }
+
+        #app-container {
+            height: 100%;
+            width: 100%;
+            overflow-y: auto; /* Allow internal scrolling only if needed */
+            -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+        }
+        /* ---------------------------- */
+
         /* Checkbox Styling */
         input[type="checkbox"]:checked + label {
             text-decoration: line-through;
@@ -65,7 +82,7 @@
             overflow: hidden;
         }
         .accordion-content.open {
-            max-height: 1000px; /* Large height to accommodate content */
+            max-height: 1000px; 
             opacity: 1;
         }
         .arrow-icon {
@@ -82,16 +99,16 @@
         }
     </style>
 </head>
-<body class="bg-golf-cream text-gray-800 font-sans antialiased min-h-screen">
+<body class="bg-golf-cream text-gray-800 font-sans antialiased">
 
     <div id="landscape-warning" class="fixed inset-0 bg-golf-dark z-[100] flex flex-col items-center justify-center text-golf-gold p-10 text-center">
         <div class="text-6xl mb-4">⟳</div>
         <h2 class="font-serif text-3xl mb-2">Portrait Mode Only</h2>
     </div>
 
-    <div id="app-container" class="max-w-md mx-auto bg-golf-cream min-h-screen shadow-2xl relative flex flex-col">
+    <div id="app-container" class="max-w-md mx-auto bg-golf-cream shadow-2xl relative flex flex-col">
 
-        <header class="bg-golf-dark pt-10 pb-8 px-6 text-center rounded-b-[30px] shadow-lg z-10 relative overflow-hidden">
+        <header class="bg-golf-dark pt-10 pb-8 px-6 text-center rounded-b-[30px] shadow-lg z-10 relative overflow-hidden shrink-0">
             
             <svg class="absolute bottom-0 right-0 w-48 h-auto opacity-10 pointer-events-none text-golf-gold transform translate-x-4 translate-y-2" viewBox="0 0 200 200" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M40 40 L160 40 L100 120 L100 180 M70 180 L130 180" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
