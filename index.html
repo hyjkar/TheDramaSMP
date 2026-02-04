@@ -31,11 +31,15 @@
     </script>
 
     <style>
-        /* Hide scrollbars for sleek look */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Force Portrait Mode Logic */
+        /* Custom Checkbox Styling */
+        input[type="checkbox"]:checked + label {
+            text-decoration: line-through;
+            color: #9CA3AF; /* Gray out text */
+        }
+        
         #landscape-warning { display: none; }
         @media screen and (orientation: landscape) {
             #app-container { display: none; }
@@ -48,44 +52,54 @@
     <div id="landscape-warning" class="fixed inset-0 bg-golf-dark z-[100] flex flex-col items-center justify-center text-golf-gold p-10 text-center">
         <div class="text-6xl mb-4">⟳</div>
         <h2 class="font-serif text-3xl mb-2">Portrait Mode Only</h2>
-        <p class="font-sans text-golf-cream opacity-80">Please rotate your device to access the clubhouse.</p>
     </div>
 
     <div id="app-container" class="h-full flex flex-col max-w-md mx-auto bg-golf-cream shadow-2xl relative overflow-hidden">
 
-        <header class="bg-golf-dark pt-12 pb-8 px-6 text-center rounded-b-[30px] shadow-lg shrink-0 z-10 relative">
-            <div class="w-16 h-1 bg-golf-gold mx-auto mb-4"></div>
+        <header class="bg-golf-dark pt-10 pb-6 px-6 text-center rounded-b-[30px] shadow-lg shrink-0 z-10 relative">
             <h1 class="font-serif text-3xl text-white tracking-wide">THE INVITATIONAL</h1>
-            <p class="text-golf-gold text-xs font-bold tracking-[0.2em] uppercase mt-2">Official Itinerary • 2026</p>
+            <p class="text-golf-gold text-xs font-bold tracking-[0.2em] uppercase mt-1">Official Itinerary • 2026</p>
+            
+            <button onclick="document.getElementById('packing-modal').classList.remove('hidden')" class="mt-4 bg-golf-deep border border-golf-gold text-golf-gold text-xs uppercase tracking-widest py-2 px-6 rounded-full hover:bg-black transition flex items-center justify-center mx-auto gap-2">
+                <span>✓</span> Packing List
+            </button>
         </header>
 
-        <main class="flex-1 overflow-y-auto no-scrollbar p-6 space-y-6 pb-20">
+        <main class="flex-1 overflow-y-auto no-scrollbar p-5 space-y-5 pb-20">
             
-            <div class="bg-white p-6 rounded-sm border-t-4 border-golf-gold shadow-sm">
-                <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
-                    <h3 class="font-serif text-xl text-golf-deep font-bold">Flight Plan</h3>
-                    <span class="text-2xl">✈️</span>
+            <div class="bg-white p-5 rounded-sm border-t-4 border-golf-gold shadow-sm">
+                <div class="flex justify-between items-center mb-3 border-b border-gray-100 pb-2">
+                    <h3 class="font-serif text-lg text-golf-deep font-bold">Flight Plan</h3>
+                    <span class="text-xl">✈️</span>
                 </div>
-                <p id="view-flight" class="whitespace-pre-line text-sm leading-relaxed text-gray-600">Loading flight details...</p>
+                <p id="view-flight" class="whitespace-pre-line text-sm leading-relaxed text-gray-600">Loading...</p>
             </div>
 
-            <div class="bg-white p-6 rounded-sm border-t-4 border-golf-deep shadow-sm">
-                <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
-                    <h3 class="font-serif text-xl text-golf-deep font-bold">Accommodation</h3>
-                    <span class="text-2xl">🏨</span>
+            <div class="bg-white p-5 rounded-sm border-t-4 border-golf-dark shadow-sm">
+                <div class="flex justify-between items-center mb-3 border-b border-gray-100 pb-2">
+                    <h3 class="font-serif text-lg text-golf-deep font-bold">Golf Rounds</h3>
+                    <span class="text-xl">⛳</span>
                 </div>
-                <p id="view-hotel" class="whitespace-pre-line text-sm leading-relaxed text-gray-600">Loading hotel details...</p>
+                <p id="view-rounds" class="whitespace-pre-line text-sm leading-relaxed text-gray-600">Loading...</p>
             </div>
 
-            <div class="bg-white p-6 rounded-sm border-t-4 border-golf-gold shadow-sm">
-                <div class="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
-                    <h3 class="font-serif text-xl text-golf-deep font-bold">Dining & Events</h3>
-                    <span class="text-2xl">🍽️</span>
+            <div class="bg-white p-5 rounded-sm border-t-4 border-golf-deep shadow-sm">
+                <div class="flex justify-between items-center mb-3 border-b border-gray-100 pb-2">
+                    <h3 class="font-serif text-lg text-golf-deep font-bold">Accommodation</h3>
+                    <span class="text-xl">🏨</span>
                 </div>
-                <p id="view-dinner" class="whitespace-pre-line text-sm leading-relaxed text-gray-600">Loading reservations...</p>
+                <p id="view-hotel" class="whitespace-pre-line text-sm leading-relaxed text-gray-600">Loading...</p>
             </div>
 
-            <div class="text-center pt-8">
+            <div class="bg-white p-5 rounded-sm border-t-4 border-golf-gold shadow-sm">
+                <div class="flex justify-between items-center mb-3 border-b border-gray-100 pb-2">
+                    <h3 class="font-serif text-lg text-golf-deep font-bold">Dining & Events</h3>
+                    <span class="text-xl">🍽️</span>
+                </div>
+                <p id="view-dinner" class="whitespace-pre-line text-sm leading-relaxed text-gray-600">Loading...</p>
+            </div>
+
+            <div class="text-center pt-4">
                 <button onclick="document.getElementById('login-modal').classList.remove('hidden')" class="text-[10px] text-gray-300 hover:text-golf-gold uppercase tracking-widest">
                     Chairman Access
                 </button>
@@ -93,14 +107,57 @@
         </main>
     </div>
 
-    <div id="login-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex items-center justify-center p-6 backdrop-blur-sm">
+    <div id="packing-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex flex-col items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div class="bg-golf-gold p-4 text-center">
+                <h2 class="font-serif text-xl font-bold text-golf-dark">Checklist</h2>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4">
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="item1" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()">
+                    <label for="item1" class="text-lg cursor-pointer">Illallisvaatteet</label>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="item2" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()">
+                    <label for="item2" class="text-lg cursor-pointer">Golfvaatteet</label>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="item3" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()">
+                    <label for="item3" class="text-lg cursor-pointer">Golfpalloja</label>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="item4" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()">
+                    <label for="item4" class="text-lg cursor-pointer">Teet</label>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="item5" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()">
+                    <label for="item5" class="text-lg cursor-pointer">Mailat</label>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="item6" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()">
+                    <label for="item6" class="text-lg cursor-pointer">Matkustusasiakirja</label>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="item7" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()">
+                    <label for="item7" class="text-lg cursor-pointer">Golfkengät</label>
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="item8" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()">
+                    <label for="item8" class="text-lg cursor-pointer">Golfhanskat</label>
+                </div>
+            </div>
+            <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="bg-gray-100 p-4 text-center text-sm font-bold text-gray-500 hover:bg-gray-200">
+                CLOSE
+            </button>
+        </div>
+    </div>
+
+    <div id="login-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
         <div class="bg-white w-full max-w-xs p-8 rounded-sm shadow-2xl text-center">
             <h2 class="font-serif text-2xl text-golf-dark mb-6">Chairman Login</h2>
-            <input type="email" id="email" placeholder="Email" class="w-full bg-gray-50 border-b-2 border-gray-200 p-3 mb-4 outline-none focus:border-golf-gold transition">
-            <input type="password" id="password" placeholder="Password" class="w-full bg-gray-50 border-b-2 border-gray-200 p-3 mb-6 outline-none focus:border-golf-gold transition">
-            <button id="btn-login" class="w-full bg-golf-dark text-golf-gold font-bold py-3 uppercase tracking-wider text-sm hover:bg-black transition">
-                Authenticate
-            </button>
+            <input type="email" id="email" placeholder="Email" class="w-full bg-gray-50 border-b-2 border-gray-200 p-3 mb-4 outline-none">
+            <input type="password" id="password" placeholder="Password" class="w-full bg-gray-50 border-b-2 border-gray-200 p-3 mb-6 outline-none">
+            <button id="btn-login" class="w-full bg-golf-dark text-golf-gold font-bold py-3 uppercase tracking-wider text-sm">Authenticate</button>
             <button onclick="document.getElementById('login-modal').classList.add('hidden')" class="mt-4 text-xs text-gray-400 underline">Cancel</button>
         </div>
     </div>
@@ -108,23 +165,26 @@
     <div id="editor-panel" class="hidden fixed inset-0 bg-gray-100 z-[60] flex flex-col">
         <div class="bg-golf-deep text-white p-4 flex justify-between items-center shadow-md">
             <h2 class="font-serif font-bold">Edit Itinerary</h2>
-            <button onclick="document.getElementById('editor-panel').classList.add('hidden')" class="text-xs bg-black/20 px-3 py-1 rounded hover:bg-black/40">Close</button>
+            <button onclick="document.getElementById('editor-panel').classList.add('hidden')" class="text-xs bg-black/20 px-3 py-1 rounded">Close</button>
         </div>
-        
-        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        <div class="flex-1 overflow-y-auto p-6 space-y-4">
             <div>
-                <label class="block text-xs font-bold text-golf-dark uppercase tracking-wide mb-2">Flight Plan</label>
-                <textarea id="edit-flight" rows="5" class="w-full p-4 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-golf-gold outline-none"></textarea>
+                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Flight Plan</label>
+                <textarea id="edit-flight" rows="3" class="w-full p-3 text-sm border rounded"></textarea>
             </div>
             <div>
-                <label class="block text-xs font-bold text-golf-dark uppercase tracking-wide mb-2">Accommodation</label>
-                <textarea id="edit-hotel" rows="5" class="w-full p-4 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-golf-gold outline-none"></textarea>
+                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Golf Rounds (New)</label>
+                <textarea id="edit-rounds" rows="3" class="w-full p-3 text-sm border rounded"></textarea>
             </div>
             <div>
-                <label class="block text-xs font-bold text-golf-dark uppercase tracking-wide mb-2">Dining & Events</label>
-                <textarea id="edit-dinner" rows="5" class="w-full p-4 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-golf-gold outline-none"></textarea>
+                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Accommodation</label>
+                <textarea id="edit-hotel" rows="3" class="w-full p-3 text-sm border rounded"></textarea>
             </div>
-            <button id="btn-save" class="w-full bg-golf-gold text-golf-dark font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest hover:brightness-110">
+            <div>
+                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Dining</label>
+                <textarea id="edit-dinner" rows="3" class="w-full p-3 text-sm border rounded"></textarea>
+            </div>
+            <button id="btn-save" class="w-full bg-golf-gold text-golf-dark font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest mt-4">
                 Save Updates Live
             </button>
         </div>
@@ -136,77 +196,92 @@
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // 🔥🔥🔥 PASTE FIREBASE CONFIG HERE 🔥🔥🔥
-        // Replace the code below with the code you copied from Project Settings
         const firebaseConfig = {
-            apiKey: "AIzaSyBQZPcQ6FcnglNHg10d__6PQDdd_OjT74U",
+apiKey: "AIzaSyBQZPcQ6FcnglNHg10d__6PQDdd_OjT74U",
   authDomain: "golfapp-10c53.firebaseapp.com",
   projectId: "golfapp-10c53",
   storageBucket: "golfapp-10c53.firebasestorage.app",
   messagingSenderId: "251112200135",
   appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2",
-  measurementId: "G-JRN0YXJGHS"
+  measurementId: "G-JRN0YXJGHS”
         };
         // 🔥🔥🔥 END PASTE 🔥🔥🔥
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-
-        // --- 1. REAL-TIME DATA LISTENER ---
-        // This makes the app update instantly for everyone when you save
         const tripRef = doc(db, "trip", "details");
-        
+
+        // 1. DATA LISTENER
         onSnapshot(tripRef, (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
-                // Update Viewer
-                document.getElementById('view-flight').innerText = data.flights || "No flight info yet.";
-                document.getElementById('view-hotel').innerText = data.hotel || "No hotel info yet.";
-                document.getElementById('view-dinner').innerText = data.dinner || "No dinner info yet.";
                 
-                // Update Editor Inputs
+                // View Mode
+                document.getElementById('view-flight').innerText = data.flights || "Details pending...";
+                document.getElementById('view-rounds').innerText = data.rounds || "Course details pending...";
+                document.getElementById('view-hotel').innerText = data.hotel || "Details pending...";
+                document.getElementById('view-dinner').innerText = data.dinner || "Details pending...";
+                
+                // Edit Mode
                 document.getElementById('edit-flight').value = data.flights || "";
+                document.getElementById('edit-rounds').value = data.rounds || "";
                 document.getElementById('edit-hotel').value = data.hotel || "";
                 document.getElementById('edit-dinner').value = data.dinner || "";
             }
         });
 
-        // --- 2. LOGIN FUNCTION ---
+        // 2. LOGIN
         document.getElementById('btn-login').addEventListener('click', async () => {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
-            
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
-                // Success: Hide login, Show editor
                 document.getElementById('login-modal').classList.add('hidden');
                 document.getElementById('editor-panel').classList.remove('hidden');
             } catch (error) {
-                alert("Access Denied. Incorrect credentials.");
+                alert("Access Denied.");
             }
         });
 
-        // --- 3. SAVE FUNCTION ---
+        // 3. SAVE
         document.getElementById('btn-save').addEventListener('click', async () => {
             const btn = document.getElementById('btn-save');
-            const originalText = btn.innerText;
             btn.innerText = "Saving...";
-            
             try {
                 await updateDoc(tripRef, {
                     flights: document.getElementById('edit-flight').value,
+                    rounds: document.getElementById('edit-rounds').value, // NEW FIELD
                     hotel: document.getElementById('edit-hotel').value,
                     dinner: document.getElementById('edit-dinner').value
                 });
-                alert("Itinerary updated for all users.");
                 document.getElementById('editor-panel').classList.add('hidden');
             } catch (error) {
                 alert("Error saving: " + error.message);
             }
-            btn.innerText = originalText;
+            btn.innerText = "Save Updates Live";
         });
 
+        // 4. LOCAL STORAGE FOR PACKING LIST (No Firebase needed for this)
+        window.saveChecklist = function() {
+            const checkboxes = document.querySelectorAll('#packing-modal input[type="checkbox"]');
+            const state = {};
+            checkboxes.forEach(box => {
+                state[box.id] = box.checked;
+            });
+            localStorage.setItem('golfPackingList', JSON.stringify(state));
+        }
+
+        // Load checklist on startup
+        window.addEventListener('load', () => {
+            const savedState = JSON.parse(localStorage.getItem('golfPackingList'));
+            if (savedState) {
+                for (const [id, isChecked] of Object.entries(savedState)) {
+                    const box = document.getElementById(id);
+                    if (box) box.checked = isChecked;
+                }
+            }
+        });
     </script>
 </body>
 </html>
