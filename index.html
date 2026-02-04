@@ -11,8 +11,8 @@
     <title>BD Tour Alicante 2026</title>
 
     <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="icon.png">
-<link rel="icon" type="image/png" sizes="16x16" href="icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icon.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -178,89 +178,52 @@
     </div>
 
     <div id="editor-panel" class="hidden fixed inset-0 bg-gray-100 z-[60] flex flex-col">
+        
         <div class="bg-golf-deep text-white p-4 flex justify-between items-center shadow-md shrink-0">
             <h2 class="font-serif font-bold">Edit Itinerary</h2>
             <button onclick="document.getElementById('editor-panel').classList.add('hidden')" class="text-xs bg-black/20 px-3 py-1 rounded hover:bg-black/40">Close</button>
         </div>
         
-        <div class="bg-yellow-50 p-2 text-[10px] text-center text-gray-500 border-b border-yellow-100">
-            Highlight text and click a button to format.
+        <div class="bg-gray-200 p-3 border-b border-gray-300 sticky top-0 z-20 flex justify-center shadow-sm">
+            <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-golf-gold text-golf-dark font-bold text-xs uppercase tracking-widest py-3 px-6 rounded shadow hover:brightness-110 w-full max-w-xs flex items-center justify-center gap-2">
+                <span><s>ABC</s></span> Mark Selection as Done
+            </button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-6 space-y-6">
             
             <div>
-                <div class="flex justify-between items-end mb-1">
-                    <label class="text-xs font-bold text-golf-dark uppercase">Flight Plan</label>
-                    <div class="flex gap-1">
-                        <button onmousedown="event.preventDefault(); format('bold')" class="bg-gray-200 px-2 rounded text-xs font-bold hover:bg-gray-300">B</button>
-                        <button onmousedown="event.preventDefault(); format('italic')" class="bg-gray-200 px-2 rounded text-xs italic hover:bg-gray-300">I</button>
-                        <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-gray-200 px-2 rounded text-xs line-through hover:bg-gray-300">S</button>
-                    </div>
-                </div>
+                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Flight Plan</label>
                 <div id="edit-flight" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
 
             <div>
-                <div class="flex justify-between items-end mb-1">
-                    <label class="text-xs font-bold text-golf-dark uppercase">Golf Rounds</label>
-                    <div class="flex gap-1">
-                        <button onmousedown="event.preventDefault(); format('bold')" class="bg-gray-200 px-2 rounded text-xs font-bold hover:bg-gray-300">B</button>
-                        <button onmousedown="event.preventDefault(); format('italic')" class="bg-gray-200 px-2 rounded text-xs italic hover:bg-gray-300">I</button>
-                        <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-gray-200 px-2 rounded text-xs line-through hover:bg-gray-300">S</button>
-                    </div>
-                </div>
+                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Golf Rounds</label>
                 <div id="edit-rounds" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
 
             <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <div class="flex justify-between items-end mb-1">
-                        <label class="text-xs font-bold text-golf-dark uppercase">Team 1</label>
-                         <div class="flex gap-1">
-                            <button onmousedown="event.preventDefault(); format('bold')" class="bg-gray-200 px-1 rounded text-[10px] font-bold">B</button>
-                            <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-gray-200 px-1 rounded text-[10px] line-through">S</button>
-                        </div>
-                    </div>
+                    <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 1</label>
                     <div id="edit-team1" contenteditable="true" class="rich-editor w-full p-2 text-sm border rounded"></div>
                 </div>
                 <div>
-                    <div class="flex justify-between items-end mb-1">
-                        <label class="text-xs font-bold text-golf-dark uppercase">Team 2</label>
-                        <div class="flex gap-1">
-                            <button onmousedown="event.preventDefault(); format('bold')" class="bg-gray-200 px-1 rounded text-[10px] font-bold">B</button>
-                            <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-gray-200 px-1 rounded text-[10px] line-through">S</button>
-                        </div>
-                    </div>
+                    <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 2</label>
                     <div id="edit-team2" contenteditable="true" class="rich-editor w-full p-2 text-sm border rounded"></div>
                 </div>
             </div>
 
             <div>
-                <div class="flex justify-between items-end mb-1">
-                    <label class="text-xs font-bold text-golf-dark uppercase">Accommodation</label>
-                    <div class="flex gap-1">
-                        <button onmousedown="event.preventDefault(); format('bold')" class="bg-gray-200 px-2 rounded text-xs font-bold hover:bg-gray-300">B</button>
-                        <button onmousedown="event.preventDefault(); format('italic')" class="bg-gray-200 px-2 rounded text-xs italic hover:bg-gray-300">I</button>
-                        <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-gray-200 px-2 rounded text-xs line-through hover:bg-gray-300">S</button>
-                    </div>
-                </div>
+                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Accommodation</label>
                 <div id="edit-hotel" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
 
             <div>
-                <div class="flex justify-between items-end mb-1">
-                    <label class="text-xs font-bold text-golf-dark uppercase">Dining</label>
-                    <div class="flex gap-1">
-                        <button onmousedown="event.preventDefault(); format('bold')" class="bg-gray-200 px-2 rounded text-xs font-bold hover:bg-gray-300">B</button>
-                        <button onmousedown="event.preventDefault(); format('italic')" class="bg-gray-200 px-2 rounded text-xs italic hover:bg-gray-300">I</button>
-                        <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-gray-200 px-2 rounded text-xs line-through hover:bg-gray-300">S</button>
-                    </div>
-                </div>
+                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Dining</label>
                 <div id="edit-dinner" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
 
-            <button id="btn-save" class="w-full bg-golf-gold text-golf-dark font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest mt-4 mb-10">
+            <button id="btn-save" class="w-full bg-golf-deep text-white font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest mt-4 mb-10">
                 Save Updates Live
             </button>
         </div>
@@ -308,7 +271,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 document.getElementById('view-hotel').innerHTML = data.hotel || "Details pending...";
                 document.getElementById('view-dinner').innerHTML = data.dinner || "Details pending...";
                 
-                // Edit Mode - Now uses innerHTML for the visual boxes
+                // Edit Mode
                 document.getElementById('edit-flight').innerHTML = data.flights || "";
                 document.getElementById('edit-rounds').innerHTML = data.rounds || "";
                 document.getElementById('edit-team1').innerHTML = data.team1 || "";
@@ -331,7 +294,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             }
         });
 
-        // 3. SAVE - Updated to grab innerHTML
+        // 3. SAVE
         document.getElementById('btn-save').addEventListener('click', async () => {
             const btn = document.getElementById('btn-save');
             btn.innerText = "Saving...";
