@@ -57,6 +57,24 @@
             outline: 2px solid #C5A059;
         }
 
+        /* Accordion Animation */
+        .accordion-content {
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .accordion-content.open {
+            max-height: 1000px; /* Large height to accommodate content */
+            opacity: 1;
+        }
+        .arrow-icon {
+            transition: transform 0.3s ease;
+        }
+        .arrow-icon.rotate {
+            transform: rotate(180deg);
+        }
+
         #landscape-warning { display: none; }
         @media screen and (orientation: landscape) {
             #app-container { display: none; }
@@ -96,55 +114,90 @@
             </div>
         </header>
 
-        <main class="p-4 space-y-4 pb-24">
+        <main class="p-4 space-y-3 pb-24">
             
-            <div class="bg-white p-4 rounded-sm border-t-2 border-golf-gold shadow-sm">
-                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
-                    <h3 class="font-serif text-base text-golf-deep font-bold">Flight Plan</h3>
-                    <span class="text-lg">✈️</span>
-                </div>
-                <div id="view-flight" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
-            </div>
-
-            <div class="bg-white p-4 rounded-sm border-t-2 border-golf-dark shadow-sm">
-                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
-                    <h3 class="font-serif text-base text-golf-deep font-bold">Golf Rounds</h3>
-                    <span class="text-lg">⛳</span>
-                </div>
-                <div id="view-rounds" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white p-3 rounded-sm border-t-4 border-golf-gold shadow-sm h-full">
-                    <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
-                        <h3 class="font-serif text-sm text-golf-deep font-bold">Team 1</h3>
-                        <span class="text-base">🏆</span>
+            <div class="bg-white rounded-sm border-t-2 border-golf-gold shadow-sm overflow-hidden">
+                <button onclick="toggleAccordion('acc-flight', 'arrow-flight')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">✈️</span>
+                        <h3 class="font-serif text-base text-golf-deep font-bold">Flight Plan</h3>
                     </div>
-                    <div id="view-team1" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
-                </div>
-                <div class="bg-white p-3 rounded-sm border-t-4 border-golf-deep shadow-sm h-full">
-                    <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
-                        <h3 class="font-serif text-sm text-golf-deep font-bold">Team 2</h3>
-                        <span class="text-base">🛡️</span>
+                    <svg id="arrow-flight" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="acc-flight" class="accordion-content border-t border-gray-100">
+                    <div class="p-4 pt-2">
+                        <div id="view-flight" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
                     </div>
-                    <div id="view-team2" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
                 </div>
             </div>
 
-            <div class="bg-white p-4 rounded-sm border-t-2 border-golf-deep shadow-sm">
-                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
-                    <h3 class="font-serif text-base text-golf-deep font-bold">Accommodation</h3>
-                    <span class="text-lg">🏨</span>
+            <div class="bg-white rounded-sm border-t-2 border-golf-dark shadow-sm overflow-hidden">
+                <button onclick="toggleAccordion('acc-rounds', 'arrow-rounds')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">⛳</span>
+                        <h3 class="font-serif text-base text-golf-deep font-bold">Golf Rounds</h3>
+                    </div>
+                    <svg id="arrow-rounds" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="acc-rounds" class="accordion-content border-t border-gray-100">
+                    <div class="p-4 pt-2">
+                        <div id="view-rounds" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                    </div>
                 </div>
-                <div id="view-hotel" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
             </div>
 
-            <div class="bg-white p-4 rounded-sm border-t-2 border-golf-gold shadow-sm">
-                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
-                    <h3 class="font-serif text-base text-golf-deep font-bold">Dining & Events</h3>
-                    <span class="text-lg">🍽️</span>
+            <div class="bg-white rounded-sm border-t-2 border-golf-gold shadow-sm overflow-hidden">
+                <button onclick="toggleAccordion('acc-teams', 'arrow-teams')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">🏆</span>
+                        <h3 class="font-serif text-base text-golf-deep font-bold">Team Rosters</h3>
+                    </div>
+                    <svg id="arrow-teams" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="acc-teams" class="accordion-content border-t border-gray-100">
+                    <div class="p-4 pt-2">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-bold text-xs text-golf-gold uppercase mb-2 border-b border-gray-100 pb-1">Team 1</h4>
+                                <div id="view-team1" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-golf-deep uppercase mb-2 border-b border-gray-100 pb-1">Team 2</h4>
+                                <div id="view-team2" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div id="view-dinner" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+            </div>
+
+            <div class="bg-white rounded-sm border-t-2 border-golf-deep shadow-sm overflow-hidden">
+                <button onclick="toggleAccordion('acc-hotel', 'arrow-hotel')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">🏨</span>
+                        <h3 class="font-serif text-base text-golf-deep font-bold">Accommodation</h3>
+                    </div>
+                    <svg id="arrow-hotel" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="acc-hotel" class="accordion-content border-t border-gray-100">
+                    <div class="p-4 pt-2">
+                        <div id="view-hotel" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-sm border-t-2 border-golf-gold shadow-sm overflow-hidden">
+                <button onclick="toggleAccordion('acc-dinner', 'arrow-dinner')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">🍽️</span>
+                        <h3 class="font-serif text-base text-golf-deep font-bold">Dining & Events</h3>
+                    </div>
+                    <svg id="arrow-dinner" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="acc-dinner" class="accordion-content border-t border-gray-100">
+                    <div class="p-4 pt-2">
+                        <div id="view-dinner" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                    </div>
+                </div>
             </div>
 
             <div class="text-center pt-6 pb-2">
@@ -265,6 +318,28 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         // GLOBAL FUNCTION FOR FORMATTING
         window.format = function(command) {
             document.execCommand(command, false, null);
+        };
+
+        // GLOBAL FUNCTION FOR ACCORDION (EXCLUSIVE MODE)
+        window.toggleAccordion = function(contentId, arrowId) {
+            const clickedContent = document.getElementById(contentId);
+            const clickedArrow = document.getElementById(arrowId);
+            
+            // 1. Check if it is currently open
+            const isAlreadyOpen = clickedContent.classList.contains('open');
+
+            // 2. Close ALL sections first
+            const allContents = document.querySelectorAll('.accordion-content');
+            const allArrows = document.querySelectorAll('.arrow-icon');
+            
+            allContents.forEach(el => el.classList.remove('open'));
+            allArrows.forEach(el => el.classList.remove('rotate'));
+
+            // 3. If it wasn't open before, open it now
+            if (!isAlreadyOpen) {
+                clickedContent.classList.add('open');
+                clickedArrow.classList.add('rotate');
+            }
         };
 
         // 1. DATA LISTENER
