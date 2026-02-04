@@ -163,13 +163,15 @@
     </div>
 
     <div id="editor-panel" class="hidden fixed inset-0 bg-gray-100 z-[60] flex flex-col">
-        <div class="bg-golf-deep text-white p-4 flex justify-between items-center shadow-md">
+        <div class="bg-golf-deep text-white p-4 flex justify-between items-center shadow-md shrink-0">
             <h2 class="font-serif font-bold">Edit Itinerary</h2>
-            <button onclick="document.getElementById('editor-panel').classList.add('hidden')" class="text-xs bg-black/20 px-3 py-1 rounded">Close</button>
+            <button onclick="document.getElementById('editor-panel').classList.add('hidden')" class="text-xs bg-black/20 px-3 py-1 rounded hover:bg-black/40">Close</button>
         </div>
         
-        <div class="bg-yellow-50 p-2 text-[10px] text-center text-gray-500 border-b border-yellow-100">
-            Tip: Use &lt;s&gt;text&lt;/s&gt; to cross out completed items.
+        <div class="bg-gray-200 py-2 px-4 text-[10px] text-gray-600 text-center border-b border-gray-300 font-mono">
+            <span>&lt;s&gt;<s>strike</s>&lt;/s&gt;</span> • 
+            <span>&lt;b&gt;<b>bold</b>&lt;/b&gt;</span> • 
+            <span>&lt;i&gt;<i>italic</i>&lt;/i&gt;</span>
         </div>
 
         <div class="flex-1 overflow-y-auto p-6 space-y-4">
@@ -226,7 +228,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const auth = getAuth(app);
         const tripRef = doc(db, "trip", "details");
 
-        // 1. DATA LISTENER (Uses innerHTML for styling tags)
+        // 1. DATA LISTENER
         onSnapshot(tripRef, (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
@@ -234,7 +236,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 const now = new Date();
                 document.getElementById('last-sync').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-                // Use innerHTML so HTML tags like <s> work
+                // innerHTML allows tags like <b> and <s>
                 document.getElementById('view-flight').innerHTML = data.flights || "Details pending...";
                 document.getElementById('view-rounds').innerHTML = data.rounds || "Course details pending...";
                 document.getElementById('view-team1').innerHTML = data.team1 || "Roster pending...";
@@ -242,7 +244,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 document.getElementById('view-hotel').innerHTML = data.hotel || "Details pending...";
                 document.getElementById('view-dinner').innerHTML = data.dinner || "Details pending...";
                 
-                // Inputs stay as values
+                // Editor inputs
                 document.getElementById('edit-flight').value = data.flights || "";
                 document.getElementById('edit-rounds').value = data.rounds || "";
                 document.getElementById('edit-team1').value = data.team1 || "";
