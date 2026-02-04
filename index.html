@@ -40,22 +40,24 @@
     </script>
 
     <style>
-        /* --- SCROLL LOCKING MAGIC --- */
+        /* --- SMART SCROLL LOGIC --- */
         html, body {
-            height: 100%;
+            height: 100%; /* Force full height */
             width: 100%;
-            overflow: hidden; /* Stop the whole page from scrolling */
-            overscroll-behavior-y: none; /* Kill the "bounce" / pull-to-refresh */
+            overflow: hidden; /* Prevent the 'background' from moving */
             background-color: #F5F5F0;
         }
 
         #app-container {
             height: 100%;
             width: 100%;
-            overflow-y: auto; /* Allow internal scrolling only if needed */
-            -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+            /* 'auto' means: scrollbar appears ONLY if content is too big */
+            overflow-y: auto; 
+            /* 'none' means: never bounce or rubber-band */
+            overscroll-behavior-y: none; 
+            -webkit-overflow-scrolling: touch;
         }
-        /* ---------------------------- */
+        /* -------------------------- */
 
         /* Checkbox Styling */
         input[type="checkbox"]:checked + label {
@@ -69,6 +71,8 @@
             max-height: 200px;
             overflow-y: auto;
             background-color: white;
+            /* Allow scrolling inside the editor box */
+            overscroll-behavior-y: contain; 
         }
         .rich-editor:focus {
             outline: 2px solid #C5A059;
@@ -342,17 +346,14 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             const clickedContent = document.getElementById(contentId);
             const clickedArrow = document.getElementById(arrowId);
             
-            // 1. Check if it is currently open
             const isAlreadyOpen = clickedContent.classList.contains('open');
 
-            // 2. Close ALL sections first
             const allContents = document.querySelectorAll('.accordion-content');
             const allArrows = document.querySelectorAll('.arrow-icon');
             
             allContents.forEach(el => el.classList.remove('open'));
             allArrows.forEach(el => el.classList.remove('rotate'));
 
-            // 3. If it wasn't open before, open it now
             if (!isAlreadyOpen) {
                 clickedContent.classList.add('open');
                 clickedArrow.classList.add('rotate');
