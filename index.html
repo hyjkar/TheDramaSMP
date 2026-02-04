@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Invitational</title>
+    <title>BD Tour Alicante 2026</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -31,6 +31,7 @@
     </script>
 
     <style>
+        /* Smooth scrolling for the main area */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
@@ -56,49 +57,66 @@
 
     <div id="app-container" class="h-full flex flex-col max-w-md mx-auto bg-golf-cream shadow-2xl relative overflow-hidden">
 
-        <header class="bg-golf-dark pt-6 pb-4 px-6 text-center rounded-b-[20px] shadow-lg shrink-0 z-10 relative">
-            <h1 class="font-serif text-2xl text-white tracking-wide">THE INVITATIONAL</h1>
+        <header class="bg-golf-dark pt-8 pb-5 px-6 text-center rounded-b-[24px] shadow-lg shrink-0 z-20 relative">
+            <h1 class="font-serif text-2xl text-white tracking-wide leading-tight">BD TOUR<br><span class="text-golf-gold italic">Alicante</span></h1>
+            <p class="text-gray-400 text-[10px] font-bold tracking-[0.3em] uppercase mt-2">2026</p>
             
-            <button onclick="document.getElementById('packing-modal').classList.remove('hidden')" class="mt-3 bg-golf-deep border border-golf-gold text-golf-gold text-[10px] uppercase tracking-widest py-1.5 px-5 rounded-full hover:bg-black transition flex items-center justify-center mx-auto gap-2">
+            <button onclick="document.getElementById('packing-modal').classList.remove('hidden')" class="mt-4 bg-golf-deep border border-golf-gold text-golf-gold text-[10px] uppercase tracking-widest py-2 px-6 rounded-full hover:bg-black transition flex items-center justify-center mx-auto gap-2">
                 <span>✓</span> Packing List
             </button>
         </header>
 
-        <main class="flex-1 overflow-y-auto no-scrollbar p-3 space-y-3 pb-12">
+        <main class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 pb-24">
             
-            <div class="bg-white p-3 px-4 rounded-sm border-t-2 border-golf-gold shadow-sm">
-                <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1">
+            <div class="bg-white p-4 rounded-sm border-t-2 border-golf-gold shadow-sm">
+                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
                     <h3 class="font-serif text-base text-golf-deep font-bold">Flight Plan</h3>
                     <span class="text-lg">✈️</span>
                 </div>
                 <p id="view-flight" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
             </div>
 
-            <div class="bg-white p-3 px-4 rounded-sm border-t-2 border-golf-dark shadow-sm">
-                <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1">
+            <div class="bg-white p-4 rounded-sm border-t-2 border-golf-dark shadow-sm">
+                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
                     <h3 class="font-serif text-base text-golf-deep font-bold">Golf Rounds</h3>
                     <span class="text-lg">⛳</span>
                 </div>
                 <p id="view-rounds" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
             </div>
 
-            <div class="bg-white p-3 px-4 rounded-sm border-t-2 border-golf-deep shadow-sm">
-                <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1">
+            <div class="bg-white p-4 rounded-sm border-l-4 border-golf-gold shadow-sm">
+                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
+                    <h3 class="font-serif text-base text-golf-deep font-bold">Team 1</h3>
+                    <span class="text-lg">🏆</span>
+                </div>
+                <p id="view-team1" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading roster...</p>
+            </div>
+
+            <div class="bg-white p-4 rounded-sm border-l-4 border-golf-deep shadow-sm">
+                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
+                    <h3 class="font-serif text-base text-golf-deep font-bold">Team 2</h3>
+                    <span class="text-lg">🛡️</span>
+                </div>
+                <p id="view-team2" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading roster...</p>
+            </div>
+
+            <div class="bg-white p-4 rounded-sm border-t-2 border-golf-deep shadow-sm">
+                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
                     <h3 class="font-serif text-base text-golf-deep font-bold">Accommodation</h3>
                     <span class="text-lg">🏨</span>
                 </div>
                 <p id="view-hotel" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
             </div>
 
-            <div class="bg-white p-3 px-4 rounded-sm border-t-2 border-golf-gold shadow-sm">
-                <div class="flex justify-between items-center mb-1 border-b border-gray-100 pb-1">
+            <div class="bg-white p-4 rounded-sm border-t-2 border-golf-gold shadow-sm">
+                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
                     <h3 class="font-serif text-base text-golf-deep font-bold">Dining & Events</h3>
                     <span class="text-lg">🍽️</span>
                 </div>
                 <p id="view-dinner" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
             </div>
 
-            <div class="text-center pt-2">
+            <div class="text-center pt-6 pb-4">
                 <button onclick="document.getElementById('login-modal').classList.remove('hidden')" class="text-[9px] text-gray-300 hover:text-golf-gold uppercase tracking-widest opacity-50">
                     Chairman Access
                 </button>
@@ -109,7 +127,7 @@
     <div id="packing-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex flex-col items-center justify-center p-6 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
             <div class="bg-golf-gold p-3 text-center">
-                <h2 class="font-serif text-lg font-bold text-golf-dark">Checklist</h2>
+                <h2 class="font-serif text-lg font-bold text-golf-dark">Packing List</h2>
             </div>
             <div class="p-6 overflow-y-auto space-y-3">
                 <div class="flex items-center gap-3"><input type="checkbox" id="item1" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()"><label for="item1" class="cursor-pointer">Illallisvaatteet</label></div>
@@ -151,6 +169,18 @@
                 <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Golf Rounds</label>
                 <textarea id="edit-rounds" rows="3" class="w-full p-3 text-sm border rounded"></textarea>
             </div>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 1</label>
+                    <textarea id="edit-team1" rows="4" class="w-full p-3 text-sm border rounded"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 2</label>
+                    <textarea id="edit-team2" rows="4" class="w-full p-3 text-sm border rounded"></textarea>
+                </div>
+            </div>
+
             <div>
                 <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Accommodation</label>
                 <textarea id="edit-hotel" rows="3" class="w-full p-3 text-sm border rounded"></textarea>
@@ -159,7 +189,7 @@
                 <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Dining</label>
                 <textarea id="edit-dinner" rows="3" class="w-full p-3 text-sm border rounded"></textarea>
             </div>
-            <button id="btn-save" class="w-full bg-golf-gold text-golf-dark font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest mt-4">
+            <button id="btn-save" class="w-full bg-golf-gold text-golf-dark font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest mt-4 mb-10">
                 Save Updates Live
             </button>
         </div>
@@ -194,12 +224,16 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 // View Mode
                 document.getElementById('view-flight').innerText = data.flights || "Details pending...";
                 document.getElementById('view-rounds').innerText = data.rounds || "Course details pending...";
+                document.getElementById('view-team1').innerText = data.team1 || "Roster pending..."; // NEW
+                document.getElementById('view-team2').innerText = data.team2 || "Roster pending..."; // NEW
                 document.getElementById('view-hotel').innerText = data.hotel || "Details pending...";
                 document.getElementById('view-dinner').innerText = data.dinner || "Details pending...";
                 
                 // Edit Mode
                 document.getElementById('edit-flight').value = data.flights || "";
                 document.getElementById('edit-rounds').value = data.rounds || "";
+                document.getElementById('edit-team1').value = data.team1 || ""; // NEW
+                document.getElementById('edit-team2').value = data.team2 || ""; // NEW
                 document.getElementById('edit-hotel').value = data.hotel || "";
                 document.getElementById('edit-dinner').value = data.dinner || "";
             }
@@ -226,6 +260,8 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 await updateDoc(tripRef, {
                     flights: document.getElementById('edit-flight').value,
                     rounds: document.getElementById('edit-rounds').value,
+                    team1: document.getElementById('edit-team1').value, // NEW
+                    team2: document.getElementById('edit-team2').value, // NEW
                     hotel: document.getElementById('edit-hotel').value,
                     dinner: document.getElementById('edit-dinner').value
                 });
