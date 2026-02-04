@@ -36,11 +36,7 @@
     </script>
 
     <style>
-        /* Smooth scrolling */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Custom Checkbox */
+        /* Checkbox Styling */
         input[type="checkbox"]:checked + label {
             text-decoration: line-through;
             color: #9CA3AF;
@@ -53,34 +49,34 @@
         }
     </style>
 </head>
-<body class="bg-golf-cream text-gray-800 font-sans antialiased h-screen overflow-hidden">
+<body class="bg-golf-cream text-gray-800 font-sans antialiased min-h-screen">
 
     <div id="landscape-warning" class="fixed inset-0 bg-golf-dark z-[100] flex flex-col items-center justify-center text-golf-gold p-10 text-center">
         <div class="text-6xl mb-4">⟳</div>
         <h2 class="font-serif text-3xl mb-2">Portrait Mode Only</h2>
     </div>
 
-    <div id="app-container" class="h-full flex flex-col max-w-md mx-auto bg-golf-cream shadow-2xl relative overflow-hidden">
+    <div id="app-container" class="max-w-md mx-auto bg-golf-cream min-h-screen shadow-2xl relative flex flex-col">
 
-        <header class="bg-golf-dark pt-8 pb-5 px-6 text-center rounded-b-[24px] shadow-lg shrink-0 z-20 relative">
+        <header class="bg-golf-dark pt-10 pb-6 px-6 text-center rounded-b-[24px] shadow-lg z-10">
             <h1 class="font-serif text-2xl text-white tracking-wide leading-tight">
                 BD TOUR<br>
                 <span class="text-golf-gold italic text-xl">Alicante 2026</span>
             </h1>
             
-            <button onclick="document.getElementById('packing-modal').classList.remove('hidden')" class="mt-3 bg-golf-deep border border-golf-gold text-golf-gold text-[10px] uppercase tracking-widest py-1.5 px-6 rounded-full hover:bg-black transition flex items-center justify-center mx-auto gap-2">
+            <button onclick="document.getElementById('packing-modal').classList.remove('hidden')" class="mt-4 bg-golf-deep border border-golf-gold text-golf-gold text-[10px] uppercase tracking-widest py-1.5 px-6 rounded-full hover:bg-black transition flex items-center justify-center mx-auto gap-2">
                 <span>✓</span> Packing List
             </button>
         </header>
 
-        <main class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 pb-24">
+        <main class="p-4 space-y-4 pb-24">
             
             <div class="bg-white p-4 rounded-sm border-t-2 border-golf-gold shadow-sm">
                 <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
                     <h3 class="font-serif text-base text-golf-deep font-bold">Flight Plan</h3>
                     <span class="text-lg">✈️</span>
                 </div>
-                <p id="view-flight" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
+                <div id="view-flight" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
             </div>
 
             <div class="bg-white p-4 rounded-sm border-t-2 border-golf-dark shadow-sm">
@@ -88,7 +84,7 @@
                     <h3 class="font-serif text-base text-golf-deep font-bold">Golf Rounds</h3>
                     <span class="text-lg">⛳</span>
                 </div>
-                <p id="view-rounds" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
+                <div id="view-rounds" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -97,14 +93,14 @@
                         <h3 class="font-serif text-sm text-golf-deep font-bold">Team 1</h3>
                         <span class="text-base">🏆</span>
                     </div>
-                    <p id="view-team1" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
+                    <div id="view-team1" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
                 </div>
                 <div class="bg-white p-3 rounded-sm border-t-4 border-golf-deep shadow-sm h-full">
                     <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
                         <h3 class="font-serif text-sm text-golf-deep font-bold">Team 2</h3>
                         <span class="text-base">🛡️</span>
                     </div>
-                    <p id="view-team2" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
+                    <div id="view-team2" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
                 </div>
             </div>
 
@@ -113,7 +109,7 @@
                     <h3 class="font-serif text-base text-golf-deep font-bold">Accommodation</h3>
                     <span class="text-lg">🏨</span>
                 </div>
-                <p id="view-hotel" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
+                <div id="view-hotel" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
             </div>
 
             <div class="bg-white p-4 rounded-sm border-t-2 border-golf-gold shadow-sm">
@@ -121,7 +117,7 @@
                     <h3 class="font-serif text-base text-golf-deep font-bold">Dining & Events</h3>
                     <span class="text-lg">🍽️</span>
                 </div>
-                <p id="view-dinner" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
+                <div id="view-dinner" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
             </div>
 
             <div class="text-center pt-6 pb-2">
@@ -171,34 +167,37 @@
             <h2 class="font-serif font-bold">Edit Itinerary</h2>
             <button onclick="document.getElementById('editor-panel').classList.add('hidden')" class="text-xs bg-black/20 px-3 py-1 rounded">Close</button>
         </div>
+        
+        <div class="bg-yellow-50 p-2 text-[10px] text-center text-gray-500 border-b border-yellow-100">
+            Tip: Use &lt;s&gt;text&lt;/s&gt; to cross out completed items.
+        </div>
+
         <div class="flex-1 overflow-y-auto p-6 space-y-4">
             <div>
                 <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Flight Plan</label>
-                <textarea id="edit-flight" rows="3" class="w-full p-3 text-sm border rounded"></textarea>
+                <textarea id="edit-flight" rows="3" class="w-full p-3 text-sm border rounded font-mono"></textarea>
             </div>
             <div>
                 <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Golf Rounds</label>
-                <textarea id="edit-rounds" rows="3" class="w-full p-3 text-sm border rounded"></textarea>
+                <textarea id="edit-rounds" rows="3" class="w-full p-3 text-sm border rounded font-mono"></textarea>
             </div>
-            
             <div class="grid grid-cols-2 gap-2">
                 <div>
                     <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 1</label>
-                    <textarea id="edit-team1" rows="4" class="w-full p-3 text-sm border rounded"></textarea>
+                    <textarea id="edit-team1" rows="4" class="w-full p-3 text-sm border rounded font-mono"></textarea>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 2</label>
-                    <textarea id="edit-team2" rows="4" class="w-full p-3 text-sm border rounded"></textarea>
+                    <textarea id="edit-team2" rows="4" class="w-full p-3 text-sm border rounded font-mono"></textarea>
                 </div>
             </div>
-
             <div>
                 <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Accommodation</label>
-                <textarea id="edit-hotel" rows="3" class="w-full p-3 text-sm border rounded"></textarea>
+                <textarea id="edit-hotel" rows="3" class="w-full p-3 text-sm border rounded font-mono"></textarea>
             </div>
             <div>
                 <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Dining</label>
-                <textarea id="edit-dinner" rows="3" class="w-full p-3 text-sm border rounded"></textarea>
+                <textarea id="edit-dinner" rows="3" class="w-full p-3 text-sm border rounded font-mono"></textarea>
             </div>
             <button id="btn-save" class="w-full bg-golf-gold text-golf-dark font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest mt-4 mb-10">
                 Save Updates Live
@@ -227,24 +226,23 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const auth = getAuth(app);
         const tripRef = doc(db, "trip", "details");
 
-        // 1. DATA LISTENER & SYNC TIME
+        // 1. DATA LISTENER (Uses innerHTML for styling tags)
         onSnapshot(tripRef, (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
                 
-                // Update Timestamp
                 const now = new Date();
                 document.getElementById('last-sync').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-                // View Mode
-                document.getElementById('view-flight').innerText = data.flights || "Details pending...";
-                document.getElementById('view-rounds').innerText = data.rounds || "Course details pending...";
-                document.getElementById('view-team1').innerText = data.team1 || "Roster pending...";
-                document.getElementById('view-team2').innerText = data.team2 || "Roster pending...";
-                document.getElementById('view-hotel').innerText = data.hotel || "Details pending...";
-                document.getElementById('view-dinner').innerText = data.dinner || "Details pending...";
+                // Use innerHTML so HTML tags like <s> work
+                document.getElementById('view-flight').innerHTML = data.flights || "Details pending...";
+                document.getElementById('view-rounds').innerHTML = data.rounds || "Course details pending...";
+                document.getElementById('view-team1').innerHTML = data.team1 || "Roster pending...";
+                document.getElementById('view-team2').innerHTML = data.team2 || "Roster pending...";
+                document.getElementById('view-hotel').innerHTML = data.hotel || "Details pending...";
+                document.getElementById('view-dinner').innerHTML = data.dinner || "Details pending...";
                 
-                // Edit Mode
+                // Inputs stay as values
                 document.getElementById('edit-flight').value = data.flights || "";
                 document.getElementById('edit-rounds').value = data.rounds || "";
                 document.getElementById('edit-team1').value = data.team1 || "";
@@ -287,7 +285,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             btn.innerText = "Save Updates Live";
         });
 
-        // 4. PACKING LIST LOCAL STORAGE
+        // 4. PACKING LIST
         window.saveChecklist = function() {
             const checkboxes = document.querySelectorAll('#packing-modal input[type="checkbox"]');
             const state = {};
