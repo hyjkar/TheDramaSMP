@@ -31,11 +31,9 @@
     </script>
 
     <style>
-        /* Smooth scrolling for the main area */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Custom Checkbox Styling */
         input[type="checkbox"]:checked + label {
             text-decoration: line-through;
             color: #9CA3AF;
@@ -84,20 +82,22 @@
                 <p id="view-rounds" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
             </div>
 
-            <div class="bg-white p-4 rounded-sm border-l-4 border-golf-gold shadow-sm">
-                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
-                    <h3 class="font-serif text-base text-golf-deep font-bold">Team 1</h3>
-                    <span class="text-lg">🏆</span>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white p-3 rounded-sm border-t-4 border-golf-gold shadow-sm h-full">
+                    <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
+                        <h3 class="font-serif text-sm text-golf-deep font-bold">Team 1</h3>
+                        <span class="text-base">🏆</span>
+                    </div>
+                    <p id="view-team1" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
                 </div>
-                <p id="view-team1" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading roster...</p>
-            </div>
-
-            <div class="bg-white p-4 rounded-sm border-l-4 border-golf-deep shadow-sm">
-                <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
-                    <h3 class="font-serif text-base text-golf-deep font-bold">Team 2</h3>
-                    <span class="text-lg">🛡️</span>
+                
+                <div class="bg-white p-3 rounded-sm border-t-4 border-golf-deep shadow-sm h-full">
+                    <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-1">
+                        <h3 class="font-serif text-sm text-golf-deep font-bold">Team 2</h3>
+                        <span class="text-base">🛡️</span>
+                    </div>
+                    <p id="view-team2" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading...</p>
                 </div>
-                <p id="view-team2" class="whitespace-pre-line text-xs leading-relaxed text-gray-600">Loading roster...</p>
             </div>
 
             <div class="bg-white p-4 rounded-sm border-t-2 border-golf-deep shadow-sm">
@@ -224,16 +224,16 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 // View Mode
                 document.getElementById('view-flight').innerText = data.flights || "Details pending...";
                 document.getElementById('view-rounds').innerText = data.rounds || "Course details pending...";
-                document.getElementById('view-team1').innerText = data.team1 || "Roster pending..."; // NEW
-                document.getElementById('view-team2').innerText = data.team2 || "Roster pending..."; // NEW
+                document.getElementById('view-team1').innerText = data.team1 || "Roster pending...";
+                document.getElementById('view-team2').innerText = data.team2 || "Roster pending...";
                 document.getElementById('view-hotel').innerText = data.hotel || "Details pending...";
                 document.getElementById('view-dinner').innerText = data.dinner || "Details pending...";
                 
                 // Edit Mode
                 document.getElementById('edit-flight').value = data.flights || "";
                 document.getElementById('edit-rounds').value = data.rounds || "";
-                document.getElementById('edit-team1').value = data.team1 || ""; // NEW
-                document.getElementById('edit-team2').value = data.team2 || ""; // NEW
+                document.getElementById('edit-team1').value = data.team1 || "";
+                document.getElementById('edit-team2').value = data.team2 || "";
                 document.getElementById('edit-hotel').value = data.hotel || "";
                 document.getElementById('edit-dinner').value = data.dinner || "";
             }
@@ -260,8 +260,8 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 await updateDoc(tripRef, {
                     flights: document.getElementById('edit-flight').value,
                     rounds: document.getElementById('edit-rounds').value,
-                    team1: document.getElementById('edit-team1').value, // NEW
-                    team2: document.getElementById('edit-team2').value, // NEW
+                    team1: document.getElementById('edit-team1').value,
+                    team2: document.getElementById('edit-team2').value,
                     hotel: document.getElementById('edit-hotel').value,
                     dinner: document.getElementById('edit-dinner').value
                 });
@@ -272,7 +272,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             btn.innerText = "Save Updates Live";
         });
 
-        // 4. LOCAL STORAGE FOR PACKING LIST
+        // 4. PACKING LIST
         window.saveChecklist = function() {
             const checkboxes = document.querySelectorAll('#packing-modal input[type="checkbox"]');
             const state = {};
