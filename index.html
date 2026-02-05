@@ -125,7 +125,7 @@
 
                 <g>
                     <g id="anim-stick" class="anim-obj">
-                         <line x1="-5" y1="30" x2="25" y2="-30" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                         <line x1="0" y1="20" x2="20" y2="-20" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                     </g>
 
                     <g id="anim-ball" class="anim-obj">
@@ -377,29 +377,30 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const auth = getAuth(app);
         const tripRef = doc(db, "trip", "details");
 
-        // --- AUTOMATIC LAVA LAMP ANIMATION (SINE WAVES) ---
+        // --- AUTOMATIC LAVA LAMP ANIMATION (Safe Constraints) ---
         const stickEl = document.getElementById('anim-stick');
         const ballEl = document.getElementById('anim-ball');
         
         function animateBubbles() {
             const time = Date.now();
 
-            // 1. BALL ANIMATION (Slow figure-8, kept low)
-            // Center X=100, Y=80. 
-            // Range: X +/- 15, Y +/- 5
-            const ballX = 100 + Math.sin(time * 0.0005) * 15; 
-            const ballY = 85 + Math.cos(time * 0.0008) * 5; 
+            // 1. BALL ANIMATION (Low, Tight Cycle)
+            // Center X=100. Range +/- 8.
+            // Center Y=85. Range +/- 4.
+            const ballX = 100 + Math.sin(time * 0.0005) * 8; 
+            const ballY = 85 + Math.cos(time * 0.0008) * 4; 
             
             if(ballEl) {
                 ballEl.setAttribute('transform', `translate(${ballX}, ${ballY})`);
             }
 
-            // 2. STICK ANIMATION (Wider float, rotating)
-            // Center X=100, Y=60.
-            // Range: X +/- 20, Y +/- 10. Rotation +/- 15 deg
-            const stickX = 100 + Math.sin(time * 0.0003 + 2) * 20;
-            const stickY = 60 + Math.cos(time * 0.0004) * 10;
-            const stickRot = Math.sin(time * 0.0002) * 15;
+            // 2. STICK ANIMATION (Higher, Wider, Rotate)
+            // Center X=100. Range +/- 10.
+            // Center Y=65. Range +/- 5.
+            // Rotation +/- 8 degrees.
+            const stickX = 100 + Math.sin(time * 0.0003 + 2) * 10;
+            const stickY = 65 + Math.cos(time * 0.0004) * 5;
+            const stickRot = Math.sin(time * 0.0002) * 8;
 
             if(stickEl) {
                 // translate first, then rotate around its center
