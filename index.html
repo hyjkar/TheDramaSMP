@@ -93,23 +93,22 @@
         }
         
         /* LIQUID ANIMATION (CSS Idle Float) */
+        /* Very slow, gentle drift when not shaking */
         @keyframes liquid-bob {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-3px) rotate(2deg); }
+            50% { transform: translateY(-2px) rotate(1deg); }
         }
         
         #float-wrapper {
-            /* This handles the gentle idle bobbing */
-            animation: liquid-bob 4s ease-in-out infinite;
+            animation: liquid-bob 5s ease-in-out infinite;
             transform-origin: center;
             transform-box: fill-box;
         }
 
         #physics-ball {
-            /* This handles the violent shaking (JS controlled) */
             transform-origin: center;
             transform-box: fill-box;
-            will-change: transform; /* Performance optimization */
+            will-change: transform; 
         }
 
         #landscape-warning { display: none; }
@@ -133,10 +132,9 @@
             <svg id="header-glass" onclick="requestMotionPermission()" class="absolute bottom-0 right-0 w-48 h-auto opacity-10 text-golf-gold transform translate-x-4 translate-y-2 cursor-pointer" viewBox="0 0 200 200" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M40 40 L160 40 L100 120 L100 180 M70 180 L130 180" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                 
-                <line x1="100" y1="80" x2="140" y2="20" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-
                 <g id="float-wrapper">
                     <g id="physics-ball">
+                        <line x1="100" y1="80" x2="140" y2="20" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                         <circle cx="100" cy="80" r="20" fill="currentColor"/>
                         <circle cx="95" cy="75" r="2" fill="white" opacity="0.5"/>
                         <circle cx="105" cy="75" r="2" fill="white" opacity="0.5"/>
@@ -386,43 +384,49 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const auth = getAuth(app);
         const tripRef = doc(db, "trip", "details");
 
-        // --- PHYSICS VARIABLES ---
+        // --- HIGH VISCOSITY PHYSICS ---
         let ball = document.getElementById('physics-ball');
         let px = 0, py = 0; // Position
         let vx = 0, vy = 0; // Velocity
-        let ax = 0, ay = 0; // Acceleration (from phone)
-        const spring = 0.05; // Pull back to center
-        const friction = 0.90; // Liquid viscosity (higher = thinner liquid)
-        const scale = 2; // Sensitivity
-        let hasMotionPermission = false;
+        let ax = 0, ay = 0; // Acceleration (Input)
+        let target_ax = 0, target_ay = 0; // Raw sensor data
 
-        // --- PHYSICS LOOP ---
+        // CONFIGURATION FOR SLOW MOTION
+        const spring = 0.008;  // Very loose spring (Drifts back slowly)
+        const friction = 0.94; // High momentum, slow decay (Like oil/honey)
+        const scale = 0.15;    // Low input sensitivity (Requires big shakes)
+        const limit = 20;      // Movement limit in pixels
+
         function updatePhysics() {
             if (ball) {
-                // 1. Add Device Acceleration
+                // 1. Input Smoothing (Low Pass Filter)
+                // This removes jitter and makes movement feel "heavy"
+                ax += (target_ax - ax) * 0.1;
+                ay += (target_ay - ay) * 0.1;
+
+                // 2. Add Velocity from Input
                 vx += ax * scale;
                 vy += ay * scale;
 
-                // 2. Add Spring Force (Pull to center)
+                // 3. Spring Force (Return to center)
                 vx -= px * spring;
                 vy -= py * spring;
 
-                // 3. Apply Friction (Drag)
+                // 4. Friction (Viscosity)
                 vx *= friction;
                 vy *= friction;
 
-                // 4. Update Position
+                // 5. Update Position
                 px += vx;
                 py += vy;
 
-                // 5. Limit movement (keep inside glass approx)
-                const limit = 30;
+                // 6. Hard Limits (Stay in glass)
                 if(px > limit) px = limit;
                 if(px < -limit) px = -limit;
                 if(py > limit) py = limit;
                 if(py < -limit) py = -limit;
 
-                // 6. Apply to DOM
+                // 7. Apply
                 ball.style.transform = `translate(${px}px, ${py}px)`;
             }
             requestAnimationFrame(updatePhysics);
@@ -433,38 +437,34 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
 
         // --- MOTION LISTENERS ---
         window.requestMotionPermission = function() {
-            // iOS 13+ requires permission
             if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
                 DeviceMotionEvent.requestPermission()
                     .then(response => {
                         if (response === 'granted') {
-                            hasMotionPermission = true;
                             window.addEventListener('devicemotion', handleMotion);
-                            // Visual feedback: Shake briefly
-                            vx = 10;
+                            // Visual feedback: Gentle nudge
+                            vx = 2; 
                         }
                     })
                     .catch(console.error);
             } else {
-                // Non-iOS or older devices usually just work
-                hasMotionPermission = true;
                 window.addEventListener('devicemotion', handleMotion);
             }
         };
 
         function handleMotion(event) {
-            // Get acceleration (including gravity for tilt, or just accel for shake)
-            // We use accelerationIncludingGravity for "Tilt" effect, 
-            // or acceleration for "Shake". Let's use acceleration for Shake.
-            const a = event.acceleration;
+            const a = event.accelerationIncludingGravity;
+            // We focus on the tilt/gravity for a "sloshing" feel
+            // If you prefer shaking only, change to event.acceleration
             if (a) {
-                // Invert X because of screen coords
-                ax = (a.x || 0) * -1; 
-                ay = (a.y || 0);
+                // X is usually left/right tilt. Y is up/down tilt.
+                // We invert/swap depending on portrait orientation
+                target_ax = (a.x || 0) * -1; 
+                target_ay = (a.y || 0);
             }
         }
         
-        // Try auto-enabling for Android
+        // Auto-enable for non-iOS
         if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission !== 'function') {
             window.addEventListener('devicemotion', handleMotion);
         }
@@ -531,7 +531,11 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     leftDiv.appendChild(label);
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = "&times;";
-                    delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2 opacity-50";
+                    delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2 opacity-0 group-hover:opacity-100 transition-opacity"; // Keep hover effect for desktop
+                    // On mobile, "opacity-0" might make it hard to tap. 
+                    // Let's remove opacity-0 for better UX or rely on active state. 
+                    // Updated to keep it visible but subtle:
+                    delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2";
                     delBtn.onclick = () => deletePersonal(index);
                     div.appendChild(leftDiv);
                     div.appendChild(delBtn);
