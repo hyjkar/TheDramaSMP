@@ -40,20 +40,24 @@
     </script>
 
     <style>
-        /* --- SMART SCROLL LOGIC --- */
+        /* --- VIEWPORT LOCK (THE CROP) --- */
         html, body {
+            position: fixed; /* Freezes the window size */
             height: 100%;
             width: 100%;
-            overflow: hidden;
+            overflow: hidden; /* No scrolling on the body */
             background-color: #F5F5F0;
+            overscroll-behavior: none; /* Kill the bounce */
         }
 
         #app-container {
             height: 100%;
             width: 100%;
-            overflow-y: auto; 
-            overscroll-behavior-y: none; 
+            overflow-y: auto; /* Scroll ONLY inside here */
+            overscroll-behavior-y: none; /* Kill internal bounce if content fits */
             -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
         }
 
         /* Checkbox Styling */
@@ -113,7 +117,7 @@
         <h2 class="font-serif text-3xl mb-2">Portrait Mode Only</h2>
     </div>
 
-    <div id="app-container" class="max-w-md mx-auto bg-golf-cream shadow-2xl relative flex flex-col">
+    <div id="app-container" class="max-w-md mx-auto bg-golf-cream shadow-2xl relative">
 
         <header class="bg-golf-dark pt-10 pb-8 px-6 text-center rounded-b-[30px] shadow-lg z-10 relative overflow-hidden shrink-0">
             
@@ -148,7 +152,7 @@
             </div>
         </header>
 
-        <main class="p-4 space-y-3 pb-24">
+        <main class="p-4 space-y-3 flex-1">
             
             <div class="bg-white rounded-sm border-t-2 border-golf-gold shadow-sm overflow-hidden">
                 <button onclick="toggleAccordion('acc-flight', 'arrow-flight')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
