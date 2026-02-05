@@ -235,20 +235,25 @@
 
     <div id="packing-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex flex-col items-center justify-center p-6 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
-            <div class="bg-golf-gold p-3 text-center">
-                <h2 class="font-serif text-lg font-bold text-golf-dark">Packing List</h2>
+            
+            <div class="bg-golf-gold p-3 text-center flex justify-between items-center">
+                <div class="w-6"></div> <h2 class="font-serif text-lg font-bold text-golf-dark">Packing List</h2>
+                <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="text-golf-dark font-bold text-xl hover:text-white">×</button>
             </div>
-            <div class="p-6 overflow-y-auto space-y-3">
-                <div class="flex items-center gap-3"><input type="checkbox" id="item1" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()"><label for="item1" class="cursor-pointer">Illallisvaatteet</label></div>
-                <div class="flex items-center gap-3"><input type="checkbox" id="item2" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()"><label for="item2" class="cursor-pointer">Golfvaatteet</label></div>
-                <div class="flex items-center gap-3"><input type="checkbox" id="item3" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()"><label for="item3" class="cursor-pointer">Golfpalloja</label></div>
-                <div class="flex items-center gap-3"><input type="checkbox" id="item4" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()"><label for="item4" class="cursor-pointer">Teet</label></div>
-                <div class="flex items-center gap-3"><input type="checkbox" id="item5" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()"><label for="item5" class="cursor-pointer">Mailat</label></div>
-                <div class="flex items-center gap-3"><input type="checkbox" id="item6" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()"><label for="item6" class="cursor-pointer">Matkustusasiakirja</label></div>
-                <div class="flex items-center gap-3"><input type="checkbox" id="item7" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()"><label for="item7" class="cursor-pointer">Golfkengät</label></div>
-                <div class="flex items-center gap-3"><input type="checkbox" id="item8" class="w-5 h-5 accent-golf-deep rounded cursor-pointer" onchange="saveChecklist()"><label for="item8" class="cursor-pointer">Golfhanskat</label></div>
+
+            <div class="bg-gray-50 p-4 border-b border-gray-200">
+                <div class="flex gap-2">
+                    <input id="new-item-input" type="text" placeholder="Add custom item..." class="flex-1 bg-white border border-gray-300 rounded-sm px-3 py-2 text-sm outline-none focus:border-golf-gold">
+                    <button onclick="addPackingItem()" class="bg-golf-deep text-white px-4 py-2 rounded-sm text-xs font-bold uppercase tracking-wide hover:bg-golf-dark">
+                        Add
+                    </button>
+                </div>
             </div>
-            <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="bg-gray-100 p-3 text-center text-xs font-bold text-gray-500 hover:bg-gray-200 uppercase tracking-wide">
+
+            <div id="packing-list-container" class="p-6 overflow-y-auto space-y-3 flex-1">
+                </div>
+            
+            <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="bg-gray-100 p-3 text-center text-xs font-bold text-gray-500 hover:bg-gray-200 uppercase tracking-wide border-t border-gray-200">
                 Close
             </button>
         </div>
@@ -337,6 +342,95 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const auth = getAuth(app);
         const tripRef = doc(db, "trip", "details");
 
+        // --- PACKING LIST LOGIC (Dynamic) ---
+        const defaultPackingList = [
+            { text: "Illallisvaatteet", checked: false },
+            { text: "Golfvaatteet", checked: false },
+            { text: "Golfpalloja", checked: false },
+            { text: "Teet", checked: false },
+            { text: "Mailat", checked: false },
+            { text: "Matkustusasiakirja", checked: false },
+            { text: "Golfkengät", checked: false },
+            { text: "Golfhanskat", checked: false }
+        ];
+
+        window.loadPackingList = function() {
+            const stored = localStorage.getItem('userPackingList');
+            let items = stored ? JSON.parse(stored) : defaultPackingList;
+            
+            const container = document.getElementById('packing-list-container');
+            container.innerHTML = '';
+
+            items.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between group";
+                
+                // Checkbox side
+                const leftDiv = document.createElement('div');
+                leftDiv.className = "flex items-center gap-3";
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = "checkbox";
+                checkbox.id = `pack-item-${index}`;
+                checkbox.checked = item.checked;
+                checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer";
+                checkbox.onchange = () => togglePackItem(index);
+                
+                const label = document.createElement('label');
+                label.htmlFor = `pack-item-${index}`;
+                label.innerText = item.text;
+                label.className = "cursor-pointer select-none text-sm text-gray-700";
+                
+                leftDiv.appendChild(checkbox);
+                leftDiv.appendChild(label);
+                
+                // Delete button
+                const delBtn = document.createElement('button');
+                delBtn.innerHTML = "&times;";
+                delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2 opacity-0 group-hover:opacity-100 transition-opacity";
+                delBtn.onclick = () => deletePackItem(index);
+
+                div.appendChild(leftDiv);
+                div.appendChild(delBtn);
+                container.appendChild(div);
+            });
+        };
+
+        window.addPackingItem = function() {
+            const input = document.getElementById('new-item-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const stored = localStorage.getItem('userPackingList');
+            let items = stored ? JSON.parse(stored) : defaultPackingList;
+            
+            items.push({ text: text, checked: false });
+            localStorage.setItem('userPackingList', JSON.stringify(items));
+            
+            input.value = "";
+            loadPackingList();
+        };
+
+        window.deletePackItem = function(index) {
+            const stored = localStorage.getItem('userPackingList');
+            let items = stored ? JSON.parse(stored) : defaultPackingList;
+            
+            items.splice(index, 1);
+            localStorage.setItem('userPackingList', JSON.stringify(items));
+            loadPackingList();
+        };
+
+        window.togglePackItem = function(index) {
+            const stored = localStorage.getItem('userPackingList');
+            let items = stored ? JSON.parse(stored) : defaultPackingList;
+            
+            items[index].checked = !items[index].checked;
+            localStorage.setItem('userPackingList', JSON.stringify(items));
+            // No reload needed, CSS handles the strikethrough
+        };
+        // --- END PACKING LIST LOGIC ---
+
+
         // --- QUOTE LOGIC ---
         const quotes = [
             "The most important shot in golf is the next one. – Ben Hogan",
@@ -376,22 +470,20 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 // Fade in
                 quoteEl.classList.remove('opacity-0');
                 quoteEl.classList.add('opacity-100');
-            }, 1000); // Wait for fade out to finish
+            }, 1000); 
         }
         
         // Start cycle
         cycleQuote();
-        setInterval(cycleQuote, 8000); // New quote every 8 seconds
-
+        setInterval(cycleQuote, 8000); 
         // --- END QUOTE LOGIC ---
 
 
-        // GLOBAL FUNCTION FOR FORMATTING
+        // GLOBAL HELPER FUNCTIONS
         window.format = function(command) {
             document.execCommand(command, false, null);
         };
 
-        // GLOBAL FUNCTION FOR ACCORDION (EXCLUSIVE MODE)
         window.toggleAccordion = function(contentId, arrowId) {
             const clickedContent = document.getElementById(contentId);
             const clickedArrow = document.getElementById(arrowId);
@@ -418,7 +510,6 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 const now = new Date();
                 document.getElementById('last-sync').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-                // View Mode
                 document.getElementById('view-flight').innerHTML = data.flights || "Details pending...";
                 document.getElementById('view-rounds').innerHTML = data.rounds || "Course details pending...";
                 document.getElementById('view-team1').innerHTML = data.team1 || "Roster pending...";
@@ -426,7 +517,6 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 document.getElementById('view-hotel').innerHTML = data.hotel || "Details pending...";
                 document.getElementById('view-dinner').innerHTML = data.dinner || "Details pending...";
                 
-                // Edit Mode
                 document.getElementById('edit-flight').innerHTML = data.flights || "";
                 document.getElementById('edit-rounds').innerHTML = data.rounds || "";
                 document.getElementById('edit-team1').innerHTML = data.team1 || "";
@@ -469,24 +559,9 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             btn.innerText = "Save Updates Live";
         });
 
-        // 4. PACKING LIST
-        window.saveChecklist = function() {
-            const checkboxes = document.querySelectorAll('#packing-modal input[type="checkbox"]');
-            const state = {};
-            checkboxes.forEach(box => {
-                state[box.id] = box.checked;
-            });
-            localStorage.setItem('golfPackingList', JSON.stringify(state));
-        }
-
+        // 4. INIT PACKING LIST
         window.addEventListener('load', () => {
-            const savedState = JSON.parse(localStorage.getItem('golfPackingList'));
-            if (savedState) {
-                for (const [id, isChecked] of Object.entries(savedState)) {
-                    const box = document.getElementById(id);
-                    if (box) box.checked = isChecked;
-                }
-            }
+            loadPackingList();
         });
     </script>
 </body>
