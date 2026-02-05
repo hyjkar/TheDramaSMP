@@ -511,7 +511,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             renderPackingLists();
         }
 
-        // --- QUOTE LOGIC (NEW: Reformat Author) ---
+        // --- QUOTE LOGIC (NEW: Italic Body + Author Below) ---
         const quotes = [
             "The most important shot in golf is the next one. – Ben Hogan",
             "Golf is a good walk spoiled. – Mark Twain",
@@ -551,11 +551,11 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 let html = "";
                 if(parts.length > 1) {
                     html = `
-                        <span class="block mb-2 text-sm text-golf-gold">"${parts[0]}"</span>
+                        <span class="block mb-2 text-sm text-golf-gold font-serif italic">"${parts[0]}"</span>
                         <span class="block text-[10px] font-sans font-bold tracking-widest uppercase opacity-60 text-golf-gold">&mdash; ${parts[1]}</span>
                     `;
                 } else {
-                    html = `<span class="block text-sm text-golf-gold">"${rawQuote}"</span>`;
+                    html = `<span class="block text-sm text-golf-gold font-serif italic">"${rawQuote}"</span>`;
                 }
                 
                 quoteContainer.innerHTML = html;
