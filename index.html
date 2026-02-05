@@ -234,26 +234,38 @@
     </div>
 
     <div id="packing-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex flex-col items-center justify-center p-6 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+        <div class="bg-white w-full max-w-sm rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             
-            <div class="bg-golf-gold p-3 text-center flex justify-between items-center">
-                <div class="w-6"></div> <h2 class="font-serif text-lg font-bold text-golf-dark">Packing List</h2>
+            <div class="bg-golf-gold p-3 text-center flex justify-between items-center shrink-0">
+                <div class="w-6"></div>
+                <h2 class="font-serif text-lg font-bold text-golf-dark">Packing List</h2>
                 <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="text-golf-dark font-bold text-xl hover:text-white">×</button>
             </div>
 
-            <div class="bg-gray-50 p-4 border-b border-gray-200">
-                <div class="flex gap-2">
-                    <input id="new-item-input" type="text" placeholder="Add custom item..." class="flex-1 bg-white border border-gray-300 rounded-sm px-3 py-2 text-sm outline-none focus:border-golf-gold">
-                    <button onclick="addPackingItem()" class="bg-golf-deep text-white px-4 py-2 rounded-sm text-xs font-bold uppercase tracking-wide hover:bg-golf-dark">
-                        Add
-                    </button>
+            <div class="overflow-y-auto flex-1 p-6 space-y-6">
+                
+                <div>
+                    <h3 class="text-xs font-bold text-golf-deep uppercase tracking-widest mb-3 border-b border-gray-100 pb-1">Essentials</h3>
+                    <div id="list-essentials" class="space-y-3">
+                        <p class="text-xs text-gray-400 italic">Loading...</p>
+                    </div>
                 </div>
-            </div>
 
-            <div id="packing-list-container" class="p-6 overflow-y-auto space-y-3 flex-1">
+                <div>
+                    <h3 class="text-xs font-bold text-golf-deep uppercase tracking-widest mb-3 border-b border-gray-100 pb-1">Personal Items</h3>
+                    
+                    <div class="flex gap-2 mb-4">
+                        <input id="new-item-input" type="text" placeholder="Add item..." class="flex-1 bg-gray-50 border border-gray-200 rounded-sm px-2 py-1 text-sm outline-none focus:border-golf-gold">
+                        <button onclick="addPersonalItem()" class="bg-golf-deep text-white px-3 py-1 rounded-sm text-xs font-bold hover:bg-black">+</button>
+                    </div>
+
+                    <div id="list-personal" class="space-y-3">
+                        </div>
                 </div>
+
+            </div>
             
-            <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="bg-gray-100 p-3 text-center text-xs font-bold text-gray-500 hover:bg-gray-200 uppercase tracking-wide border-t border-gray-200">
+            <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="bg-gray-100 p-3 text-center text-xs font-bold text-gray-500 hover:bg-gray-200 uppercase tracking-wide shrink-0">
                 Close
             </button>
         </div>
@@ -315,6 +327,12 @@
                 <div id="edit-dinner" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
 
+            <div class="bg-yellow-50 p-3 rounded border border-yellow-100">
+                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Essentials Packing List</label>
+                <p class="text-[10px] text-gray-500 mb-2">Items listed here appear for everyone. One item per line.</p>
+                <textarea id="edit-packing-essentials" rows="6" class="w-full p-3 text-sm border rounded font-sans"></textarea>
+            </div>
+
             <button id="btn-save" class="w-full bg-golf-deep text-white font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest mt-4 mb-10">
                 Save Updates Live
             </button>
@@ -342,96 +360,134 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const auth = getAuth(app);
         const tripRef = doc(db, "trip", "details");
 
-        // --- PACKING LIST LOGIC (Dynamic) ---
-        const defaultPackingList = [
-            { text: "Illallisvaatteet", checked: false },
-            { text: "Golfvaatteet", checked: false },
-            { text: "Golfpalloja", checked: false },
-            { text: "Teet", checked: false },
-            { text: "Mailat", checked: false },
-            { text: "Matkustusasiakirja", checked: false },
-            { text: "Golfkengät", checked: false },
-            { text: "Golfhanskat", checked: false }
-        ];
+        // GLOBAL VARS
+        let globalEssentialsList = []; // Array of strings from Firebase
 
-        window.loadPackingList = function() {
-            const stored = localStorage.getItem('userPackingList');
-            let items = stored ? JSON.parse(stored) : defaultPackingList;
+        // --- PACKING LIST LOGIC ---
+        
+        // 1. RENDER EVERYTHING
+        window.renderPackingLists = function() {
+            // A. Render Essentials (From Firebase + Local Check State)
+            const essentialsContainer = document.getElementById('list-essentials');
+            essentialsContainer.innerHTML = '';
             
-            const container = document.getElementById('packing-list-container');
-            container.innerHTML = '';
+            const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}');
 
-            items.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = "flex items-center justify-between group";
-                
-                // Checkbox side
-                const leftDiv = document.createElement('div');
-                leftDiv.className = "flex items-center gap-3";
-                
-                const checkbox = document.createElement('input');
-                checkbox.type = "checkbox";
-                checkbox.id = `pack-item-${index}`;
-                checkbox.checked = item.checked;
-                checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer";
-                checkbox.onchange = () => togglePackItem(index);
-                
-                const label = document.createElement('label');
-                label.htmlFor = `pack-item-${index}`;
-                label.innerText = item.text;
-                label.className = "cursor-pointer select-none text-sm text-gray-700";
-                
-                leftDiv.appendChild(checkbox);
-                leftDiv.appendChild(label);
-                
-                // Delete button
-                const delBtn = document.createElement('button');
-                delBtn.innerHTML = "&times;";
-                delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2 opacity-0 group-hover:opacity-100 transition-opacity";
-                delBtn.onclick = () => deletePackItem(index);
+            if (globalEssentialsList.length === 0) {
+                essentialsContainer.innerHTML = '<p class="text-xs text-gray-400 italic">No essentials added yet.</p>';
+            } else {
+                globalEssentialsList.forEach((itemText, index) => {
+                    if(!itemText.trim()) return;
+                    
+                    const div = document.createElement('div');
+                    div.className = "flex items-center gap-3";
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = "checkbox";
+                    checkbox.id = `essential-${index}`;
+                    checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer";
+                    checkbox.checked = !!localChecks[itemText]; // Check if saved as checked
+                    checkbox.onchange = () => toggleEssential(itemText);
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `essential-${index}`;
+                    label.innerText = itemText;
+                    label.className = "cursor-pointer select-none text-sm text-gray-700";
 
-                div.appendChild(leftDiv);
-                div.appendChild(delBtn);
-                container.appendChild(div);
-            });
-        };
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    essentialsContainer.appendChild(div);
+                });
+            }
 
-        window.addPackingItem = function() {
+            // B. Render Personal (From LocalStorage)
+            const personalContainer = document.getElementById('list-personal');
+            personalContainer.innerHTML = '';
+            
+            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
+
+            if (personalItems.length === 0) {
+                personalContainer.innerHTML = '<p class="text-xs text-gray-400 italic">No personal items.</p>';
+            } else {
+                personalItems.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center justify-between group";
+                    
+                    const leftDiv = document.createElement('div');
+                    leftDiv.className = "flex items-center gap-3";
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = "checkbox";
+                    checkbox.id = `personal-${index}`;
+                    checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer";
+                    checkbox.checked = item.checked;
+                    checkbox.onchange = () => togglePersonal(index);
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `personal-${index}`;
+                    label.innerText = item.text;
+                    label.className = "cursor-pointer select-none text-sm text-gray-700";
+                    
+                    leftDiv.appendChild(checkbox);
+                    leftDiv.appendChild(label);
+                    
+                    const delBtn = document.createElement('button');
+                    delBtn.innerHTML = "&times;";
+                    delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2 opacity-50";
+                    delBtn.onclick = () => deletePersonal(index);
+
+                    div.appendChild(leftDiv);
+                    div.appendChild(delBtn);
+                    personalContainer.appendChild(div);
+                });
+            }
+        }
+
+        // 2. TOGGLE ESSENTIAL (Save state locally by Item Name)
+        window.toggleEssential = function(itemName) {
+            const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}');
+            // Flip state
+            if (localChecks[itemName]) {
+                delete localChecks[itemName];
+            } else {
+                localChecks[itemName] = true;
+            }
+            localStorage.setItem('essentialsChecks', JSON.stringify(localChecks));
+        }
+
+        // 3. ADD PERSONAL
+        window.addPersonalItem = function() {
             const input = document.getElementById('new-item-input');
             const text = input.value.trim();
             if(!text) return;
 
-            const stored = localStorage.getItem('userPackingList');
-            let items = stored ? JSON.parse(stored) : defaultPackingList;
-            
-            items.push({ text: text, checked: false });
-            localStorage.setItem('userPackingList', JSON.stringify(items));
+            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
+            personalItems.push({ text: text, checked: false });
+            localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
             
             input.value = "";
-            loadPackingList();
-        };
+            renderPackingLists();
+        }
 
-        window.deletePackItem = function(index) {
-            const stored = localStorage.getItem('userPackingList');
-            let items = stored ? JSON.parse(stored) : defaultPackingList;
-            
-            items.splice(index, 1);
-            localStorage.setItem('userPackingList', JSON.stringify(items));
-            loadPackingList();
-        };
+        // 4. TOGGLE PERSONAL
+        window.togglePersonal = function(index) {
+            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
+            personalItems[index].checked = !personalItems[index].checked;
+            localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
+        }
 
-        window.togglePackItem = function(index) {
-            const stored = localStorage.getItem('userPackingList');
-            let items = stored ? JSON.parse(stored) : defaultPackingList;
-            
-            items[index].checked = !items[index].checked;
-            localStorage.setItem('userPackingList', JSON.stringify(items));
-            // No reload needed, CSS handles the strikethrough
-        };
+        // 5. DELETE PERSONAL
+        window.deletePersonal = function(index) {
+            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
+            personalItems.splice(index, 1);
+            localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
+            renderPackingLists();
+        }
+
         // --- END PACKING LIST LOGIC ---
 
 
-        // --- QUOTE LOGIC ---
+        // QUOTE LOGIC
         const quotes = [
             "The most important shot in golf is the next one. – Ben Hogan",
             "Golf is a good walk spoiled. – Mark Twain",
@@ -458,26 +514,17 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const quoteEl = document.getElementById('quote-text');
         
         function cycleQuote() {
-            // Fade out
             quoteEl.classList.remove('opacity-100');
             quoteEl.classList.add('opacity-0');
-            
             setTimeout(() => {
-                // Change text
                 const random = quotes[Math.floor(Math.random() * quotes.length)];
                 quoteEl.innerText = `"${random}"`;
-                
-                // Fade in
                 quoteEl.classList.remove('opacity-0');
                 quoteEl.classList.add('opacity-100');
             }, 1000); 
         }
-        
-        // Start cycle
         cycleQuote();
         setInterval(cycleQuote, 8000); 
-        // --- END QUOTE LOGIC ---
-
 
         // GLOBAL HELPER FUNCTIONS
         window.format = function(command) {
@@ -487,9 +534,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         window.toggleAccordion = function(contentId, arrowId) {
             const clickedContent = document.getElementById(contentId);
             const clickedArrow = document.getElementById(arrowId);
-            
             const isAlreadyOpen = clickedContent.classList.contains('open');
-
             const allContents = document.querySelectorAll('.accordion-content');
             const allArrows = document.querySelectorAll('.arrow-icon');
             
@@ -510,6 +555,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 const now = new Date();
                 document.getElementById('last-sync').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
+                // View Mode Content
                 document.getElementById('view-flight').innerHTML = data.flights || "Details pending...";
                 document.getElementById('view-rounds').innerHTML = data.rounds || "Course details pending...";
                 document.getElementById('view-team1').innerHTML = data.team1 || "Roster pending...";
@@ -517,12 +563,22 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 document.getElementById('view-hotel').innerHTML = data.hotel || "Details pending...";
                 document.getElementById('view-dinner').innerHTML = data.dinner || "Details pending...";
                 
+                // Editor Content
                 document.getElementById('edit-flight').innerHTML = data.flights || "";
                 document.getElementById('edit-rounds').innerHTML = data.rounds || "";
                 document.getElementById('edit-team1').innerHTML = data.team1 || "";
                 document.getElementById('edit-team2').innerHTML = data.team2 || "";
                 document.getElementById('edit-hotel').innerHTML = data.hotel || "";
                 document.getElementById('edit-dinner').innerHTML = data.dinner || "";
+                document.getElementById('edit-packing-essentials').value = data.packing_list || ""; // Textarea
+
+                // UPDATE ESSENTIALS LIST VAR & RENDER
+                if (data.packing_list) {
+                    globalEssentialsList = data.packing_list.split('\n');
+                } else {
+                    globalEssentialsList = ["Passport", "Clubs", "Golf Shoes", "Tees"]; // Default fallback
+                }
+                renderPackingLists();
             }
         });
 
@@ -539,7 +595,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             }
         });
 
-        // 3. SAVE
+        // 3. SAVE (Includes Packing List String)
         document.getElementById('btn-save').addEventListener('click', async () => {
             const btn = document.getElementById('btn-save');
             btn.innerText = "Saving...";
@@ -550,18 +606,14 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     team1: document.getElementById('edit-team1').innerHTML,
                     team2: document.getElementById('edit-team2').innerHTML,
                     hotel: document.getElementById('edit-hotel').innerHTML,
-                    dinner: document.getElementById('edit-dinner').innerHTML
+                    dinner: document.getElementById('edit-dinner').innerHTML,
+                    packing_list: document.getElementById('edit-packing-essentials').value
                 });
                 document.getElementById('editor-panel').classList.add('hidden');
             } catch (error) {
                 alert("Error saving: " + error.message);
             }
             btn.innerText = "Save Updates Live";
-        });
-
-        // 4. INIT PACKING LIST
-        window.addEventListener('load', () => {
-            loadPackingList();
         });
     </script>
 </body>
