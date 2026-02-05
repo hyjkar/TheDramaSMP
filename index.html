@@ -93,19 +93,19 @@
         }
         
         /* LIQUID ANIMATION (CSS Idle Float) */
-        /* Very slow, gentle drift when not shaking */
         @keyframes liquid-bob {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-2px) rotate(1deg); }
+            50% { transform: translateY(-3px) rotate(1deg); }
         }
         
         #float-wrapper {
-            animation: liquid-bob 5s ease-in-out infinite;
+            animation: liquid-bob 6s ease-in-out infinite; /* Even slower idle bob */
             transform-origin: center;
             transform-box: fill-box;
         }
 
-        #physics-ball {
+        /* Classes for JS Physics target */
+        .physics-obj {
             transform-origin: center;
             transform-box: fill-box;
             will-change: transform; 
@@ -133,13 +133,18 @@
                 <path d="M40 40 L160 40 L100 120 L100 180 M70 180 L130 180" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                 
                 <g id="float-wrapper">
-                    <g id="physics-ball">
+                    
+                    <g id="physics-stick" class="physics-obj">
                         <line x1="100" y1="80" x2="140" y2="20" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    </g>
+
+                    <g id="physics-ball" class="physics-obj">
                         <circle cx="100" cy="80" r="20" fill="currentColor"/>
                         <circle cx="95" cy="75" r="2" fill="white" opacity="0.5"/>
                         <circle cx="105" cy="75" r="2" fill="white" opacity="0.5"/>
                         <circle cx="100" cy="85" r="2" fill="white" opacity="0.5"/>
                     </g>
+
                 </g>
             </svg>
 
@@ -384,55 +389,72 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const auth = getAuth(app);
         const tripRef = doc(db, "trip", "details");
 
-        // --- HIGH VISCOSITY PHYSICS ---
-        let ball = document.getElementById('physics-ball');
-        let px = 0, py = 0; // Position
-        let vx = 0, vy = 0; // Velocity
+        // --- EXTREME SLOW MOTION PHYSICS ---
+        // Setup two objects: ball and stick
+        const ballObj = {
+            el: document.getElementById('physics-ball'),
+            x: 0, y: 0, vx: 0, vy: 0,
+            friction: 0.99, // Extremely viscous
+            spring: 0.002,  // Weak return
+            scale: 0.03     // Very low sensitivity
+        };
+
+        const stickObj = {
+            el: document.getElementById('physics-stick'),
+            x: 0, y: 0, vx: 0, vy: 0,
+            friction: 0.98, // Slightly faster return than ball
+            spring: 0.003,
+            scale: 0.05     // Slightly more reactive than ball
+        };
+
         let ax = 0, ay = 0; // Acceleration (Input)
         let target_ax = 0, target_ay = 0; // Raw sensor data
 
-        // CONFIGURATION FOR SLOW MOTION
-        const spring = 0.008;  // Very loose spring (Drifts back slowly)
-        const friction = 0.94; // High momentum, slow decay (Like oil/honey)
-        const scale = 0.15;    // Low input sensitivity (Requires big shakes)
-        const limit = 20;      // Movement limit in pixels
-
         function updatePhysics() {
-            if (ball) {
-                // 1. Input Smoothing (Low Pass Filter)
-                // This removes jitter and makes movement feel "heavy"
-                ax += (target_ax - ax) * 0.1;
-                ay += (target_ay - ay) * 0.1;
+            // 1. Input Smoothing (Low Pass Filter to kill jitter)
+            ax += (target_ax - ax) * 0.05;
+            ay += (target_ay - ay) * 0.05;
 
-                // 2. Add Velocity from Input
-                vx += ax * scale;
-                vy += ay * scale;
-
-                // 3. Spring Force (Return to center)
-                vx -= px * spring;
-                vy -= py * spring;
-
-                // 4. Friction (Viscosity)
-                vx *= friction;
-                vy *= friction;
-
-                // 5. Update Position
-                px += vx;
-                py += vy;
-
-                // 6. Hard Limits (Stay in glass)
-                if(px > limit) px = limit;
-                if(px < -limit) px = -limit;
-                if(py > limit) py = limit;
-                if(py < -limit) py = -limit;
-
-                // 7. Apply
-                ball.style.transform = `translate(${px}px, ${py}px)`;
+            // Update Ball
+            if (ballObj.el) {
+                ballObj.vx += ax * ballObj.scale;
+                ballObj.vy += ay * ballObj.scale;
+                ballObj.vx -= ballObj.x * ballObj.spring;
+                ballObj.vy -= ballObj.y * ballObj.spring;
+                ballObj.vx *= ballObj.friction;
+                ballObj.vy *= ballObj.friction;
+                ballObj.x += ballObj.vx;
+                ballObj.y += ballObj.vy;
+                
+                // Limits
+                const limit = 20;
+                if(ballObj.x > limit) ballObj.x = limit; if(ballObj.x < -limit) ballObj.x = -limit;
+                if(ballObj.y > limit) ballObj.y = limit; if(ballObj.y < -limit) ballObj.y = -limit;
+                
+                ballObj.el.style.transform = `translate(${ballObj.x}px, ${ballObj.y}px)`;
             }
+
+            // Update Stick (Independent physics)
+            if (stickObj.el) {
+                stickObj.vx += ax * stickObj.scale;
+                stickObj.vy += ay * stickObj.scale;
+                stickObj.vx -= stickObj.x * stickObj.spring;
+                stickObj.vy -= stickObj.y * stickObj.spring;
+                stickObj.vx *= stickObj.friction;
+                stickObj.vy *= stickObj.friction;
+                stickObj.x += stickObj.vx;
+                stickObj.y += stickObj.vy;
+
+                const limit = 25;
+                if(stickObj.x > limit) stickObj.x = limit; if(stickObj.x < -limit) stickObj.x = -limit;
+                if(stickObj.y > limit) stickObj.y = limit; if(stickObj.y < -limit) stickObj.y = -limit;
+
+                stickObj.el.style.transform = `translate(${stickObj.x}px, ${stickObj.y}px)`;
+            }
+
             requestAnimationFrame(updatePhysics);
         }
         
-        // Start Loop
         updatePhysics();
 
         // --- MOTION LISTENERS ---
@@ -442,8 +464,9 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     .then(response => {
                         if (response === 'granted') {
                             window.addEventListener('devicemotion', handleMotion);
-                            // Visual feedback: Gentle nudge
-                            vx = 2; 
+                            // Visual feedback
+                            ballObj.vx = 1; 
+                            stickObj.vx = -1;
                         }
                     })
                     .catch(console.error);
@@ -454,17 +477,12 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
 
         function handleMotion(event) {
             const a = event.accelerationIncludingGravity;
-            // We focus on the tilt/gravity for a "sloshing" feel
-            // If you prefer shaking only, change to event.acceleration
             if (a) {
-                // X is usually left/right tilt. Y is up/down tilt.
-                // We invert/swap depending on portrait orientation
                 target_ax = (a.x || 0) * -1; 
                 target_ay = (a.y || 0);
             }
         }
         
-        // Auto-enable for non-iOS
         if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission !== 'function') {
             window.addEventListener('devicemotion', handleMotion);
         }
@@ -531,10 +549,6 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     leftDiv.appendChild(label);
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = "&times;";
-                    delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2 opacity-0 group-hover:opacity-100 transition-opacity"; // Keep hover effect for desktop
-                    // On mobile, "opacity-0" might make it hard to tap. 
-                    // Let's remove opacity-0 for better UX or rely on active state. 
-                    // Updated to keep it visible but subtle:
                     delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2";
                     delBtn.onclick = () => deletePersonal(index);
                     div.appendChild(leftDiv);
