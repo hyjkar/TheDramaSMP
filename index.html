@@ -91,6 +91,26 @@
         .arrow-icon.rotate {
             transform: rotate(180deg);
         }
+        
+        /* LIQUID ANIMATION (CSS Idle Float) */
+        @keyframes liquid-bob {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-3px) rotate(2deg); }
+        }
+        
+        #float-wrapper {
+            /* This handles the gentle idle bobbing */
+            animation: liquid-bob 4s ease-in-out infinite;
+            transform-origin: center;
+            transform-box: fill-box;
+        }
+
+        #physics-ball {
+            /* This handles the violent shaking (JS controlled) */
+            transform-origin: center;
+            transform-box: fill-box;
+            will-change: transform; /* Performance optimization */
+        }
 
         #landscape-warning { display: none; }
         @media screen and (orientation: landscape) {
@@ -110,22 +130,28 @@
 
         <header class="bg-golf-dark pt-10 pb-8 px-6 text-center rounded-b-[30px] shadow-lg z-10 relative overflow-hidden shrink-0">
             
-            <svg class="absolute bottom-0 right-0 w-48 h-auto opacity-10 pointer-events-none text-golf-gold transform translate-x-4 translate-y-2" viewBox="0 0 200 200" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <svg id="header-glass" onclick="requestMotionPermission()" class="absolute bottom-0 right-0 w-48 h-auto opacity-10 text-golf-gold transform translate-x-4 translate-y-2 cursor-pointer" viewBox="0 0 200 200" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M40 40 L160 40 L100 120 L100 180 M70 180 L130 180" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="100" cy="80" r="20" fill="currentColor"/>
+                
                 <line x1="100" y1="80" x2="140" y2="20" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-                <circle cx="95" cy="75" r="2" fill="white" opacity="0.5"/>
-                <circle cx="105" cy="75" r="2" fill="white" opacity="0.5"/>
-                <circle cx="100" cy="85" r="2" fill="white" opacity="0.5"/>
+
+                <g id="float-wrapper">
+                    <g id="physics-ball">
+                        <circle cx="100" cy="80" r="20" fill="currentColor"/>
+                        <circle cx="95" cy="75" r="2" fill="white" opacity="0.5"/>
+                        <circle cx="105" cy="75" r="2" fill="white" opacity="0.5"/>
+                        <circle cx="100" cy="85" r="2" fill="white" opacity="0.5"/>
+                    </g>
+                </g>
             </svg>
 
-            <div class="relative z-10">
+            <div class="relative z-10 pointer-events-none">
                 <h1 class="font-serif text-2xl text-white tracking-wide leading-tight drop-shadow-md">
                     BD TOUR<br>
                     <span class="text-golf-gold italic text-xl">Alicante 2026</span>
                 </h1>
                 
-                <button onclick="document.getElementById('packing-modal').classList.remove('hidden')" class="mt-4 bg-golf-deep border border-golf-gold text-golf-gold text-[10px] uppercase tracking-widest py-1.5 px-6 rounded-full hover:bg-black transition flex items-center justify-center mx-auto gap-2 shadow-lg">
+                <button onclick="document.getElementById('packing-modal').classList.remove('hidden'); event.stopPropagation();" class="pointer-events-auto mt-4 bg-golf-deep border border-golf-gold text-golf-gold text-[10px] uppercase tracking-widest py-1.5 px-6 rounded-full hover:bg-black transition flex items-center justify-center mx-auto gap-2 shadow-lg">
                     <span>✓</span> Packing List
                 </button>
             </div>
@@ -360,17 +386,99 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const auth = getAuth(app);
         const tripRef = doc(db, "trip", "details");
 
+        // --- PHYSICS VARIABLES ---
+        let ball = document.getElementById('physics-ball');
+        let px = 0, py = 0; // Position
+        let vx = 0, vy = 0; // Velocity
+        let ax = 0, ay = 0; // Acceleration (from phone)
+        const spring = 0.05; // Pull back to center
+        const friction = 0.90; // Liquid viscosity (higher = thinner liquid)
+        const scale = 2; // Sensitivity
+        let hasMotionPermission = false;
+
+        // --- PHYSICS LOOP ---
+        function updatePhysics() {
+            if (ball) {
+                // 1. Add Device Acceleration
+                vx += ax * scale;
+                vy += ay * scale;
+
+                // 2. Add Spring Force (Pull to center)
+                vx -= px * spring;
+                vy -= py * spring;
+
+                // 3. Apply Friction (Drag)
+                vx *= friction;
+                vy *= friction;
+
+                // 4. Update Position
+                px += vx;
+                py += vy;
+
+                // 5. Limit movement (keep inside glass approx)
+                const limit = 30;
+                if(px > limit) px = limit;
+                if(px < -limit) px = -limit;
+                if(py > limit) py = limit;
+                if(py < -limit) py = -limit;
+
+                // 6. Apply to DOM
+                ball.style.transform = `translate(${px}px, ${py}px)`;
+            }
+            requestAnimationFrame(updatePhysics);
+        }
+        
+        // Start Loop
+        updatePhysics();
+
+        // --- MOTION LISTENERS ---
+        window.requestMotionPermission = function() {
+            // iOS 13+ requires permission
+            if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            hasMotionPermission = true;
+                            window.addEventListener('devicemotion', handleMotion);
+                            // Visual feedback: Shake briefly
+                            vx = 10;
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                // Non-iOS or older devices usually just work
+                hasMotionPermission = true;
+                window.addEventListener('devicemotion', handleMotion);
+            }
+        };
+
+        function handleMotion(event) {
+            // Get acceleration (including gravity for tilt, or just accel for shake)
+            // We use accelerationIncludingGravity for "Tilt" effect, 
+            // or acceleration for "Shake". Let's use acceleration for Shake.
+            const a = event.acceleration;
+            if (a) {
+                // Invert X because of screen coords
+                ax = (a.x || 0) * -1; 
+                ay = (a.y || 0);
+            }
+        }
+        
+        // Try auto-enabling for Android
+        if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission !== 'function') {
+            window.addEventListener('devicemotion', handleMotion);
+        }
+
+        // --- END PHYSICS ---
+
         // GLOBAL VARS
-        let globalEssentialsList = []; // Array of strings from Firebase
+        let globalEssentialsList = [];
 
         // --- PACKING LIST LOGIC ---
-        
-        // 1. RENDER EVERYTHING
         window.renderPackingLists = function() {
-            // A. Render Essentials (From Firebase + Local Check State)
+            // A. Render Essentials
             const essentialsContainer = document.getElementById('list-essentials');
             essentialsContainer.innerHTML = '';
-            
             const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}');
 
             if (globalEssentialsList.length === 0) {
@@ -378,32 +486,27 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             } else {
                 globalEssentialsList.forEach((itemText, index) => {
                     if(!itemText.trim()) return;
-                    
                     const div = document.createElement('div');
                     div.className = "flex items-center gap-3";
-                    
                     const checkbox = document.createElement('input');
                     checkbox.type = "checkbox";
                     checkbox.id = `essential-${index}`;
                     checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer";
-                    checkbox.checked = !!localChecks[itemText]; // Check if saved as checked
+                    checkbox.checked = !!localChecks[itemText];
                     checkbox.onchange = () => toggleEssential(itemText);
-                    
                     const label = document.createElement('label');
                     label.htmlFor = `essential-${index}`;
                     label.innerText = itemText;
                     label.className = "cursor-pointer select-none text-sm text-gray-700";
-
                     div.appendChild(checkbox);
                     div.appendChild(label);
                     essentialsContainer.appendChild(div);
                 });
             }
 
-            // B. Render Personal (From LocalStorage)
+            // B. Render Personal
             const personalContainer = document.getElementById('list-personal');
             personalContainer.innerHTML = '';
-            
             const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
 
             if (personalItems.length === 0) {
@@ -412,30 +515,24 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 personalItems.forEach((item, index) => {
                     const div = document.createElement('div');
                     div.className = "flex items-center justify-between group";
-                    
                     const leftDiv = document.createElement('div');
                     leftDiv.className = "flex items-center gap-3";
-                    
                     const checkbox = document.createElement('input');
                     checkbox.type = "checkbox";
                     checkbox.id = `personal-${index}`;
                     checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer";
                     checkbox.checked = item.checked;
                     checkbox.onchange = () => togglePersonal(index);
-                    
                     const label = document.createElement('label');
                     label.htmlFor = `personal-${index}`;
                     label.innerText = item.text;
                     label.className = "cursor-pointer select-none text-sm text-gray-700";
-                    
                     leftDiv.appendChild(checkbox);
                     leftDiv.appendChild(label);
-                    
                     const delBtn = document.createElement('button');
                     delBtn.innerHTML = "&times;";
                     delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2 opacity-50";
                     delBtn.onclick = () => deletePersonal(index);
-
                     div.appendChild(leftDiv);
                     div.appendChild(delBtn);
                     personalContainer.appendChild(div);
@@ -443,40 +540,30 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             }
         }
 
-        // 2. TOGGLE ESSENTIAL (Save state locally by Item Name)
         window.toggleEssential = function(itemName) {
             const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}');
-            // Flip state
-            if (localChecks[itemName]) {
-                delete localChecks[itemName];
-            } else {
-                localChecks[itemName] = true;
-            }
+            if (localChecks[itemName]) delete localChecks[itemName];
+            else localChecks[itemName] = true;
             localStorage.setItem('essentialsChecks', JSON.stringify(localChecks));
         }
 
-        // 3. ADD PERSONAL
         window.addPersonalItem = function() {
             const input = document.getElementById('new-item-input');
             const text = input.value.trim();
             if(!text) return;
-
             const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
             personalItems.push({ text: text, checked: false });
             localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
-            
             input.value = "";
             renderPackingLists();
         }
 
-        // 4. TOGGLE PERSONAL
         window.togglePersonal = function(index) {
             const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
             personalItems[index].checked = !personalItems[index].checked;
             localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
         }
 
-        // 5. DELETE PERSONAL
         window.deletePersonal = function(index) {
             const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
             personalItems.splice(index, 1);
@@ -484,10 +571,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             renderPackingLists();
         }
 
-        // --- END PACKING LIST LOGIC ---
-
-
-        // QUOTE LOGIC
+        // --- QUOTES ---
         const quotes = [
             "The most important shot in golf is the next one. – Ben Hogan",
             "Golf is a good walk spoiled. – Mark Twain",
@@ -512,7 +596,6 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         ];
 
         const quoteEl = document.getElementById('quote-text');
-        
         function cycleQuote() {
             quoteEl.classList.remove('opacity-100');
             quoteEl.classList.add('opacity-0');
@@ -526,10 +609,8 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         cycleQuote();
         setInterval(cycleQuote, 8000); 
 
-        // GLOBAL HELPER FUNCTIONS
-        window.format = function(command) {
-            document.execCommand(command, false, null);
-        };
+        // HELPERS
+        window.format = function(command) { document.execCommand(command, false, null); };
 
         window.toggleAccordion = function(contentId, arrowId) {
             const clickedContent = document.getElementById(contentId);
@@ -537,10 +618,8 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             const isAlreadyOpen = clickedContent.classList.contains('open');
             const allContents = document.querySelectorAll('.accordion-content');
             const allArrows = document.querySelectorAll('.arrow-icon');
-            
             allContents.forEach(el => el.classList.remove('open'));
             allArrows.forEach(el => el.classList.remove('rotate'));
-
             if (!isAlreadyOpen) {
                 clickedContent.classList.add('open');
                 clickedArrow.classList.add('rotate');
@@ -551,11 +630,9 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         onSnapshot(tripRef, (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
-                
                 const now = new Date();
                 document.getElementById('last-sync').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-                // View Mode Content
                 document.getElementById('view-flight').innerHTML = data.flights || "Details pending...";
                 document.getElementById('view-rounds').innerHTML = data.rounds || "Course details pending...";
                 document.getElementById('view-team1').innerHTML = data.team1 || "Roster pending...";
@@ -563,20 +640,18 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 document.getElementById('view-hotel').innerHTML = data.hotel || "Details pending...";
                 document.getElementById('view-dinner').innerHTML = data.dinner || "Details pending...";
                 
-                // Editor Content
                 document.getElementById('edit-flight').innerHTML = data.flights || "";
                 document.getElementById('edit-rounds').innerHTML = data.rounds || "";
                 document.getElementById('edit-team1').innerHTML = data.team1 || "";
                 document.getElementById('edit-team2').innerHTML = data.team2 || "";
                 document.getElementById('edit-hotel').innerHTML = data.hotel || "";
                 document.getElementById('edit-dinner').innerHTML = data.dinner || "";
-                document.getElementById('edit-packing-essentials').value = data.packing_list || ""; // Textarea
+                document.getElementById('edit-packing-essentials').value = data.packing_list || "";
 
-                // UPDATE ESSENTIALS LIST VAR & RENDER
                 if (data.packing_list) {
                     globalEssentialsList = data.packing_list.split('\n');
                 } else {
-                    globalEssentialsList = ["Passport", "Clubs", "Golf Shoes", "Tees"]; // Default fallback
+                    globalEssentialsList = ["Passport", "Clubs", "Golf Shoes", "Tees"];
                 }
                 renderPackingLists();
             }
@@ -595,7 +670,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             }
         });
 
-        // 3. SAVE (Includes Packing List String)
+        // 3. SAVE
         document.getElementById('btn-save').addEventListener('click', async () => {
             const btn = document.getElementById('btn-save');
             btn.innerText = "Saving...";
