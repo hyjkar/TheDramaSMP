@@ -125,7 +125,7 @@
 
                 <g>
                     <g id="anim-stick" class="anim-obj">
-                         <line x1="0" y1="20" x2="20" y2="-20" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                        <line x1="0" y1="20" x2="20" y2="-20" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                     </g>
 
                     <g id="anim-ball" class="anim-obj">
@@ -235,8 +235,7 @@
             </div>
 
             <div id="quote-container" class="mt-8 px-6 text-center min-h-[40px] flex items-center justify-center">
-                <p id="quote-text" class="text-golf-gold italic font-serif text-xs leading-relaxed transition-opacity duration-1000 opacity-0">
-                    </p>
+                <div id="quote-content" class="transition-opacity duration-1000 opacity-0"></div>
             </div>
 
             <div class="text-center pt-4 pb-2">
@@ -377,7 +376,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const auth = getAuth(app);
         const tripRef = doc(db, "trip", "details");
 
-        // --- AUTOMATIC LAVA LAMP ANIMATION (Safe Constraints) ---
+        // --- AUTOMATIC LAVA LAMP ANIMATION ---
         const stickEl = document.getElementById('anim-stick');
         const ballEl = document.getElementById('anim-ball');
         
@@ -403,14 +402,12 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             const stickRot = Math.sin(time * 0.0002) * 8;
 
             if(stickEl) {
-                // translate first, then rotate around its center
                 stickEl.setAttribute('transform', `translate(${stickX}, ${stickY}) rotate(${stickRot})`);
             }
 
             requestAnimationFrame(animateBubbles);
         }
 
-        // Start animation loop
         animateBubbles();
         // --- END ANIMATION ---
 
@@ -514,14 +511,14 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             renderPackingLists();
         }
 
-        // --- QUOTES ---
+        // --- QUOTE LOGIC (NEW: Reformat Author) ---
         const quotes = [
             "The most important shot in golf is the next one. – Ben Hogan",
             "Golf is a good walk spoiled. – Mark Twain",
             "Success in golf depends less on strength of body than upon strength of mind. – Arnold Palmer",
             "I have a tip that can take five strokes off anyone's game: it's called an eraser. – Arnold Palmer",
             "Golf is deceptive. It looks so simple, yet it's endlessly complicated. – Arnold Palmer",
-            "A bad day at golf is better than a good day at work.",
+            "A bad day at golf is better than a good day at work. – Unknown",
             "Golf is a game of inches. The most important are the six inches between your ears. – Bobby Jones",
             "The harder you work, the luckier you get. – Gary Player",
             "My swing is so bad I look like a caveman killing his lunch. – Lee Trevino",
@@ -534,19 +531,38 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             "It takes hundreds of good golf shots to gain confidence, but only one bad one to lose it. – Jack Nicklaus",
             "You don’t know what pressure is until you play for five bucks with only two bucks in your pocket. – Lee Trevino",
             "Golf... is the infallible test of integrity and self-control. – P.G. Wodehouse",
-            "Keep your head down and follow through.",
-            "Drive for show, putt for dough."
+            "Keep your head down and follow through. – Unknown",
+            "Drive for show, putt for dough. – Unknown"
         ];
 
-        const quoteEl = document.getElementById('quote-text');
+        const quoteContainer = document.getElementById('quote-content');
+        
         function cycleQuote() {
-            quoteEl.classList.remove('opacity-100');
-            quoteEl.classList.add('opacity-0');
+            // 1. Fade Out
+            quoteContainer.classList.remove('opacity-100');
+            quoteContainer.classList.add('opacity-0');
+            
             setTimeout(() => {
-                const random = quotes[Math.floor(Math.random() * quotes.length)];
-                quoteEl.innerText = `"${random}"`;
-                quoteEl.classList.remove('opacity-0');
-                quoteEl.classList.add('opacity-100');
+                // 2. Change Content
+                const rawQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                // Split quote into Body and Author
+                const parts = rawQuote.split(' – ');
+                
+                let html = "";
+                if(parts.length > 1) {
+                    html = `
+                        <span class="block mb-2 text-sm text-golf-gold">"${parts[0]}"</span>
+                        <span class="block text-[10px] font-sans font-bold tracking-widest uppercase opacity-60 text-golf-gold">&mdash; ${parts[1]}</span>
+                    `;
+                } else {
+                    html = `<span class="block text-sm text-golf-gold">"${rawQuote}"</span>`;
+                }
+                
+                quoteContainer.innerHTML = html;
+                
+                // 3. Fade In
+                quoteContainer.classList.remove('opacity-0');
+                quoteContainer.classList.add('opacity-100');
             }, 1000); 
         }
         cycleQuote();
