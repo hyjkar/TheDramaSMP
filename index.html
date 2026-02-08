@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -43,19 +42,19 @@
     <style>
         /* --- VIEWPORT LOCK (THE CROP) --- */
         html, body {
-            position: fixed; /* Freezes the window size */
+            position: fixed;
             height: 100%;
             width: 100%;
-            overflow: hidden; /* No scrolling on the body */
+            overflow: hidden;
             background-color: #F5F5F0;
-            overscroll-behavior: none; /* Kill the bounce */
+            overscroll-behavior: none; 
         }
 
         #app-container {
             height: 100%;
             width: 100%;
-            overflow-y: auto; /* Scroll ONLY inside here */
-            overscroll-behavior-y: none; /* Kill internal bounce if content fits */
+            overflow-y: auto; 
+            overscroll-behavior-y: none; 
             -webkit-overflow-scrolling: touch;
             display: flex;
             flex-direction: column;
@@ -123,16 +122,12 @@
         <header class="bg-golf-dark pt-10 pb-8 px-6 text-center rounded-b-[30px] shadow-lg z-10 relative overflow-hidden shrink-0">
             
             <svg id="header-glass" class="absolute bottom-0 right-0 w-48 h-auto opacity-10 text-golf-gold transform translate-x-4 translate-y-2" viewBox="0 0 200 200" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                
                 <path d="M40 40 L160 40 L100 120 L100 180 M70 180 L130 180" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                
                 <line x1="50" y1="50" x2="150" y2="50" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity="0.5" />
-
                 <g>
                     <g id="anim-stick" class="anim-obj">
                         <line x1="0" y1="20" x2="20" y2="-20" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                     </g>
-
                     <g id="anim-ball" class="anim-obj">
                         <circle cx="0" cy="0" r="18" fill="currentColor"/>
                         <circle cx="-5" cy="-5" r="2" fill="white" opacity="0.5"/>
@@ -166,6 +161,21 @@
                 <div id="acc-flight" class="accordion-content border-t border-gray-100">
                     <div class="p-4 pt-2">
                         <div id="view-flight" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-sm border-t-2 border-golf-deep shadow-sm overflow-hidden">
+                <button onclick="toggleAccordion('acc-transport', 'arrow-transport')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-golf-deep" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path> </svg>
+                        <h3 class="font-serif text-base text-golf-deep font-bold">Transportation</h3>
+                    </div>
+                    <svg id="arrow-transport" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="acc-transport" class="accordion-content border-t border-gray-100">
+                    <div class="p-4 pt-2">
+                        <div id="view-transport" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
                     </div>
                 </div>
             </div>
@@ -256,36 +266,27 @@
 
     <div id="packing-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex flex-col items-center justify-center p-6 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            
             <div class="bg-golf-gold p-3 text-center flex justify-between items-center shrink-0">
                 <div class="w-6"></div>
                 <h2 class="font-serif text-lg font-bold text-golf-dark">Packing List</h2>
                 <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="text-golf-dark font-bold text-xl hover:text-white">×</button>
             </div>
-
             <div class="overflow-y-auto flex-1 p-6 space-y-6">
-                
                 <div>
                     <h3 class="text-xs font-bold text-golf-deep uppercase tracking-widest mb-3 border-b border-gray-100 pb-1">Essentials</h3>
                     <div id="list-essentials" class="space-y-3">
                         <p class="text-xs text-gray-400 italic">Loading...</p>
                     </div>
                 </div>
-
                 <div>
                     <h3 class="text-xs font-bold text-golf-deep uppercase tracking-widest mb-3 border-b border-gray-100 pb-1">Personal Items</h3>
-                    
                     <div class="flex gap-2 mb-4">
                         <input id="new-item-input" type="text" placeholder="Add item..." class="flex-1 bg-gray-50 border border-gray-200 rounded-sm px-2 py-1 text-sm outline-none focus:border-golf-gold">
                         <button onclick="addPersonalItem()" class="bg-golf-deep text-white px-3 py-1 rounded-sm text-xs font-bold hover:bg-black">+</button>
                     </div>
-
-                    <div id="list-personal" class="space-y-3">
-                        </div>
+                    <div id="list-personal" class="space-y-3"></div>
                 </div>
-
             </div>
-            
             <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="bg-gray-100 p-3 text-center text-xs font-bold text-gray-500 hover:bg-gray-200 uppercase tracking-wide shrink-0">
                 Close
             </button>
@@ -316,17 +317,18 @@
         </div>
 
         <div class="flex-1 overflow-y-auto p-6 space-y-6">
-            
             <div>
                 <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Flight Plan</label>
                 <div id="edit-flight" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
-
+            <div>
+                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Transportation</label>
+                <div id="edit-transport" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
+            </div>
             <div>
                 <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Golf Rounds</label>
                 <div id="edit-rounds" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
-
             <div class="grid grid-cols-2 gap-2">
                 <div>
                     <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 1</label>
@@ -337,17 +339,14 @@
                     <div id="edit-team2" contenteditable="true" class="rich-editor w-full p-2 text-sm border rounded"></div>
                 </div>
             </div>
-
             <div>
                 <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Accommodation</label>
                 <div id="edit-hotel" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
-
             <div>
                 <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Dining</label>
                 <div id="edit-dinner" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
             </div>
-
             <div class="bg-yellow-50 p-3 rounded border border-yellow-100">
                 <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Essentials Packing List</label>
                 <p class="text-[10px] text-gray-500 mb-2">Items listed here appear for everyone. One item per line.</p>
@@ -381,47 +380,31 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const auth = getAuth(app);
         const tripRef = doc(db, "trip", "details");
 
-        // --- AUTOMATIC LAVA LAMP ANIMATION ---
+        // ANIMATION
         const stickEl = document.getElementById('anim-stick');
         const ballEl = document.getElementById('anim-ball');
         
         function animateBubbles() {
             const time = Date.now();
-
-            // 1. BALL ANIMATION (Low, Tight Cycle)
-            // Center X=100. Range +/- 8.
-            // Center Y=85. Range +/- 4.
             const ballX = 100 + Math.sin(time * 0.0005) * 8; 
             const ballY = 85 + Math.cos(time * 0.0008) * 4; 
-            
-            if(ballEl) {
-                ballEl.setAttribute('transform', `translate(${ballX}, ${ballY})`);
-            }
+            if(ballEl) ballEl.setAttribute('transform', `translate(${ballX}, ${ballY})`);
 
-            // 2. STICK ANIMATION (Higher, Wider, Rotate)
-            // Center X=100. Range +/- 10.
-            // Center Y=65. Range +/- 5.
-            // Rotation +/- 8 degrees.
             const stickX = 100 + Math.sin(time * 0.0003 + 2) * 10;
             const stickY = 65 + Math.cos(time * 0.0004) * 5;
             const stickRot = Math.sin(time * 0.0002) * 8;
-
-            if(stickEl) {
-                stickEl.setAttribute('transform', `translate(${stickX}, ${stickY}) rotate(${stickRot})`);
-            }
+            if(stickEl) stickEl.setAttribute('transform', `translate(${stickX}, ${stickY}) rotate(${stickRot})`);
 
             requestAnimationFrame(animateBubbles);
         }
-
         animateBubbles();
-        // --- END ANIMATION ---
 
-        // GLOBAL VARS
+        // VARS
         let globalEssentialsList = [];
 
-        // --- PACKING LIST LOGIC ---
+        // PACKING LIST
         window.renderPackingLists = function() {
-            // A. Render Essentials
+            // Essentials
             const essentialsContainer = document.getElementById('list-essentials');
             essentialsContainer.innerHTML = '';
             const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}');
@@ -448,8 +431,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     essentialsContainer.appendChild(div);
                 });
             }
-
-            // B. Render Personal
+            // Personal
             const personalContainer = document.getElementById('list-personal');
             personalContainer.innerHTML = '';
             const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
@@ -516,7 +498,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             renderPackingLists();
         }
 
-        // --- QUOTE LOGIC (NEW: Reformat Author) ---
+        // QUOTES
         const quotes = [
             "The most important shot in golf is the next one. – Ben Hogan",
             "Golf is a good walk spoiled. – Mark Twain",
@@ -541,18 +523,12 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         ];
 
         const quoteContainer = document.getElementById('quote-content');
-        
         function cycleQuote() {
-            // 1. Fade Out
             quoteContainer.classList.remove('opacity-100');
             quoteContainer.classList.add('opacity-0');
-            
             setTimeout(() => {
-                // 2. Change Content
                 const rawQuote = quotes[Math.floor(Math.random() * quotes.length)];
-                // Split quote into Body and Author
                 const parts = rawQuote.split(' – ');
-                
                 let html = "";
                 if(parts.length > 1) {
                     html = `
@@ -562,10 +538,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 } else {
                     html = `<span class="block text-sm text-golf-gold">"${rawQuote}"</span>`;
                 }
-                
                 quoteContainer.innerHTML = html;
-                
-                // 3. Fade In
                 quoteContainer.classList.remove('opacity-0');
                 quoteContainer.classList.add('opacity-100');
             }, 1000); 
@@ -590,7 +563,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             }
         };
 
-        // 1. DATA LISTENER
+        // DATA
         onSnapshot(tripRef, (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
@@ -598,6 +571,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 document.getElementById('last-sync').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
                 document.getElementById('view-flight').innerHTML = data.flights || "Details pending...";
+                document.getElementById('view-transport').innerHTML = data.transport || "Details pending..."; // NEW
                 document.getElementById('view-rounds').innerHTML = data.rounds || "Course details pending...";
                 document.getElementById('view-team1').innerHTML = data.team1 || "Roster pending...";
                 document.getElementById('view-team2').innerHTML = data.team2 || "Roster pending...";
@@ -605,6 +579,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 document.getElementById('view-dinner').innerHTML = data.dinner || "Details pending...";
                 
                 document.getElementById('edit-flight').innerHTML = data.flights || "";
+                document.getElementById('edit-transport').innerHTML = data.transport || ""; // NEW
                 document.getElementById('edit-rounds').innerHTML = data.rounds || "";
                 document.getElementById('edit-team1').innerHTML = data.team1 || "";
                 document.getElementById('edit-team2').innerHTML = data.team2 || "";
@@ -621,7 +596,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             }
         });
 
-        // 2. LOGIN
+        // AUTH & SAVE
         document.getElementById('btn-login').addEventListener('click', async () => {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
@@ -634,13 +609,13 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             }
         });
 
-        // 3. SAVE
         document.getElementById('btn-save').addEventListener('click', async () => {
             const btn = document.getElementById('btn-save');
             btn.innerText = "Saving...";
             try {
                 await updateDoc(tripRef, {
                     flights: document.getElementById('edit-flight').innerHTML,
+                    transport: document.getElementById('edit-transport').innerHTML, // NEW
                     rounds: document.getElementById('edit-rounds').innerHTML,
                     team1: document.getElementById('edit-team1').innerHTML,
                     team2: document.getElementById('edit-team2').innerHTML,
