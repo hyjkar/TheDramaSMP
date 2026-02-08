@@ -40,7 +40,7 @@
     </script>
 
     <style>
-        /* --- VIEWPORT LOCK (THE CROP) --- */
+        /* --- VIEWPORT LOCK --- */
         html, body {
             position: fixed;
             height: 100%;
@@ -96,7 +96,7 @@
             transform: rotate(180deg);
         }
         
-        /* Classes for JS Physics target */
+        /* Animation Classes */
         .anim-obj {
             transform-origin: center;
             transform-box: fill-box;
@@ -168,7 +168,7 @@
             <div class="bg-white rounded-sm border-t-2 border-golf-deep shadow-sm overflow-hidden">
                 <button onclick="toggleAccordion('acc-transport', 'arrow-transport')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
                     <div class="flex items-center gap-3">
-                        <svg class="w-5 h-5 text-golf-deep" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path> </svg>
+                        <svg class="w-5 h-5 text-golf-deep" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                         <h3 class="font-serif text-base text-golf-deep font-bold">Transportation</h3>
                     </div>
                     <svg id="arrow-transport" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -180,10 +180,10 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-sm border-t-2 border-golf-dark shadow-sm overflow-hidden">
+            <div class="bg-white rounded-sm border-t-2 border-golf-gold shadow-sm overflow-hidden">
                 <button onclick="toggleAccordion('acc-rounds', 'arrow-rounds')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
                     <div class="flex items-center gap-3">
-                        <svg class="w-5 h-5 text-golf-deep" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 21v-8a2 2 0 012-2h14l-3 4 3 4H5a2 2 0 01-2-2z"></path></svg>
+                        <svg class="w-5 h-5 text-golf-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 21v-8a2 2 0 012-2h14l-3 4 3 4H5a2 2 0 01-2-2z"></path></svg>
                         <h3 class="font-serif text-base text-golf-deep font-bold">Golf Rounds</h3>
                     </div>
                     <svg id="arrow-rounds" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -195,10 +195,10 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-sm border-t-2 border-golf-gold shadow-sm overflow-hidden">
+            <div class="bg-white rounded-sm border-t-2 border-golf-deep shadow-sm overflow-hidden">
                 <button onclick="toggleAccordion('acc-teams', 'arrow-teams')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
                     <div class="flex items-center gap-3">
-                        <svg class="w-5 h-5 text-golf-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <svg class="w-5 h-5 text-golf-deep" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                         <h3 class="font-serif text-base text-golf-deep font-bold">Team Rosters</h3>
                     </div>
                     <svg id="arrow-teams" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -219,10 +219,10 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-sm border-t-2 border-golf-deep shadow-sm overflow-hidden">
+            <div class="bg-white rounded-sm border-t-2 border-golf-gold shadow-sm overflow-hidden">
                 <button onclick="toggleAccordion('acc-hotel', 'arrow-hotel')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
                     <div class="flex items-center gap-3">
-                        <svg class="w-5 h-5 text-golf-deep" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <svg class="w-5 h-5 text-golf-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                         <h3 class="font-serif text-base text-golf-deep font-bold">Accommodation</h3>
                     </div>
                     <svg id="arrow-hotel" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -234,10 +234,10 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-sm border-t-2 border-golf-gold shadow-sm overflow-hidden">
+            <div class="bg-white rounded-sm border-t-2 border-golf-deep shadow-sm overflow-hidden">
                 <button onclick="toggleAccordion('acc-dinner', 'arrow-dinner')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
                     <div class="flex items-center gap-3">
-                        <svg class="w-5 h-5 text-golf-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                        <svg class="w-5 h-5 text-golf-deep" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
                         <h3 class="font-serif text-base text-golf-deep font-bold">Dining & Events</h3>
                     </div>
                     <svg id="arrow-dinner" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -249,11 +249,11 @@
                 </div>
             </div>
 
-            <div id="quote-container" class="mt-6 px-10 text-center h-32 flex flex-col items-center justify-center select-none pointer-events-none">
+            <div id="quote-container" class="mt-4 px-10 text-center h-24 flex flex-col items-center justify-center select-none pointer-events-none">
                 <div id="quote-content" class="transition-opacity duration-1000 opacity-0"></div>
             </div>
 
-            <div class="text-center pb-6">
+            <div class="text-center pt-2 pb-6">
                 <button onclick="document.getElementById('login-modal').classList.remove('hidden')" class="text-[9px] text-gray-300 hover:text-golf-gold uppercase tracking-widest opacity-50 mb-2">
                     Chairman Access
                 </button>
@@ -571,7 +571,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 document.getElementById('last-sync').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
                 document.getElementById('view-flight').innerHTML = data.flights || "Details pending...";
-                document.getElementById('view-transport').innerHTML = data.transport || "Details pending..."; // NEW
+                document.getElementById('view-transport').innerHTML = data.transport || "Details pending..."; 
                 document.getElementById('view-rounds').innerHTML = data.rounds || "Course details pending...";
                 document.getElementById('view-team1').innerHTML = data.team1 || "Roster pending...";
                 document.getElementById('view-team2').innerHTML = data.team2 || "Roster pending...";
@@ -579,7 +579,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 document.getElementById('view-dinner').innerHTML = data.dinner || "Details pending...";
                 
                 document.getElementById('edit-flight').innerHTML = data.flights || "";
-                document.getElementById('edit-transport').innerHTML = data.transport || ""; // NEW
+                document.getElementById('edit-transport').innerHTML = data.transport || "";
                 document.getElementById('edit-rounds').innerHTML = data.rounds || "";
                 document.getElementById('edit-team1').innerHTML = data.team1 || "";
                 document.getElementById('edit-team2').innerHTML = data.team2 || "";
@@ -615,7 +615,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             try {
                 await updateDoc(tripRef, {
                     flights: document.getElementById('edit-flight').innerHTML,
-                    transport: document.getElementById('edit-transport').innerHTML, // NEW
+                    transport: document.getElementById('edit-transport').innerHTML,
                     rounds: document.getElementById('edit-rounds').innerHTML,
                     team1: document.getElementById('edit-team1').innerHTML,
                     team2: document.getElementById('edit-team2').innerHTML,
