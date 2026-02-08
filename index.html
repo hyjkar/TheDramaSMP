@@ -1,22 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    
     <meta charset="UTF-8">
     
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BD Tour">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BD Tour Alicante 2026</title>
 
-<link rel="apple-touch-icon" href="app-icon-v2.png">
-<link rel="icon" type="image/png" sizes="32x32" href="icon.png">
-<link rel="icon" type="image/png" sizes="16x16" href="icon.png">
+    <link rel="apple-touch-icon" href="app-icon-v2.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icon.png">
+    <link rel="manifest" href="manifest.json">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -125,13 +126,17 @@
 
         <header class="bg-golf-dark pt-10 pb-8 px-6 text-center rounded-b-[30px] shadow-lg z-10 relative overflow-hidden shrink-0">
             
+            <button id="install-btn" onclick="showInstallInstructions()" class="hidden absolute top-6 left-6 text-golf-gold hover:text-white transition z-50 p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+            </button>
+
             <svg id="header-glass" class="absolute bottom-0 right-0 w-48 h-auto opacity-10 text-golf-gold transform translate-x-4 translate-y-2" viewBox="0 0 200 200" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M40 40 L160 40 L100 120 L100 180 M70 180 L130 180" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                 <line x1="50" y1="50" x2="150" y2="50" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity="0.5" />
                 <g>
-                    <g id="anim-stick" class="anim-obj">
-                        <line x1="0" y1="20" x2="20" y2="-20" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-                    </g>
+                    <g id="anim-stick" class="anim-obj"><line x1="0" y1="20" x2="20" y2="-20" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></g>
                     <g id="anim-ball" class="anim-obj">
                         <circle cx="0" cy="0" r="18" fill="currentColor"/>
                         <circle cx="-5" cy="-5" r="2" fill="white" opacity="0.5"/>
@@ -268,6 +273,28 @@
         </main>
     </div>
 
+    <div id="install-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-end pb-10 text-white animate-fade-in" onclick="document.getElementById('install-modal').classList.add('hidden')">
+        <div class="bg-golf-dark border border-golf-gold p-6 rounded-t-2xl w-full max-w-md text-center shadow-2xl relative">
+            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gray-500 rounded-full"></div>
+            <h3 class="font-serif text-xl text-golf-gold mb-2">Install App</h3>
+            <p class="text-sm text-gray-300 mb-6">For the best experience, add this to your home screen.</p>
+            
+            <div class="flex items-center justify-center gap-4 text-sm font-bold text-white mb-2">
+                <span>1. Tap Share</span>
+                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+            </div>
+            <div class="flex items-center justify-center gap-4 text-sm font-bold text-white">
+                <span>2. Add to Home Screen</span>
+                <div class="border border-white rounded px-2 text-[10px] uppercase">Plus</div>
+            </div>
+            
+            <div class="mt-8 text-xs text-gray-500">Tap anywhere to close</div>
+        </div>
+        <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-golf-gold animate-bounce">
+            ↓
+        </div>
+    </div>
+
     <div id="packing-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex flex-col items-center justify-center p-6 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div class="bg-golf-gold p-3 text-center flex justify-between items-center shrink-0">
@@ -278,9 +305,7 @@
             <div class="overflow-y-auto flex-1 p-6 space-y-6">
                 <div>
                     <h3 class="text-xs font-bold text-golf-deep uppercase tracking-widest mb-3 border-b border-gray-100 pb-1">Essentials</h3>
-                    <div id="list-essentials" class="space-y-3">
-                        <p class="text-xs text-gray-400 italic">Loading...</p>
-                    </div>
+                    <div id="list-essentials" class="space-y-3"><p class="text-xs text-gray-400 italic">Loading...</p></div>
                 </div>
                 <div>
                     <h3 class="text-xs font-bold text-golf-deep uppercase tracking-widest mb-3 border-b border-gray-100 pb-1">Personal Items</h3>
@@ -291,9 +316,7 @@
                     <div id="list-personal" class="space-y-3"></div>
                 </div>
             </div>
-            <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="bg-gray-100 p-3 text-center text-xs font-bold text-gray-500 hover:bg-gray-200 uppercase tracking-wide shrink-0">
-                Close
-            </button>
+            <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="bg-gray-100 p-3 text-center text-xs font-bold text-gray-500 hover:bg-gray-200 uppercase tracking-wide shrink-0">Close</button>
         </div>
     </div>
 
@@ -308,58 +331,25 @@
     </div>
 
     <div id="editor-panel" class="hidden fixed inset-0 bg-gray-100 z-[60] flex flex-col">
-        
         <div class="bg-golf-deep text-white p-4 flex justify-between items-center shadow-md shrink-0">
             <h2 class="font-serif font-bold">Edit Itinerary</h2>
             <button onclick="document.getElementById('editor-panel').classList.add('hidden')" class="text-xs bg-black/20 px-3 py-1 rounded hover:bg-black/40">Close</button>
         </div>
-        
         <div class="bg-gray-200 p-3 border-b border-gray-300 sticky top-0 z-20 flex justify-center shadow-sm">
-            <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-golf-gold text-golf-dark font-bold text-xs uppercase tracking-widest py-3 px-6 rounded shadow hover:brightness-110 w-full max-w-xs flex items-center justify-center gap-2">
-                <span><s>ABC</s></span> Mark Selection as Done
-            </button>
+            <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-golf-gold text-golf-dark font-bold text-xs uppercase tracking-widest py-3 px-6 rounded shadow hover:brightness-110 w-full max-w-xs flex items-center justify-center gap-2"><span><s>ABC</s></span> Mark Selection as Done</button>
         </div>
-
         <div class="flex-1 overflow-y-auto p-6 space-y-6">
-            <div>
-                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Flight Plan</label>
-                <div id="edit-flight" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Transportation</label>
-                <div id="edit-transport" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Golf Rounds</label>
-                <div id="edit-rounds" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
-            </div>
+            <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Flight Plan</label><div id="edit-flight" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div></div>
+            <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Transportation</label><div id="edit-transport" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div></div>
+            <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Golf Rounds</label><div id="edit-rounds" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div></div>
             <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 1</label>
-                    <div id="edit-team1" contenteditable="true" class="rich-editor w-full p-2 text-sm border rounded"></div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 2</label>
-                    <div id="edit-team2" contenteditable="true" class="rich-editor w-full p-2 text-sm border rounded"></div>
-                </div>
+                <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 1</label><div id="edit-team1" contenteditable="true" class="rich-editor w-full p-2 text-sm border rounded"></div></div>
+                <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 2</label><div id="edit-team2" contenteditable="true" class="rich-editor w-full p-2 text-sm border rounded"></div></div>
             </div>
-            <div>
-                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Accommodation</label>
-                <div id="edit-hotel" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Dining</label>
-                <div id="edit-dinner" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div>
-            </div>
-            <div class="bg-yellow-50 p-3 rounded border border-yellow-100">
-                <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Essentials Packing List</label>
-                <p class="text-[10px] text-gray-500 mb-2">Items listed here appear for everyone. One item per line.</p>
-                <textarea id="edit-packing-essentials" rows="6" class="w-full p-3 text-sm border rounded font-sans"></textarea>
-            </div>
-
-            <button id="btn-save" class="w-full bg-golf-deep text-white font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest mt-4 mb-10">
-                Save Updates Live
-            </button>
+            <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Accommodation</label><div id="edit-hotel" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div></div>
+            <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Dining</label><div id="edit-dinner" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div></div>
+            <div class="bg-yellow-50 p-3 rounded border border-yellow-100"><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Essentials Packing List</label><textarea id="edit-packing-essentials" rows="6" class="w-full p-3 text-sm border rounded font-sans"></textarea></div>
+            <button id="btn-save" class="w-full bg-golf-deep text-white font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest mt-4 mb-10">Save Updates Live</button>
         </div>
     </div>
 
@@ -384,21 +374,48 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const auth = getAuth(app);
         const tripRef = doc(db, "trip", "details");
 
+        // INSTALL BUTTON LOGIC
+        // 1. Check if already installed (standalone mode)
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const installBtn = document.getElementById('install-btn');
+        let deferredPrompt; // For Android
+
+        if (!isStandalone) {
+            installBtn.classList.remove('hidden'); // Show button if in browser
+        }
+
+        // 2. Android Prompt Capture
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e; // Stash event for button click
+        });
+
+        // 3. Button Handler
+        window.showInstallInstructions = function() {
+            if (deferredPrompt) {
+                // Android Native Prompt
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                });
+            } else {
+                // iOS / Desktop Instructions
+                document.getElementById('install-modal').classList.remove('hidden');
+            }
+        };
+
         // ANIMATION
         const stickEl = document.getElementById('anim-stick');
         const ballEl = document.getElementById('anim-ball');
-        
         function animateBubbles() {
             const time = Date.now();
             const ballX = 100 + Math.sin(time * 0.0005) * 8; 
             const ballY = 85 + Math.cos(time * 0.0008) * 4; 
             if(ballEl) ballEl.setAttribute('transform', `translate(${ballX}, ${ballY})`);
-
             const stickX = 100 + Math.sin(time * 0.0003 + 2) * 10;
             const stickY = 65 + Math.cos(time * 0.0004) * 5;
             const stickRot = Math.sin(time * 0.0002) * 8;
             if(stickEl) stickEl.setAttribute('transform', `translate(${stickX}, ${stickY}) rotate(${stickRot})`);
-
             requestAnimationFrame(animateBubbles);
         }
         animateBubbles();
@@ -408,11 +425,9 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
 
         // PACKING LIST
         window.renderPackingLists = function() {
-            // Essentials
             const essentialsContainer = document.getElementById('list-essentials');
             essentialsContainer.innerHTML = '';
             const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}');
-
             if (globalEssentialsList.length === 0) {
                 essentialsContainer.innerHTML = '<p class="text-xs text-gray-400 italic">No essentials added yet.</p>';
             } else {
@@ -435,11 +450,9 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     essentialsContainer.appendChild(div);
                 });
             }
-            // Personal
             const personalContainer = document.getElementById('list-personal');
             personalContainer.innerHTML = '';
             const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
-
             if (personalItems.length === 0) {
                 personalContainer.innerHTML = '<p class="text-xs text-gray-400 italic">No personal items.</p>';
             } else {
@@ -477,7 +490,6 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             else localChecks[itemName] = true;
             localStorage.setItem('essentialsChecks', JSON.stringify(localChecks));
         }
-
         window.addPersonalItem = function() {
             const input = document.getElementById('new-item-input');
             const text = input.value.trim();
@@ -488,13 +500,11 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             input.value = "";
             renderPackingLists();
         }
-
         window.togglePersonal = function(index) {
             const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
             personalItems[index].checked = !personalItems[index].checked;
             localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
         }
-
         window.deletePersonal = function(index) {
             const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
             personalItems.splice(index, 1);
@@ -575,7 +585,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 document.getElementById('last-sync').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
                 document.getElementById('view-flight').innerHTML = data.flights || "Details pending...";
-                document.getElementById('view-transport').innerHTML = data.transport || "Details pending..."; 
+                document.getElementById('view-transport').innerHTML = data.transport || "Details pending...";
                 document.getElementById('view-rounds').innerHTML = data.rounds || "Course details pending...";
                 document.getElementById('view-team1').innerHTML = data.team1 || "Roster pending...";
                 document.getElementById('view-team2').innerHTML = data.team2 || "Roster pending...";
