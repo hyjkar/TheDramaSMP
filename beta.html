@@ -157,7 +157,8 @@
         </header>
 
         <main class="p-4 space-y-3 flex-1" id="sections-container">
-            </main>
+            <div class="text-center text-gray-400 text-xs mt-10">Loading Itinerary...</div>
+        </main>
 
         <div class="admin-only px-4 pb-4">
             <button onclick="addNewSection()" class="w-full border-2 border-dashed border-golf-gold text-golf-gold font-bold py-3 rounded-sm hover:bg-golf-gold hover:text-white transition uppercase tracking-widest text-xs">+ Add New Section</button>
@@ -224,6 +225,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        // NOTE: added setDoc to imports
         import { getFirestore, doc, onSnapshot, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -242,7 +244,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // ⚠️ DEMO MODE: USING "DEMO" DOCUMENT TO NOT BREAK OLD APP
+        // ⚠️ DEMO MODE: Points to "trip/demo" so we don't break the live app
         const tripRef = doc(db, "trip", "demo"); 
 
         // GLOBAL STATE
@@ -254,7 +256,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const container = document.getElementById('sections-container');
         
         function renderSections(sections) {
-            // If dragging, don't re-render entire DOM to avoid glitches
+            // If dragging, don't re-render to avoid glitches
             if (document.querySelector('.draggable-source')) return;
 
             container.innerHTML = '';
@@ -264,15 +266,19 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             if (!isAdmin) {
                 const savedOrder = JSON.parse(localStorage.getItem('userSectionOrder') || '[]');
                 if (savedOrder.length > 0) {
-                    // Sort sections based on saved ID order
                     displayOrder = sections.sort((a, b) => {
                         const indexA = savedOrder.indexOf(a.id);
                         const indexB = savedOrder.indexOf(b.id);
-                        if (indexA === -1) return 1; // New sections go to bottom
+                        if (indexA === -1) return 1; 
                         if (indexB === -1) return -1;
                         return indexA - indexB;
                     });
                 }
+            }
+
+            if (displayOrder.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 text-xs mt-10">No sections found.</div>';
+                return;
             }
 
             displayOrder.forEach((sec, index) => {
@@ -285,7 +291,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     borderColor = 'border-golf-deep';
                     iconColor = 'text-golf-deep';
                     textColor = 'text-golf-deep';
-                } else if (index % 3 === 2) { // Dark (rounds)
+                } else if (index % 3 === 2) { // Dark
                     borderColor = 'border-golf-dark';
                     iconColor = 'text-golf-deep';
                     textColor = 'text-golf-deep';
@@ -315,10 +321,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                         </div>
                     </div>
                 `;
-                
-                // Add dragging events (Same logic as before)
                 addDragEvents(el);
-                
                 container.appendChild(el);
             });
         }
@@ -331,7 +334,6 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 id: newId,
                 title: "New Section Title",
                 content: "Add content here...",
-                color: "gold" // default
             });
             renderSections(sectionsData);
             setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
@@ -344,7 +346,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             }
         }
 
-window.saveAllChanges = async function() {
+        window.saveAllChanges = async function() {
             const btn = document.getElementById('btn-save-main');
             btn.innerText = "SAVING...";
             
@@ -352,15 +354,13 @@ window.saveAllChanges = async function() {
             const newSections = [];
             container.querySelectorAll('.draggable-item').forEach(el => {
                 const id = el.id;
-                // Safe check to ensure we aren't grabbing null elements
                 const titleEl = el.querySelector('.editable-title');
                 const contentEl = el.querySelector('.editable-content');
-                
                 if (titleEl && contentEl) {
                     newSections.push({ 
                         id: id, 
                         title: titleEl.innerText, 
-                        content: contentEl.innerHTML // innerHTML preserves links/bold
+                        content: contentEl.innerHTML 
                     });
                 }
             });
@@ -378,25 +378,7 @@ window.saveAllChanges = async function() {
                 alert("Saved Successfully!");
                 btn.innerText = "SAVE";
             } catch (error) {
-                console.error(error); // Log full error to console
-                alert("Error saving: " + error.message);
-                btn.innerText = "RETRY";
-            }
-        };
-            });
-
-            // 2. Scrape Packing List (Admin Edit)
-            const packingListRaw = document.getElementById('edit-packing-essentials').value;
-
-            try {
-                // 3. Save to Firestore
-                await updateDoc(tripRef, {
-                    sections: newSections,
-                    packing_list: packingListRaw
-                });
-                alert("Saved Successfully!");
-                btn.innerText = "SAVE";
-            } catch (error) {
+                console.error(error);
                 alert("Error saving: " + error.message);
                 btn.innerText = "RETRY";
             }
@@ -411,21 +393,20 @@ window.saveAllChanges = async function() {
                 document.getElementById('login-modal').classList.add('hidden');
                 enableAdminMode();
             } catch (error) {
-                alert("Access Denied.");
+                alert("Access Denied: " + error.message);
             }
         });
 
         function enableAdminMode() {
             isAdmin = true;
             document.body.classList.add('admin-mode');
-            renderSections(sectionsData); // Re-render to add contenteditable
+            renderSections(sectionsData);
         }
 
-        // NEW: Exit Admin
         window.disableAdminMode = function() {
             isAdmin = false;
             document.body.classList.remove('admin-mode');
-            renderSections(sectionsData); // Re-render to remove edits/lines
+            renderSections(sectionsData);
         }
 
         // --- DATA LISTENER & MIGRATION ---
@@ -463,6 +444,11 @@ window.saveAllChanges = async function() {
                     ];
                     renderSections(sectionsData);
                 }
+            } else {
+                // If demo doc doesn't exist yet, show blank slate or dummy data
+                console.log("No data found, starting fresh.");
+                sectionsData = [];
+                renderSections(sectionsData);
             }
         });
 
@@ -473,9 +459,8 @@ window.saveAllChanges = async function() {
             });
             item.addEventListener('dragend', () => {
                 item.classList.remove('draggable-source');
-                if(!isAdmin) saveUserOrder(); // Only save user order if not admin
+                if(!isAdmin) saveUserOrder(); 
             });
-            // Touch handlers for mobile sorting
             const handle = item.querySelector('.drag-handle');
             if (handle) {
                 let draggedItem = null;
@@ -518,11 +503,10 @@ window.saveAllChanges = async function() {
         window.format = function(command) { document.execCommand(command, false, null); };
         window.addLink = function() { const url = prompt("Enter URL:", "https://"); if(url) document.execCommand('createLink', false, url); };
         window.toggleAccordion = function(contentId, arrowId) {
-            if(document.body.classList.contains('admin-mode')) return; // No toggle in admin mode
+            if(document.body.classList.contains('admin-mode')) return; 
             const content = document.getElementById(contentId);
             const arrow = document.getElementById(arrowId);
             const isOpen = content.classList.contains('open');
-            // Close others
             document.querySelectorAll('.accordion-content').forEach(el => el.classList.remove('open'));
             document.querySelectorAll('.arrow-icon').forEach(el => el.classList.remove('rotate'));
             if(!isOpen) { content.classList.add('open'); arrow.classList.add('rotate'); }
@@ -534,10 +518,96 @@ window.saveAllChanges = async function() {
             if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => deferredPrompt = null); }
             else { document.getElementById('install-modal').classList.remove('hidden'); }
         };
-        // Check install status
         if (!window.matchMedia('(display-mode: standalone)').matches) document.getElementById('install-btn').classList.remove('hidden');
 
-        // Quote & Packing List Logic (Standard)
+        // Packing List (Standard User View)
+        window.renderPackingLists = function() {
+            const essentialsContainer = document.getElementById('list-essentials');
+            essentialsContainer.innerHTML = '';
+            const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}');
+            if (globalEssentialsList.length === 0) {
+                essentialsContainer.innerHTML = '<p class="text-xs text-gray-400 italic">No essentials added yet.</p>';
+            } else {
+                globalEssentialsList.forEach((itemText, index) => {
+                    if(!itemText.trim()) return;
+                    const div = document.createElement('div');
+                    div.className = "flex items-center gap-3";
+                    const checkbox = document.createElement('input');
+                    checkbox.type = "checkbox";
+                    checkbox.id = `essential-${index}`;
+                    checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer";
+                    checkbox.checked = !!localChecks[itemText];
+                    checkbox.onchange = () => toggleEssential(itemText);
+                    const label = document.createElement('label');
+                    label.htmlFor = `essential-${index}`;
+                    label.innerText = itemText;
+                    label.className = "cursor-pointer select-none text-sm text-gray-700";
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    essentialsContainer.appendChild(div);
+                });
+            }
+            const personalContainer = document.getElementById('list-personal');
+            personalContainer.innerHTML = '';
+            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
+            if (personalItems.length === 0) {
+                personalContainer.innerHTML = '<p class="text-xs text-gray-400 italic">No personal items.</p>';
+            } else {
+                personalItems.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center justify-between group";
+                    const leftDiv = document.createElement('div');
+                    leftDiv.className = "flex items-center gap-3";
+                    const checkbox = document.createElement('input');
+                    checkbox.type = "checkbox";
+                    checkbox.id = `personal-${index}`;
+                    checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer";
+                    checkbox.checked = item.checked;
+                    checkbox.onchange = () => togglePersonal(index);
+                    const label = document.createElement('label');
+                    label.htmlFor = `personal-${index}`;
+                    label.innerText = item.text;
+                    label.className = "cursor-pointer select-none text-sm text-gray-700";
+                    leftDiv.appendChild(checkbox);
+                    leftDiv.appendChild(label);
+                    const delBtn = document.createElement('button');
+                    delBtn.innerHTML = "&times;";
+                    delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2";
+                    delBtn.onclick = () => deletePersonal(index);
+                    div.appendChild(leftDiv);
+                    div.appendChild(delBtn);
+                    personalContainer.appendChild(div);
+                });
+            }
+        }
+        window.toggleEssential = function(itemName) {
+            const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}');
+            if (localChecks[itemName]) delete localChecks[itemName];
+            else localChecks[itemName] = true;
+            localStorage.setItem('essentialsChecks', JSON.stringify(localChecks));
+        }
+        window.addPersonalItem = function() {
+            const input = document.getElementById('new-item-input');
+            const text = input.value.trim();
+            if(!text) return;
+            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
+            personalItems.push({ text: text, checked: false });
+            localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
+            input.value = "";
+            renderPackingLists();
+        }
+        window.togglePersonal = function(index) {
+            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
+            personalItems[index].checked = !personalItems[index].checked;
+            localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
+        }
+        window.deletePersonal = function(index) {
+            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
+            personalItems.splice(index, 1);
+            localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
+            renderPackingLists();
+        }
+
         const quotes = ["The most important shot in golf is the next one. – Ben Hogan", "Golf is a good walk spoiled. – Mark Twain", "Drive for show, putt for dough.", "Keep your head down."];
         const quoteContainer = document.getElementById('quote-content');
         function cycleQuote() {
@@ -553,4 +623,4 @@ window.saveAllChanges = async function() {
         cycleQuote(); setInterval(cycleQuote, 8000);
     </script>
 </body>
-</html>ƒ
+</html>
