@@ -52,7 +52,7 @@
             overflow: hidden;
             background-color: #F5F5F0;
             overscroll-behavior: none; 
-            touch-action: none; /* Prevent iOS elastic scroll on body */
+            touch-action: none; 
         }
 
         #app-container {
@@ -98,38 +98,22 @@
         }
         
         /* --- FLUID DRAGGING STYLES --- */
-        
-        /* The Placeholder (The empty space in the list) */
         .draggable-item.placeholder {
             opacity: 0.3;
             border: 2px dashed #C5A059;
             background: #f0f0f0;
             box-shadow: none;
         }
-        .draggable-item.placeholder * {
-            visibility: hidden; /* Hide content inside placeholder */
-        }
+        .draggable-item.placeholder * { visibility: hidden; }
 
-        /* The Ghost (The element following your finger) */
         .drag-ghost {
-            position: fixed;
-            z-index: 9999;
-            pointer-events: none; /* Let clicks pass through to detect underlying elements */
+            position: fixed; z-index: 9999; pointer-events: none;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-            opacity: 0.95;
-            transform: scale(1.02) rotate(1deg); /* Slight pop and tilt */
-            transition: transform 0.1s; /* Smooth follow lag */
-            width: 100%; /* Will be overwritten by JS */
-            background: #FFFCF5;
-            border-top: 2px solid #C5A059;
+            opacity: 0.95; transform: scale(1.02) rotate(1deg); transition: transform 0.1s;
+            width: 100%; background: #FFFCF5; border-top: 2px solid #C5A059;
         }
 
-        .drag-handle { 
-            cursor: grab; 
-            touch-action: none; 
-            padding: 1rem; 
-            margin: -1rem 0 -1rem -0.5rem;
-        }
+        .drag-handle { cursor: grab; touch-action: none; padding: 1rem; margin: -1rem 0 -1rem -0.5rem; }
         
         /* Animation Classes */
         .anim-obj { transform-origin: center; transform-box: fill-box; will-change: transform; }
@@ -145,11 +129,13 @@
             outline: 2px dashed rgba(197, 160, 89, 0.5);
             padding: 2px;
             border-radius: 4px;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #000; /* Ensure text is visible when editing header */
         }
         body.admin-mode [contenteditable="true"]:focus {
             outline: 2px solid #C5A059;
             background-color: white;
+            color: #000;
         }
         .admin-only { display: none !important; }
         body.admin-mode .admin-only { display: flex !important; }
@@ -181,7 +167,11 @@
             </svg>
 
             <div class="relative z-10 pointer-events-none">
-                <h1 class="font-serif text-2xl text-white tracking-wide leading-tight drop-shadow-md">BD TOUR<br><span class="text-golf-gold italic text-xl">Alicante 2026</span></h1>
+                <div class="font-serif text-2xl text-white tracking-wide leading-tight drop-shadow-md pointer-events-auto">
+                    <div id="app-title-main" class="outline-none">BD TOUR</div>
+                    <div id="app-title-sub" class="text-golf-gold italic text-xl outline-none mt-1">Alicante 2026</div>
+                </div>
+                
                 <button onclick="document.getElementById('packing-modal').classList.remove('hidden'); event.stopPropagation();" class="pointer-events-auto mt-4 bg-golf-deep border border-golf-gold text-golf-gold text-[10px] uppercase tracking-widest py-1.5 px-6 rounded-full hover:bg-black transition flex items-center justify-center mx-auto gap-2 shadow-lg"><span>✓</span> Packing List</button>
             </div>
         </header>
@@ -285,7 +275,6 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const container = document.getElementById('sections-container');
         
         function renderSections(sections) {
-            // Check if we are currently dragging (via class check on body or ghost existence)
             if (document.querySelector('.drag-ghost')) return; 
 
             container.innerHTML = '';
@@ -339,60 +328,41 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                         </div>
                     </div>
                 `;
-                
-                // Add "Ghost" Drag Logic
                 addGhostDrag(el);
-                
                 container.appendChild(el);
             });
         }
 
-        // --- GHOST DRAG LOGIC (The "Fluid" Fix) ---
+        // --- GHOST DRAG LOGIC ---
         function addGhostDrag(item) {
             const handle = item.querySelector('.drag-handle');
             if (!handle) return;
 
             handle.addEventListener('touchstart', (e) => {
-                // 1. Prevent default scrolling logic
                 e.preventDefault(); 
-                
-                // 2. Haptics
                 if (navigator.vibrate) navigator.vibrate(50);
                 
-                // 3. Create Ghost (Clone)
                 const rect = item.getBoundingClientRect();
                 const ghost = item.cloneNode(true);
                 
-                // Style the Ghost
                 ghost.classList.add('drag-ghost');
                 ghost.style.width = rect.width + 'px';
-                ghost.style.height = rect.height + 'px'; // Lock height
+                ghost.style.height = rect.height + 'px'; 
                 ghost.style.left = rect.left + 'px';
                 ghost.style.top = rect.top + 'px';
                 
-                // Add to Body (so it floats above everything)
                 document.body.appendChild(ghost);
-                
-                // 4. Transform Original into Placeholder
                 item.classList.add('placeholder');
                 
-                // 5. Track state
                 const touchStartX = e.touches[0].clientX;
                 const touchStartY = e.touches[0].clientY;
-                const originalTop = rect.top;
-                const originalLeft = rect.left;
 
-                // Move Handler
                 function moveHandler(e) {
                     const touch = e.touches[0];
                     const deltaX = touch.clientX - touchStartX;
                     const deltaY = touch.clientY - touchStartY;
-                    
-                    // Move Ghost
                     ghost.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.02) rotate(1deg)`;
                     
-                    // Detect Swap Target
-                    // We hide ghost briefly to check what's underneath
                     ghost.style.visibility = 'hidden';
                     const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
                     ghost.style.visibility = 'visible';
@@ -400,40 +370,21 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     const dropTarget = elementBelow ? elementBelow.closest('.draggable-item') : null;
                     
                     if (dropTarget && dropTarget !== item) {
-                        // Check if we are in the upper or lower half of the target
                         const targetRect = dropTarget.getBoundingClientRect();
                         const next = (touch.clientY - targetRect.top) / (targetRect.height) > 0.5;
-                        
-                        // Swap the PLACEHOLDER (item) in the DOM
-                        // Because item is 'placeholder' (invisible space), the list rearranges around it
-                        if (next) {
-                            container.insertBefore(item, dropTarget.nextSibling);
-                        } else {
-                            container.insertBefore(item, dropTarget);
-                        }
+                        if (next) container.insertBefore(item, dropTarget.nextSibling);
+                        else container.insertBefore(item, dropTarget);
                     }
                 }
 
-                // End Handler
                 function endHandler() {
-                    // Animate Ghost into final position
-                    const finalRect = item.getBoundingClientRect();
-                    const currentGhostRect = ghost.getBoundingClientRect();
-                    
-                    // Calculate difference for smooth snap-back
-                    // (Simple version: just remove ghost and show item)
                     ghost.remove();
                     item.classList.remove('placeholder');
-                    
-                    // Save Order
                     if(!isAdmin) saveUserOrder();
-
-                    // Clean up listeners
                     document.removeEventListener('touchmove', moveHandler);
                     document.removeEventListener('touchend', endHandler);
                 }
 
-                // Attach Listeners to Document (to catch drags outside handle)
                 document.addEventListener('touchmove', moveHandler, { passive: false });
                 document.addEventListener('touchend', endHandler);
 
@@ -464,6 +415,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             const btn = document.getElementById('btn-save-main');
             btn.innerText = "SAVING...";
             
+            // 1. Scrape Sections
             const newSections = [];
             container.querySelectorAll('.draggable-item').forEach(el => {
                 const id = el.id;
@@ -477,10 +429,18 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     });
                 }
             });
+
+            // 2. Scrape Title
+            const titleMain = document.getElementById('app-title-main').innerText;
+            const titleSub = document.getElementById('app-title-sub').innerText;
+
+            // 3. Scrape Packing List
             const packingListRaw = document.getElementById('edit-packing-essentials').value;
 
             try {
                 await setDoc(tripRef, {
+                    titleMain: titleMain,
+                    titleSub: titleSub,
                     sections: newSections,
                     packing_list: packingListRaw
                 }, { merge: true });
@@ -510,21 +470,35 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         function enableAdminMode() {
             isAdmin = true;
             document.body.classList.add('admin-mode');
+            
+            // Enable Title Editing
+            document.getElementById('app-title-main').contentEditable = "true";
+            document.getElementById('app-title-sub').contentEditable = "true";
+            
             renderSections(sectionsData);
         }
 
         window.disableAdminMode = function() {
             isAdmin = false;
             document.body.classList.remove('admin-mode');
+            
+            // Disable Title Editing
+            document.getElementById('app-title-main').contentEditable = "false";
+            document.getElementById('app-title-sub').contentEditable = "false";
+            
             renderSections(sectionsData);
         }
 
-        // --- DATA LISTENER & MIGRATION ---
+        // --- DATA LISTENER ---
         onSnapshot(tripRef, (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
                 const now = new Date();
                 document.getElementById('last-sync').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                // LOAD TITLES
+                document.getElementById('app-title-main').innerText = data.titleMain || "BD TOUR";
+                document.getElementById('app-title-sub').innerText = data.titleSub || "Alicante 2026";
 
                 // PACKING LIST
                 if (data.packing_list) {
@@ -535,13 +509,11 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 }
                 renderPackingLists();
 
-                // SECTIONS MIGRATION LOGIC
+                // SECTIONS
                 if (data.sections && Array.isArray(data.sections)) {
-                    // New Format Exists -> Use it
                     sectionsData = data.sections;
                     renderSections(sectionsData);
                 } else {
-                    // OLD FORMAT DETECTED -> MIGRATE ON THE FLY
                     console.log("Migrating old data structure...");
                     sectionsData = [
                         { id: 'flight', title: 'Flight Plan', content: data.flights || 'No details' },
