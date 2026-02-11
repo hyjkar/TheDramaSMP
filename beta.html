@@ -65,7 +65,6 @@
             padding-bottom: 20px;
         }
         
-        /* Add padding when admin toolbar is visible so content isn't hidden behind it */
         body.admin-mode #app-container {
             padding-bottom: 100px; 
         }
@@ -97,9 +96,30 @@
             transform: rotate(180deg);
         }
         
-        /* Dragging Styles */
-        .draggable-source { opacity: 0.4; border: 2px dashed #C5A059; }
-        .drag-handle { cursor: move; touch-action: none; }
+        /* --- IMPROVED DRAGGING VISUALS --- */
+        .draggable-item {
+            transition: transform 0.15s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s;
+            touch-action: pan-y; /* Allow vertical scroll but capture horizontal/drag */
+        }
+
+        /* The "Floating" State */
+        .draggable-item.dragging {
+            position: relative;
+            z-index: 50;
+            transform: scale(1.03) rotate(1deg); /* Pop up and tilt slightly */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1); /* Deep Shadow */
+            border-color: #C5A059 !important; /* Force Gold Border */
+            opacity: 0.95;
+            background-color: #FFFCF5; /* Very light cream */
+        }
+        
+        .drag-handle { 
+            cursor: grab; 
+            touch-action: none; 
+            padding: 1rem; /* Bigger touch target */
+            margin: -1rem 0 -1rem -0.5rem;
+        }
+        .drag-handle:active { cursor: grabbing; }
         
         /* Animation Classes */
         .anim-obj { transform-origin: center; transform-box: fill-box; will-change: transform; }
@@ -112,7 +132,7 @@
 
         /* --- ADMIN MODE STYLES --- */
         body.admin-mode [contenteditable="true"] {
-            outline: 2px dashed rgba(197, 160, 89, 0.5); /* Gold Dashed Outline */
+            outline: 2px dashed rgba(197, 160, 89, 0.5);
             padding: 2px;
             border-radius: 4px;
             background-color: rgba(255, 255, 255, 0.8);
@@ -127,8 +147,8 @@
         /* Admin Overrides */
         body.admin-mode .section-header { pointer-events: none; } 
         body.admin-mode .section-header .editable-title { pointer-events: auto; }
-        body.admin-mode .accordion-content { max-height: none !important; opacity: 1 !important; display: block; } /* Force all open */
-        body.admin-mode .arrow-icon { display: none; } /* Hide arrows */
+        body.admin-mode .accordion-content { max-height: none !important; opacity: 1 !important; display: block; }
+        body.admin-mode .arrow-icon { display: none; }
 
     </style>
 </head>
@@ -225,7 +245,6 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // NOTE: added setDoc to imports
         import { getFirestore, doc, onSnapshot, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -244,7 +263,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // ⚠️ DEMO MODE: Points to "trip/demo" so we don't break the live app
+        // ⚠️ DEMO MODE: "trip/demo"
         const tripRef = doc(db, "trip", "demo"); 
 
         // GLOBAL STATE
@@ -256,12 +275,11 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const container = document.getElementById('sections-container');
         
         function renderSections(sections) {
-            // If dragging, don't re-render to avoid glitches
-            if (document.querySelector('.draggable-source')) return;
+            if (document.querySelector('.draggable-item.dragging')) return; // Don't redraw if currently dragging
 
             container.innerHTML = '';
             
-            // Check User Order Preference (if not admin mode, we respect user order. In admin mode, we show True DB order)
+            // Check User Order Preference (if not admin mode, we respect user order)
             let displayOrder = sections;
             if (!isAdmin) {
                 const savedOrder = JSON.parse(localStorage.getItem('userSectionOrder') || '[]');
@@ -282,34 +300,24 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             }
 
             displayOrder.forEach((sec, index) => {
-                // Determine styling (Gold vs Deep vs Dark cycle)
                 let borderColor = 'border-golf-gold';
                 let iconColor = 'text-golf-gold';
                 let textColor = 'text-golf-deep';
-                
-                if (index % 3 === 1) { // Deep
-                    borderColor = 'border-golf-deep';
-                    iconColor = 'text-golf-deep';
-                    textColor = 'text-golf-deep';
-                } else if (index % 3 === 2) { // Dark
-                    borderColor = 'border-golf-dark';
-                    iconColor = 'text-golf-deep';
-                    textColor = 'text-golf-deep';
-                }
+                if (index % 3 === 1) { borderColor = 'border-golf-deep'; iconColor = 'text-golf-deep'; }
+                else if (index % 3 === 2) { borderColor = 'border-golf-dark'; iconColor = 'text-golf-deep'; }
 
                 const el = document.createElement('div');
                 el.className = `draggable-item bg-white rounded-sm border-t-2 ${borderColor} shadow-sm overflow-hidden mb-3 relative`;
                 el.id = sec.id;
-                if (!isAdmin) el.draggable = true;
+                // Note: We do NOT use HTML5 'draggable=true' anymore. We use Touch Events.
 
-                // Trash Button (Admin Only)
                 const deleteBtn = `<button onclick="deleteSection('${sec.id}')" class="admin-only absolute top-0 right-0 bg-red-500 text-white p-2 text-xs font-bold z-20 hover:bg-red-700">DELETE</button>`;
 
                 el.innerHTML = `
                     ${deleteBtn}
                     <div class="section-header w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition cursor-pointer" onclick="toggleAccordion('content-${sec.id}', 'arrow-${sec.id}')">
                         <div class="flex items-center gap-3 flex-1">
-                            <div class="drag-handle text-gray-300 cursor-move p-2 -ml-2 hover:text-golf-gold ${isAdmin ? 'hidden' : ''}" onmousedown="event.stopPropagation()">⋮⋮</div>
+                            <div class="drag-handle text-gray-300 p-2 -ml-2 hover:text-golf-gold ${isAdmin ? 'hidden' : ''}">⋮⋮</div>
                             <svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
                             <h3 class="editable-title font-serif text-base ${textColor} font-bold outline-none" ${isAdmin ? 'contenteditable="true"' : ''}>${sec.title}</h3>
                         </div>
@@ -321,20 +329,66 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                         </div>
                     </div>
                 `;
-                addDragEvents(el);
+                
+                // Add enhanced drag events
+                addTouchDrag(el);
+                
                 container.appendChild(el);
             });
         }
 
-        // --- ADMIN ACTIONS ---
+        // --- ENHANCED TOUCH DRAG LOGIC (The "Float" Effect) ---
+        function addTouchDrag(item) {
+            const handle = item.querySelector('.drag-handle');
+            if (!handle) return;
+
+            handle.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Stop scroll
+                
+                // 1. Haptic Feedback
+                if (navigator.vibrate) navigator.vibrate(50);
+                
+                // 2. Visual "Pop"
+                item.classList.add('dragging');
+                
+                // 3. Track current item
+                window.currentDrag = item;
+            }, { passive: false });
+
+            handle.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!window.currentDrag) return;
+                
+                const touch = e.touches[0];
+                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                const dropTarget = elementBelow ? elementBelow.closest('.draggable-item') : null;
+                
+                if (dropTarget && dropTarget !== window.currentDrag) {
+                    const rect = dropTarget.getBoundingClientRect();
+                    const next = (touch.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+                    container.insertBefore(window.currentDrag, next ? dropTarget.nextSibling : dropTarget);
+                }
+            }, { passive: false });
+
+            handle.addEventListener('touchend', () => {
+                if (window.currentDrag) {
+                    // Drop visual
+                    window.currentDrag.classList.remove('dragging');
+                    window.currentDrag = null;
+                    if(!isAdmin) saveUserOrder(); 
+                }
+            });
+        }
         
+        function saveUserOrder() {
+            const order = [...container.querySelectorAll('.draggable-item')].map(el => el.id);
+            localStorage.setItem('userSectionOrder', JSON.stringify(order));
+        }
+
+        // --- ADMIN ACTIONS ---
         window.addNewSection = function() {
             const newId = 'sec_' + Date.now();
-            sectionsData.push({
-                id: newId,
-                title: "New Section Title",
-                content: "Add content here...",
-            });
+            sectionsData.push({ id: newId, title: "New Section", content: "Content..." });
             renderSections(sectionsData);
             setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
         }
@@ -350,7 +404,6 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             const btn = document.getElementById('btn-save-main');
             btn.innerText = "SAVING...";
             
-            // 1. Scrape the DOM to get latest edits (titles, contents)
             const newSections = [];
             container.querySelectorAll('.draggable-item').forEach(el => {
                 const id = el.id;
@@ -364,12 +417,9 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     });
                 }
             });
-
-            // 2. Scrape Packing List
             const packingListRaw = document.getElementById('edit-packing-essentials').value;
 
             try {
-                // 3. Save to Firestore (Using setDoc to create if missing)
                 await setDoc(tripRef, {
                     sections: newSections,
                     packing_list: packingListRaw
@@ -445,71 +495,21 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     renderSections(sectionsData);
                 }
             } else {
-                // If demo doc doesn't exist yet, show blank slate or dummy data
                 console.log("No data found, starting fresh.");
                 sectionsData = [];
                 renderSections(sectionsData);
             }
         });
 
-        // --- DRAG EVENTS HELPER ---
-        function addDragEvents(item) {
-            item.addEventListener('dragstart', (e) => {
-                setTimeout(() => item.classList.add('draggable-source'), 0);
-            });
-            item.addEventListener('dragend', () => {
-                item.classList.remove('draggable-source');
-                if(!isAdmin) saveUserOrder(); 
-            });
-            const handle = item.querySelector('.drag-handle');
-            if (handle) {
-                let draggedItem = null;
-                handle.addEventListener('touchstart', (e) => { e.preventDefault(); draggedItem = item; item.classList.add('draggable-source'); }, {passive: false});
-                handle.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
-                    if (!draggedItem) return;
-                    const touch = e.touches[0];
-                    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-                    const dropTarget = elementBelow ? elementBelow.closest('.draggable-item') : null;
-                    if (dropTarget && dropTarget !== draggedItem) {
-                        const rect = dropTarget.getBoundingClientRect();
-                        const next = (touch.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
-                        container.insertBefore(draggedItem, next ? dropTarget.nextSibling : dropTarget);
-                    }
-                }, {passive: false});
-                handle.addEventListener('touchend', () => {
-                    if (draggedItem) { draggedItem.classList.remove('draggable-source'); saveUserOrder(); draggedItem = null; }
-                });
-            }
-        }
-
-        function saveUserOrder() {
-            const order = [...container.querySelectorAll('.draggable-item')].map(el => el.id);
-            localStorage.setItem('userSectionOrder', JSON.stringify(order));
-        }
-
-        // --- ANIMATION ---
-        const stickEl = document.getElementById('anim-stick');
-        const ballEl = document.getElementById('anim-ball');
-        function animateBubbles() {
-            const time = Date.now();
-            if(ballEl) ballEl.setAttribute('transform', `translate(${100 + Math.sin(time * 0.0005) * 8}, ${85 + Math.cos(time * 0.0008) * 4})`);
-            if(stickEl) stickEl.setAttribute('transform', `translate(${100 + Math.sin(time * 0.0003 + 2) * 10}, ${65 + Math.cos(time * 0.0004) * 5}) rotate(${Math.sin(time * 0.0002) * 8})`);
-            requestAnimationFrame(animateBubbles);
-        }
-        animateBubbles();
-
-        // --- HELPERS ---
+        // Helpers & Listeners
         window.format = function(command) { document.execCommand(command, false, null); };
         window.addLink = function() { const url = prompt("Enter URL:", "https://"); if(url) document.execCommand('createLink', false, url); };
         window.toggleAccordion = function(contentId, arrowId) {
             if(document.body.classList.contains('admin-mode')) return; 
             const content = document.getElementById(contentId);
             const arrow = document.getElementById(arrowId);
-            const isOpen = content.classList.contains('open');
-            document.querySelectorAll('.accordion-content').forEach(el => el.classList.remove('open'));
-            document.querySelectorAll('.arrow-icon').forEach(el => el.classList.remove('rotate'));
-            if(!isOpen) { content.classList.add('open'); arrow.classList.add('rotate'); }
+            if(!content.classList.contains('open')) { content.classList.add('open'); arrow.classList.add('rotate'); }
+            else { content.classList.remove('open'); arrow.classList.remove('rotate'); }
         };
         // Install Logic
         let deferredPrompt;
@@ -519,6 +519,17 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             else { document.getElementById('install-modal').classList.remove('hidden'); }
         };
         if (!window.matchMedia('(display-mode: standalone)').matches) document.getElementById('install-btn').classList.remove('hidden');
+
+        // Animation
+        const stickEl = document.getElementById('anim-stick');
+        const ballEl = document.getElementById('anim-ball');
+        function animateBubbles() {
+            const time = Date.now();
+            if(ballEl) ballEl.setAttribute('transform', `translate(${100 + Math.sin(time * 0.0005) * 8}, ${85 + Math.cos(time * 0.0008) * 4})`);
+            if(stickEl) stickEl.setAttribute('transform', `translate(${100 + Math.sin(time * 0.0003 + 2) * 10}, ${65 + Math.cos(time * 0.0004) * 5}) rotate(${Math.sin(time * 0.0002) * 8})`);
+            requestAnimationFrame(animateBubbles);
+        }
+        animateBubbles();
 
         // Packing List (Standard User View)
         window.renderPackingLists = function() {
