@@ -224,7 +224,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // 🔥🔥🔥 PASTE FIREBASE CONFIG HERE 🔥🔥🔥
@@ -344,7 +344,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             }
         }
 
-        window.saveAllChanges = async function() {
+window.saveAllChanges = async function() {
             const btn = document.getElementById('btn-save-main');
             btn.innerText = "SAVING...";
             
@@ -352,9 +352,37 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             const newSections = [];
             container.querySelectorAll('.draggable-item').forEach(el => {
                 const id = el.id;
-                const title = el.querySelector('.editable-title').innerText;
-                const content = el.querySelector('.editable-content').innerHTML; // innerHTML preserves links/bold
-                newSections.push({ id, title, content });
+                // Safe check to ensure we aren't grabbing null elements
+                const titleEl = el.querySelector('.editable-title');
+                const contentEl = el.querySelector('.editable-content');
+                
+                if (titleEl && contentEl) {
+                    newSections.push({ 
+                        id: id, 
+                        title: titleEl.innerText, 
+                        content: contentEl.innerHTML // innerHTML preserves links/bold
+                    });
+                }
+            });
+
+            // 2. Scrape Packing List
+            const packingListRaw = document.getElementById('edit-packing-essentials').value;
+
+            try {
+                // 3. Save to Firestore (Using setDoc to create if missing)
+                await setDoc(tripRef, {
+                    sections: newSections,
+                    packing_list: packingListRaw
+                }, { merge: true });
+                
+                alert("Saved Successfully!");
+                btn.innerText = "SAVE";
+            } catch (error) {
+                console.error(error); // Log full error to console
+                alert("Error saving: " + error.message);
+                btn.innerText = "RETRY";
+            }
+        };
             });
 
             // 2. Scrape Packing List (Admin Edit)
