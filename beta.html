@@ -31,7 +31,7 @@
     </script>
 
     <style>
-        html, body { position: fixed; height: 100%; width: 100%; overflow: hidden; background-color: #F5F5F0; overscroll-behavior: none; touch-action: none; }
+        html, body { position: fixed; height: 100%; width: 100%; overflow: hidden; background-color: #F5F5F0; touch-action: none; }
         #app-container { height: 100%; width: 100%; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding-bottom: 20px; }
         body.admin-mode #app-container { padding-bottom: 100px; }
         input[type="checkbox"]:checked + label { text-decoration: line-through; color: #9CA3AF; }
@@ -52,9 +52,12 @@
         body.admin-mode .section-header { pointer-events: none; } body.admin-mode .section-header .editable-title { pointer-events: auto; }
         body.admin-mode .accordion-content { max-height: none !important; opacity: 1 !important; display: block; } body.admin-mode .arrow-icon { display: none; }
         
-        /* CALENDAR STYLES */
-        .timeline-line { position: absolute; left: 15px; top: 10px; bottom: -20px; width: 2px; background: #e5e7eb; z-index: 0; }
-        .timeline-dot { width: 12px; height: 12px; background: #C5A059; border-radius: 50%; border: 2px solid white; position: relative; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        /* LIVE STATUS STYLES */
+        .live-card { background: linear-gradient(135deg, #0A2615 0%, #1B4D3E 100%); color: white; border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px -10px rgba(27, 77, 62, 0.5); text-align: center; position: relative; overflow: hidden; }
+        .live-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(197,160,89,0.1) 0%, transparent 70%); pointer-events: none; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .status-now { background-color: #C5A059; color: #0A2615; }
+        .status-next { background-color: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
     </style>
 </head>
 <body class="bg-golf-cream text-gray-800 font-sans antialiased">
@@ -68,8 +71,10 @@
         <header class="bg-golf-dark pt-10 pb-8 px-6 text-center rounded-b-[30px] shadow-lg z-10 relative overflow-hidden shrink-0">
             <button id="install-btn" onclick="showInstallInstructions()" class="hidden absolute top-6 left-6 text-golf-gold hover:text-white transition z-50 p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg></button>
             
-            <button onclick="openCalendar()" class="absolute top-6 right-6 text-golf-gold hover:text-white transition z-50 p-2">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <button onclick="openLiveStatus()" class="absolute top-6 right-6 text-golf-gold hover:text-white transition z-50 p-2 group">
+                <div class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-ping opacity-75"></div>
+                <div class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></div>
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </button>
 
             <svg id="header-glass" class="absolute bottom-0 right-0 w-48 h-auto opacity-10 text-golf-gold transform translate-x-4 translate-y-2" viewBox="0 0 200 200" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -110,14 +115,34 @@
         <button id="btn-save-main" onclick="saveAllChanges()" class="bg-golf-gold text-golf-dark font-bold px-4 py-2 rounded shadow-lg uppercase tracking-widest text-xs hover:bg-white min-w-[100px]">SAVE</button>
     </div>
 
-    <div id="calendar-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex flex-col items-center justify-center p-6 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div class="bg-golf-gold p-3 text-center flex justify-between items-center shrink-0">
-                <div class="w-6"></div><h2 class="font-serif text-lg font-bold text-golf-dark">Schedule</h2><button onclick="document.getElementById('calendar-modal').classList.add('hidden')" class="text-golf-dark font-bold text-xl hover:text-white">×</button>
+    <div id="live-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6 backdrop-blur-sm animate-fade-in">
+        <div class="w-full max-w-sm space-y-6">
+            
+            <div class="text-center mb-6">
+                <div class="text-golf-gold uppercase tracking-widest text-xs font-bold mb-2">Live Trip Status</div>
+                <div id="live-clock" class="text-white font-serif text-3xl">...</div>
+                <div id="live-date" class="text-gray-400 text-sm">...</div>
             </div>
-            <div id="calendar-content" class="overflow-y-auto flex-1 p-6">
+
+            <div class="live-card transform transition hover:scale-105">
+                <div class="status-badge status-now">Happening Now</div>
+                <h2 id="status-now-title" class="font-serif text-2xl mb-2 leading-tight">Relaxing</h2>
+                <div id="status-now-time" class="text-golf-gold font-bold mb-2">--:--</div>
+                <p id="status-now-desc" class="text-xs text-gray-300 line-clamp-2">No specific activity detected.</p>
+            </div>
+
+            <div class="bg-white/10 border border-white/10 rounded-lg p-4 flex items-center gap-4">
+                <div class="flex-shrink-0 text-center bg-golf-gold/20 rounded p-2 min-w-[60px]">
+                    <div class="text-[10px] text-golf-gold uppercase font-bold">Next</div>
+                    <div id="status-next-time" class="text-white font-bold">--:--</div>
                 </div>
-            <button onclick="document.getElementById('calendar-modal').classList.add('hidden')" class="bg-gray-100 p-3 text-center text-xs font-bold text-gray-500 hover:bg-gray-200 uppercase tracking-wide shrink-0">Close</button>
+                <div>
+                    <h3 id="status-next-title" class="text-white font-serif font-bold">Unknown</h3>
+                    <p id="status-next-desc" class="text-xs text-gray-400 line-clamp-1">...</p>
+                </div>
+            </div>
+
+            <button onclick="document.getElementById('live-modal').classList.add('hidden')" class="w-full py-4 text-gray-500 text-sm hover:text-white uppercase tracking-widest">Close</button>
         </div>
     </div>
 
@@ -186,19 +211,45 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         let sectionsData = [];
         let globalEssentialsList = [];
 
-        // --- CALENDAR LOGIC (SMART PARSER) ---
-        window.openCalendar = function() {
-            const calContent = document.getElementById('calendar-content');
-            calContent.innerHTML = '';
+        // --- SMART TIME PARSING LOGIC ---
+        
+        function getUpcomingEvents() {
+            const events = [];
+            const now = new Date();
+            const year = now.getFullYear(); // Assume current year
             
-            let events = [];
+            // Regex for time (14:00, 2:30pm, 9.30)
+            const timeRegex = /\b((1[0-2]|0?[1-9])(?::([0-5][0-9]))?\s*([ap]m)|([01]?[0-9]|2[0-3])[:.]([0-5][0-9]))\b/i;
             
-            // 1. Scan sections for timestamps
-            // Looks for formats like: 14:00, 9.30, 8:00 AM, 16.45
-            const timeRegex = /\b([0-1]?[0-9]|2[0-3])[:.]([0-5][0-9])\b/g; 
-
+            // Map Day names to actual dates relative to today
+            const daysMap = { "sunday": 0, "monday": 1, "tuesday": 2, "wednesday": 3, "thursday": 4, "friday": 5, "saturday": 6 };
+            
             sectionsData.forEach(sec => {
-                // Strip HTML to get raw text lines
+                // 1. Detect Day in Title (e.g., "Friday Golf")
+                const titleLower = sec.title.toLowerCase();
+                let eventDate = null;
+                
+                // Find mention of a day
+                for (const [dayName, dayIndex] of Object.entries(daysMap)) {
+                    if (titleLower.includes(dayName)) {
+                        // Calculate next occurrence of this day
+                        const todayIndex = now.getDay();
+                        let diff = dayIndex - todayIndex;
+                        if (diff < 0) diff += 7; // Assuming upcoming day, or today
+                        // Note: If you want to handle past days, we'd need more logic. 
+                        // Assuming trip is this week.
+                        
+                        const d = new Date();
+                        d.setDate(now.getDate() + diff);
+                        eventDate = d;
+                        break;
+                    }
+                }
+                
+                // If no day found in title, skip this section for calendar (too ambiguous)
+                if (!eventDate) return; 
+
+                // 2. Scan lines for times
                 const tempDiv = document.createElement("div");
                 tempDiv.innerHTML = sec.content;
                 const rawLines = tempDiv.innerText.split('\n');
@@ -207,46 +258,116 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     const cleanLine = line.trim();
                     if(!cleanLine) return;
                     
-                    // Does this line contain a time?
                     const timeMatch = cleanLine.match(timeRegex);
-                    
                     if(timeMatch) {
-                        // Create an event object
+                        const timeStr = timeMatch[0];
+                        // Parse Time
+                        let hours = 0, minutes = 0;
+                        
+                        if (timeStr.toLowerCase().includes('m')) { // AM/PM
+                            const parts = timeStr.match(/(\d+)(?::(\d+))?\s*([ap]m)/i);
+                            if(parts) {
+                                hours = parseInt(parts[1]);
+                                minutes = parts[2] ? parseInt(parts[2]) : 0;
+                                if (parts[3].toLowerCase() === 'pm' && hours < 12) hours += 12;
+                                if (parts[3].toLowerCase() === 'am' && hours === 12) hours = 0;
+                            }
+                        } else { // 24H (14:00 or 14.00)
+                            const parts = timeStr.split(/[:.]/);
+                            hours = parseInt(parts[0]);
+                            minutes = parseInt(parts[1]);
+                        }
+
+                        // Set event time
+                        const eventTime = new Date(eventDate);
+                        eventTime.setHours(hours, minutes, 0, 0);
+                        
                         events.push({
-                            timeStr: timeMatch[0],
-                            text: cleanLine,
-                            section: sec.title
+                            date: eventTime,
+                            text: cleanLine.replace(timeStr, '').trim(), // Remove time from text for clean display
+                            timeDisplay: timeStr,
+                            originalSection: sec.title
                         });
                     }
                 });
             });
 
-            if(events.length === 0) {
-                calContent.innerHTML = '<div class="text-center text-gray-400 text-sm italic mt-10">No times found in itinerary.<br>Add times (e.g. 14:00) to section text to see them here.</div>';
-            } else {
-                // Note: We can't sort chronologically perfectly without real dates, 
-                // so we display them in the order they appear in the itinerary (Dom Order).
-                let html = '<div class="relative pl-2">';
+            // Sort Chronologically
+            events.sort((a, b) => a.date - b.date);
+            return events;
+        }
+
+        window.openLiveStatus = function() {
+            const now = new Date();
+            
+            // Update Clock inside Modal
+            document.getElementById('live-clock').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('live-date').innerText = now.toLocaleDateString([], {weekday: 'long', day: 'numeric', month: 'long'});
+
+            const events = getUpcomingEvents();
+            
+            let currentEvent = null;
+            let nextEvent = null;
+
+            // Logic: "Current" is an event that started within the last 2 hours
+            // "Next" is the first event in the future
+            
+            for (let i = 0; i < events.length; i++) {
+                const e = events[i];
+                const diffMinutes = (now - e.date) / 1000 / 60; // Minutes since start
                 
-                events.forEach((evt, idx) => {
-                    // Highlight the time in the text
-                    const highlightedText = evt.text.replace(evt.timeStr, `<span class="font-bold text-golf-deep">${evt.timeStr}</span>`);
-                    
-                    html += `
-                        <div class="mb-6 relative pl-6">
-                            <div class="timeline-line"></div>
-                            <div class="timeline-dot absolute left-0 top-1.5"></div>
-                            
-                            <div class="text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-widest">${evt.section}</div>
-                            <div class="text-sm text-gray-700 leading-snug">${highlightedText}</div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                calContent.innerHTML = html;
+                if (diffMinutes >= 0 && diffMinutes < 120) {
+                    // Started recently (0 to 120 mins ago) -> It's Current
+                    currentEvent = e;
+                } else if (diffMinutes < 0) {
+                    // Hasn't started yet -> It's Next
+                    nextEvent = e;
+                    break; // Found the next one, stop looking
+                }
             }
 
-            document.getElementById('calendar-modal').classList.remove('hidden');
+            // Populate UI
+            const nowTitle = document.getElementById('status-now-title');
+            const nowTime = document.getElementById('status-now-time');
+            const nowDesc = document.getElementById('status-now-desc');
+            
+            if (currentEvent) {
+                nowTitle.innerText = currentEvent.text || "Event";
+                nowTime.innerText = `Started ${currentEvent.timeDisplay}`;
+                nowDesc.innerText = currentEvent.originalSection;
+                document.querySelector('.status-badge').innerText = "Happening Now";
+                document.querySelector('.status-badge').classList.remove('bg-gray-500');
+                document.querySelector('.status-badge').classList.add('status-now');
+            } else {
+                nowTitle.innerText = "Free Time";
+                nowTime.innerText = "--:--";
+                nowDesc.innerText = "Relax and enjoy.";
+                document.querySelector('.status-badge').innerText = "Status";
+                document.querySelector('.status-badge').classList.remove('status-now');
+                document.querySelector('.status-badge').classList.add('bg-gray-500');
+            }
+
+            const nextTitle = document.getElementById('status-next-title');
+            const nextTime = document.getElementById('status-next-time');
+            const nextDesc = document.getElementById('status-next-desc');
+
+            if (nextEvent) {
+                nextTitle.innerText = nextEvent.text || "Event";
+                nextTime.innerText = nextEvent.timeDisplay;
+                // Calculate "In X hours"
+                const minsToNext = Math.round((nextEvent.date - now) / 1000 / 60);
+                let waitText = "";
+                if(minsToNext < 60) waitText = `In ${minsToNext} mins`;
+                else waitText = `In ${Math.round(minsToNext/60)} hours`;
+                
+                nextDesc.innerText = `${waitText} • ${nextEvent.originalSection}`;
+            } else {
+                nextTitle.innerText = "No upcoming events";
+                nextTime.innerText = "--";
+                nextDesc.innerText = "Trip Completed?";
+            }
+
+            document.getElementById('live-modal').classList.remove('hidden');
         };
 
         // --- RENDER SECTIONS ---
