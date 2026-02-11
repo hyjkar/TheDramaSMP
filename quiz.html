@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Airplane Quiz - 747 Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Airplane Quiz - Mobile</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Emirates-inspired Palette */
             --brand-red: #d71920;
             --brand-gold: #cfa86e;
             --brand-dark: #333333;
@@ -22,88 +21,79 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start; /* Aligns to top on mobile */
             min-height: 100vh;
             margin: 0;
-            background-image: radial-gradient(#e6e6e6 1px, transparent 1px);
-            background-size: 20px 20px;
+            padding-top: 20px;
+            /* Prevent scrolling/bouncing effects on iOS */
+            overscroll-behavior: none; 
         }
 
         /* --- Header --- */
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
+        header { text-align: center; margin-bottom: 15px; }
 
         h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 3rem;
+            font-size: 2.2rem; /* Smaller for mobile */
             color: var(--brand-dark);
             margin: 0;
-            letter-spacing: 1px;
             text-transform: uppercase;
         }
 
         h2 {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: var(--brand-gold);
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             margin-top: 5px;
-            font-weight: 500;
         }
 
-        /* --- Timer --- */
         #timer-container {
             font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
+            font-size: 2rem;
             color: var(--brand-red);
-            margin-top: 15px;
+            margin-top: 10px;
             font-weight: bold;
-            font-feature-settings: "tnum"; /* Tabular numbers for steady timer */
         }
 
-        .timer-warning {
-            animation: pulse 1s infinite;
-        }
-
-        /* --- Game Area --- */
+        /* --- Game Wrapper (Responsive) --- */
         #game-wrapper {
-            padding: 10px;
-            background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%); /* Gold Frame */
+            padding: 8px;
+            background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
             border-radius: 8px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            /* Mobile Sizing */
+            width: 90vw; /* 90% of screen width */
+            max-width: 600px; 
+            margin-bottom: 20px;
         }
 
         #game-container {
             position: relative;
-            width: 700px;
-            height: 450px;
+            width: 100%; 
+            /* Aspect Ratio Hack to keep it rectangular (4:3 ratio) */
+            aspect-ratio: 4/3; 
             background-color: #000;
             overflow: hidden;
-            border: 4px solid #fff; 
+            border: 3px solid #fff;
         }
 
         #mystery-image {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Ensures image fills box without stretching */
+            object-fit: cover;
             position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
+            top: 0; left: 0; z-index: 1;
         }
 
-        /* Grid Overlay */
         #cover-grid {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             display: grid;
-            grid-template-columns: repeat(20, 1fr);
-            grid-template-rows: repeat(15, 1fr);
+            /* 10 columns is better for mobile than 20 */
+            grid-template-columns: repeat(10, 1fr); 
+            grid-template-rows: repeat(10, 1fr);
             z-index: 2;
         }
 
@@ -119,72 +109,92 @@
             background-color: var(--brand-gold);
         }
 
-        /* --- Input Area --- */
+        /* --- Input Area (Stacked for Mobile) --- */
         #input-area {
-            margin-top: 35px;
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* Stack input on top of button */
             align-items: center;
-            width: 700px;
+            gap: 10px;
+            width: 90vw;
+            max-width: 600px;
         }
 
         input[type="text"] {
-            flex-grow: 1;
-            padding: 18px 25px;
-            font-size: 1.2rem;
+            width: 100%;
+            box-sizing: border-box; /* Ensures padding doesn't break width */
+            padding: 15px;
+            font-size: 16px; /* Prevents iOS from zooming in when clicked */
             border: 2px solid #ddd;
-            border-right: none;
-            border-radius: 50px 0 0 50px;
+            border-radius: 10px;
             outline: none;
+            text-align: center;
             font-family: 'Roboto', sans-serif;
-            transition: border-color 0.3s;
         }
 
-        input[type="text"]:focus {
-            border-color: var(--brand-gold);
-        }
+        input[type="text"]:focus { border-color: var(--brand-gold); }
 
         button {
-            padding: 18px 40px;
+            width: 100%;
+            padding: 15px;
             font-size: 1.1rem;
             background-color: var(--brand-red);
             color: white;
-            border: 2px solid var(--brand-red);
-            border-radius: 0 50px 50px 0;
+            border: none;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 500;
             letter-spacing: 1px;
-            transition: all 0.3s;
-            font-family: 'Roboto', sans-serif;
+            /* Remove touch delay on mobile */
+            touch-action: manipulation; 
         }
 
-        button:hover {
-            background-color: #b01319;
-            border-color: #b01319;
-        }
+        button:active { transform: scale(0.98); }
 
-        /* --- Feedback Message --- */
+        /* --- Message --- */
         #message {
-            margin-top: 20px;
+            margin-top: 15px;
             font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            height: 40px;
+            font-size: 1.4rem;
+            text-align: center;
             opacity: 0;
             transition: opacity 0.5s;
+            padding: 0 20px;
         }
         
         #message.visible { opacity: 1; }
         .success { color: #27ae60; }
         .fail { color: var(--brand-red); }
 
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.05); }
-            100% { opacity: 1; transform: scale(1); }
+        /* --- PORTRAIT LOCK OVERLAY --- */
+        #orientation-lock {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--brand-dark);
+            color: var(--brand-gold);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
         }
+
+        /* Show the lock screen ONLY when in Landscape on small devices */
+        @media screen and (orientation: landscape) and (max-height: 500px) {
+            #orientation-lock { display: flex; }
+        }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
+
+    <div id="orientation-lock">
+        <div style="font-size: 3rem;">↻</div>
+        <h2>Please Rotate Device</h2>
+        <p>This quiz is designed for Portrait Mode.</p>
+    </div>
 
     <header>
         <h1>Airplane Quiz</h1>
@@ -194,13 +204,13 @@
 
     <div id="game-wrapper">
         <div id="game-container">
-           <img id="mystery-image" src="747.jpg" alt="Mystery Airplane">
+            <img id="mystery-image" src="747.jpg" alt="Mystery Airplane" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/b/b8/B747_Iberia_EC-HDS.jpg'">
             <div id="cover-grid"></div>
         </div>
     </div>
 
     <div id="input-area">
-        <input type="text" id="guess-input" placeholder="Type answer and hit Enter..." autocomplete="off">
+        <input type="text" id="guess-input" placeholder="Type airplane model..." autocomplete="off">
         <button onclick="checkAnswer()">ENTER</button>
     </div>
 
@@ -208,21 +218,9 @@
 
     <script>
         // --- CONFIGURATION ---
-        
-        // List of accepted answers (normalized to lowercase)
-        const ACCEPTED_ANSWERS = [
-            "boeing 747",
-            "747",
-            "b747",
-            "b 747",
-            "jumbo jet",
-            "the jumbo jet",
-            "queen of the skies",
-            "boeing747"
-        ];
-        
+        const ACCEPTED_ANSWERS = ["boeing 747", "747", "b747", "b 747", "jumbo jet", "queen of the skies"];
         const GAME_DURATION = 60; 
-        const REVEAL_SPEED = 200; // ms
+        const REVEAL_SPEED = 200; 
         
         // --- STATE ---
         let timeLeft = GAME_DURATION;
@@ -238,8 +236,8 @@
 
         // --- INIT ---
         function initGame() {
-            // Create Grid (300 pieces)
-            for (let i = 0; i < 300; i++) {
+            // REDUCED GRID FOR MOBILE: 10x10 = 100 pieces (Better performance)
+            for (let i = 0; i < 100; i++) {
                 const piece = document.createElement('div');
                 piece.classList.add('grid-piece');
                 gridContainer.appendChild(piece);
@@ -251,21 +249,21 @@
             inputField.addEventListener("keypress", function(event) {
                 if (event.key === "Enter") {
                     checkAnswer();
+                    // Mobile Quality of Life: Hide keyboard on Enter
+                    inputField.blur(); 
                 }
             });
-            inputField.focus();
+            // Removed auto-focus because it pops up the keyboard immediately on mobile
+            // which hides the image!
         }
 
         // --- GAME LOOP ---
         function updateTimer() {
             if (!isGameRunning) return;
-
             timeLeft--;
-            
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
             timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
             if (timeLeft <= 10) timerDisplay.classList.add('timer-warning');
             if (timeLeft <= 0) endGame(false);
         }
@@ -274,73 +272,43 @@
             if (!isGameRunning) return;
             const hiddenPieces = document.querySelectorAll('.grid-piece:not(.revealed)');
             if (hiddenPieces.length === 0) return;
-            
             const randomIndex = Math.floor(Math.random() * hiddenPieces.length);
             hiddenPieces[randomIndex].classList.add('revealed');
         }
 
-        // --- LOGIC: ANSWER CHECKING ---
-        
+        // --- LOGIC ---
         function checkAnswer() {
             if (!isGameRunning) return;
-
             const userGuess = inputField.value.trim().toLowerCase();
-            
             if (isMatch(userGuess)) {
                 endGame(true);
             } else {
-                // Shake effect for wrong answer
                 inputField.style.borderColor = "var(--brand-red)";
-                inputField.style.color = "var(--brand-red)";
-                setTimeout(() => {
-                    inputField.style.borderColor = "#ddd";
-                    inputField.style.color = "var(--brand-dark)";
-                }, 500);
+                setTimeout(() => inputField.style.borderColor = "#ddd", 500);
             }
         }
 
-        // Returns true if the guess matches any accepted answer (with fuzzy logic)
         function isMatch(guess) {
-            // 1. Direct match check
             if (ACCEPTED_ANSWERS.includes(guess)) return true;
-
-            // 2. Fuzzy match (Levenshtein Distance)
-            // We allow up to 2 typos for longer words, but 0 typos for short words (like "747")
             for (let answer of ACCEPTED_ANSWERS) {
-                // If the answer is short (less than 4 chars), require exact match
-                if (answer.length < 4) {
-                    if (guess === answer) return true;
-                    continue;
-                }
-                
-                // For longer answers, calculate edit distance
+                if (answer.length < 4) { if (guess === answer) return true; continue; }
                 const dist = levenshteinDistance(guess, answer);
-                // Allow 1 error for medium words, 2 errors for long words
                 const allowedErrors = answer.length > 8 ? 2 : 1;
-                
                 if (dist <= allowedErrors) return true;
             }
             return false;
         }
 
-        // Standard Levenshtein Distance Algorithm (measures "edits" needed to match)
         function levenshteinDistance(a, b) {
             const matrix = [];
             for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
             for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
-
             for (let i = 1; i <= b.length; i++) {
                 for (let j = 1; j <= a.length; j++) {
                     if (b.charAt(i - 1) == a.charAt(j - 1)) {
                         matrix[i][j] = matrix[i - 1][j - 1];
                     } else {
-                        matrix[i][j] = Math.min(
-                            matrix[i - 1][j - 1] + 1, // substitution
-                            Math.min(
-                                matrix[i][j - 1] + 1, // insertion
-                                matrix[i - 1][j] + 1  // deletion
-                            )
-                        );
+                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
                     }
                 }
             }
@@ -351,9 +319,7 @@
             isGameRunning = false;
             clearInterval(timerInterval);
             clearInterval(revealInterval);
-            
             messageDisplay.classList.add('visible');
-
             if (isWin) {
                 messageDisplay.textContent = "Correct! It is the Boeing 747.";
                 messageDisplay.classList.add("success");
@@ -362,13 +328,11 @@
                 messageDisplay.textContent = "Time's up! It was the Boeing 747.";
                 messageDisplay.classList.add("fail");
             }
-            
             document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
             inputField.disabled = true;
         }
 
         window.onload = initGame;
-
     </script>
 </body>
 </html>
