@@ -62,7 +62,12 @@
             -webkit-overflow-scrolling: touch;
             display: flex;
             flex-direction: column;
-            padding-bottom: 80px; /* Space for admin toolbar */
+            padding-bottom: 20px;
+        }
+        
+        /* Add padding when admin toolbar is visible so content isn't hidden behind it */
+        body.admin-mode #app-container {
+            padding-bottom: 100px; 
         }
 
         /* Checkbox Styling */
@@ -82,7 +87,7 @@
             overflow: hidden;
         }
         .accordion-content.open {
-            max-height: 2000px; /* Increased for longer content */
+            max-height: 2000px;
             opacity: 1;
         }
         .arrow-icon {
@@ -119,11 +124,11 @@
         .admin-only { display: none !important; }
         body.admin-mode .admin-only { display: flex !important; }
         
-        /* When in admin mode, disable accordion toggling on title click to allow editing */
+        /* Admin Overrides */
         body.admin-mode .section-header { pointer-events: none; } 
         body.admin-mode .section-header .editable-title { pointer-events: auto; }
-        body.admin-mode .accordion-content { max-height: none !important; opacity: 1 !important; display: block; } /* Force all open in admin */
-        body.admin-mode .arrow-icon { display: none; } /* Hide arrows in admin */
+        body.admin-mode .accordion-content { max-height: none !important; opacity: 1 !important; display: block; } /* Force all open */
+        body.admin-mode .arrow-icon { display: none; } /* Hide arrows */
 
     </style>
 </head>
@@ -167,11 +172,12 @@
 
     <div id="admin-toolbar" class="admin-only fixed bottom-0 left-0 right-0 bg-golf-dark border-t border-golf-gold p-3 z-[60] flex justify-between items-center shadow-2xl">
         <div class="flex gap-2">
-            <button onmousedown="event.preventDefault(); format('bold')" class="bg-white/10 text-golf-gold px-3 py-2 rounded font-bold hover:bg-white/20">B</button>
-            <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-white/10 text-golf-gold px-3 py-2 rounded font-bold hover:bg-white/20"><s>S</s></button>
-            <button onmousedown="event.preventDefault(); addLink()" class="bg-white/10 text-golf-gold px-3 py-2 rounded font-bold hover:bg-white/20">🔗</button>
+            <button onmousedown="event.preventDefault(); disableAdminMode()" class="bg-red-900/50 border border-red-800 text-white px-3 py-2 rounded font-bold hover:bg-red-800">×</button>
+            <button id="btn-bold" onmousedown="event.preventDefault(); format('bold')" class="bg-white/10 text-golf-gold px-3 py-2 rounded font-bold hover:bg-white/20">B</button>
+            <button id="btn-strike" onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-white/10 text-golf-gold px-3 py-2 rounded font-bold hover:bg-white/20"><s>S</s></button>
+            <button id="btn-link" onmousedown="event.preventDefault(); addLink()" class="bg-white/10 text-golf-gold px-3 py-2 rounded font-bold hover:bg-white/20">🔗</button>
         </div>
-        <button onclick="saveAllChanges()" class="bg-golf-gold text-golf-dark font-bold px-6 py-2 rounded shadow-lg uppercase tracking-widest text-xs hover:bg-white">SAVE CHANGES</button>
+        <button id="btn-save-main" onclick="saveAllChanges()" class="bg-golf-gold text-golf-dark font-bold px-4 py-2 rounded shadow-lg uppercase tracking-widest text-xs hover:bg-white min-w-[100px]">SAVE</button>
     </div>
 
     <div id="packing-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex flex-col items-center justify-center p-6 backdrop-blur-sm">
@@ -235,7 +241,9 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const tripRef = doc(db, "trip", "details");
+        
+        // ⚠️ DEMO MODE: USING "DEMO" DOCUMENT TO NOT BREAK OLD APP
+        const tripRef = doc(db, "trip", "demo"); 
 
         // GLOBAL STATE
         let isAdmin = false;
@@ -289,16 +297,14 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 if (!isAdmin) el.draggable = true;
 
                 // Trash Button (Admin Only)
-                const deleteBtn = `<button onclick="deleteSection('${sec.id}')" class="admin-only absolute top-0 right-0 bg-red-500 text-white p-2 text-xs font-bold z-20">DELETE</button>`;
+                const deleteBtn = `<button onclick="deleteSection('${sec.id}')" class="admin-only absolute top-0 right-0 bg-red-500 text-white p-2 text-xs font-bold z-20 hover:bg-red-700">DELETE</button>`;
 
                 el.innerHTML = `
                     ${deleteBtn}
                     <div class="section-header w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition cursor-pointer" onclick="toggleAccordion('content-${sec.id}', 'arrow-${sec.id}')">
                         <div class="flex items-center gap-3 flex-1">
                             <div class="drag-handle text-gray-300 cursor-move p-2 -ml-2 hover:text-golf-gold ${isAdmin ? 'hidden' : ''}" onmousedown="event.stopPropagation()">⋮⋮</div>
-                            
                             <svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"></path></svg>
-                            
                             <h3 class="editable-title font-serif text-base ${textColor} font-bold outline-none" ${isAdmin ? 'contenteditable="true"' : ''}>${sec.title}</h3>
                         </div>
                         <svg id="arrow-${sec.id}" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -328,7 +334,6 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 color: "gold" // default
             });
             renderSections(sectionsData);
-            // Scroll to bottom
             setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
         }
 
@@ -340,16 +345,15 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         }
 
         window.saveAllChanges = async function() {
-            const btn = document.querySelector('#admin-toolbar button:last-child');
+            const btn = document.getElementById('btn-save-main');
             btn.innerText = "SAVING...";
             
             // 1. Scrape the DOM to get latest edits (titles, contents)
             const newSections = [];
-            // We iterate in DOM order so we capture the admin's preferred order
             container.querySelectorAll('.draggable-item').forEach(el => {
                 const id = el.id;
                 const title = el.querySelector('.editable-title').innerText;
-                const content = el.querySelector('.editable-content').innerHTML; // innerHTML preserves HTML tags
+                const content = el.querySelector('.editable-content').innerHTML; // innerHTML preserves links/bold
                 newSections.push({ id, title, content });
             });
 
@@ -363,10 +367,10 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     packing_list: packingListRaw
                 });
                 alert("Saved Successfully!");
-                btn.innerText = "SAVE CHANGES";
+                btn.innerText = "SAVE";
             } catch (error) {
                 alert("Error saving: " + error.message);
-                btn.innerText = "RETRY SAVE";
+                btn.innerText = "RETRY";
             }
         };
 
@@ -387,6 +391,13 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             isAdmin = true;
             document.body.classList.add('admin-mode');
             renderSections(sectionsData); // Re-render to add contenteditable
+        }
+
+        // NEW: Exit Admin
+        window.disableAdminMode = function() {
+            isAdmin = false;
+            document.body.classList.remove('admin-mode');
+            renderSections(sectionsData); // Re-render to remove edits/lines
         }
 
         // --- DATA LISTENER & MIGRATION ---
@@ -514,4 +525,4 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         cycleQuote(); setInterval(cycleQuote, 8000);
     </script>
 </body>
-</html>
+</html>ƒ
