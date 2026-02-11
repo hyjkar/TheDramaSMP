@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Crash Quiz</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #f0f0f0;
+            --accent-color: #e74c3c;
+            --grid-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* --- Header & Timer --- */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #timer-container {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #fff;
+            background: #2c3e50;
+            padding: 10px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            display: inline-block;
+        }
+
+        .timer-warning {
+            color: var(--accent-color) !important;
+            animation: pulse 1s infinite;
+        }
+
+        /* --- Game Area --- */
+        #game-container {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            background-color: #000;
+            border: 5px solid #444;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+
+        /* The actual image to guess */
+        #mystery-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* The grid overlay */
+        #cover-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(20, 1fr); /* 20 columns */
+            grid-template-rows: repeat(15, 1fr);    /* 15 rows */
+            z-index: 2;
+        }
+
+        .grid-piece {
+            background-color: var(--grid-color);
+            border: 1px solid #2a2a2a;
+            transition: all 0.5s ease;
+        }
+
+        /* The effect when a piece is removed */
+        .grid-piece.revealed {
+            opacity: 0;
+            transform: scale(0.5) rotate(10deg);
+            pointer-events: none;
+        }
+
+        /* --- Input Area --- */
+        #input-area {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            width: 600px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 15px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #c0392b;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-size: 1.5rem;
+            height: 30px;
+            font-weight: bold;
+        }
+
+        .success { color: #2ecc71; }
+        .fail { color: #e74c3c; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Air Crash Quiz</h1>
+        <div id="timer-container">60</div>
+    </header>
+
+    <div id="game-container">
+        <img id="mystery-image" src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Concorde_at_Filton.jpg" alt="Mystery Airplane">
+        <div id="cover-grid"></div>
+    </div>
+
+    <div id="input-area">
+        <input type="text" id="guess-input" placeholder="Name the aircraft..." autocomplete="off">
+        <button onclick="checkAnswer()">GUESS</button>
+    </div>
+
+    <div id="message"></div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const CORRECT_ANSWERS = ["concorde", "the concorde", "bac concorde"]; // Acceptable answers
+        const GAME_DURATION = 60; // Seconds
+        const REVEAL_SPEED = 200; // Milliseconds between block removals (lower is faster)
+        
+        // --- VARIABLES ---
+        let timeLeft = GAME_DURATION;
+        let timerInterval;
+        let revealInterval;
+        let isGameRunning = true;
+        
+        // --- DOM ELEMENTS ---
+        const gridContainer = document.getElementById('cover-grid');
+        const timerDisplay = document.getElementById('timer-container');
+        const inputField = document.getElementById('guess-input');
+        const messageDisplay = document.getElementById('message');
+
+        // --- INITIALIZATION ---
+        function initGame() {
+            // Create the grid pieces (20 cols * 15 rows = 300 pieces)
+            for (let i = 0; i < 300; i++) {
+                const piece = document.createElement('div');
+                piece.classList.add('grid-piece');
+                gridContainer.appendChild(piece);
+            }
+
+            // Start Timers
+            timerInterval = setInterval(updateTimer, 1000);
+            revealInterval = setInterval(revealRandomPiece, REVEAL_SPEED);
+
+            // Allow "Enter" key to submit
+            inputField.addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    checkAnswer();
+                }
+            });
+
+            inputField.focus();
+        }
+
+        // --- LOGIC ---
+
+        function updateTimer() {
+            if (!isGameRunning) return;
+
+            timeLeft--;
+            timerDisplay.textContent = timeLeft;
+
+            // Visual effect when time is running out (under 10 seconds)
+            if (timeLeft <= 10) {
+                timerDisplay.classList.add('timer-warning');
+            }
+
+            if (timeLeft <= 0) {
+                endGame(false);
+            }
+        }
+
+        function revealRandomPiece() {
+            if (!isGameRunning) return;
+
+            // Get all pieces that aren't revealed yet
+            const hiddenPieces = document.querySelectorAll('.grid-piece:not(.revealed)');
+            
+            if (hiddenPieces.length === 0) {
+                // If all pieces are gone but time remains, do nothing, just wait for timer/guess
+                return;
+            }
+
+            // Pick a random index
+            const randomIndex = Math.floor(Math.random() * hiddenPieces.length);
+            const piece = hiddenPieces[randomIndex];
+
+            // Add class to trigger CSS transition
+            piece.classList.add('revealed');
+        }
+
+        function checkAnswer() {
+            if (!isGameRunning) return;
+
+            const userGuess = inputField.value.trim().toLowerCase();
+
+            if (CORRECT_ANSWERS.includes(userGuess)) {
+                endGame(true);
+            } else {
+                // Shake effect or red text for wrong answer
+                inputField.style.borderColor = "red";
+                setTimeout(() => inputField.style.borderColor = "", 500);
+            }
+        }
+
+        function endGame(isWin) {
+            isGameRunning = false;
+            clearInterval(timerInterval);
+            clearInterval(revealInterval);
+
+            if (isWin) {
+                messageDisplay.textContent = "Correct! It was the Concorde.";
+                messageDisplay.classList.add("success");
+                timerDisplay.style.backgroundColor = "#2ecc71";
+                // Reveal remaining blocks quickly for satisfaction
+                document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+            } else {
+                messageDisplay.textContent = "Time's up! Game Over.";
+                messageDisplay.classList.add("fail");
+                timerDisplay.textContent = "0";
+                // Reveal everything so they see what they missed
+                document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+            }
+            
+            inputField.disabled = true;
+        }
+
+        // Run the game
+        window.onload = initGame;
+
+    </script>
+</body>
+</html>
