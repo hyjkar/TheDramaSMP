@@ -1,4 +1,188 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Airplane Quiz - Fixed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-red: #d71920;
+            --brand-gold: #cfa86e;
+            --brand-dark: #333333;
+            --bg-sand: #fcfbf9;
+            --piece-color: #2c2c2c;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-sand);
+            color: var(--brand-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 20px;
+            overscroll-behavior: none; 
+        }
+
+        header { text-align: center; margin-bottom: 15px; }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            color: var(--brand-dark);
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 0.9rem;
+            color: var(--brand-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        #timer-container {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--brand-red);
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        #game-wrapper {
+            padding: 8px;
+            background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 90vw;
+            max-width: 600px; 
+            margin-bottom: 20px;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%; 
+            aspect-ratio: 4/3; 
+            background-color: #000;
+            overflow: hidden;
+            border: 3px solid #fff;
+        }
+
+        #mystery-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0; left: 0; z-index: 1;
+        }
+
+        #cover-grid {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr); 
+            grid-template-rows: repeat(10, 1fr);
+            z-index: 2;
+        }
+
+        .grid-piece {
+            background-color: var(--piece-color);
+            border: 1px solid #3a3a3a;
+            transition: all 0.6s ease-out;
+        }
+
+        .grid-piece.revealed {
+            opacity: 0;
+            transform: scale(0.8);
+            background-color: var(--brand-gold);
+        }
+
+        #input-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 90vw;
+            max-width: 600px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            text-align: center;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        input[type="text"]:focus { border-color: var(--brand-gold); }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            background-color: var(--brand-red);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            letter-spacing: 1px;
+            touch-action: manipulation; 
+        }
+
+        button:active { transform: scale(0.98); }
+
+        #message {
+            margin-top: 15px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+            padding: 0 20px;
+        }
+        
+        #message.visible { opacity: 1; }
+        .success { color: #27ae60; }
+        .fail { color: var(--brand-red); }
+
+        .timer-warning { animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Airplane Quiz</h1>
+        <h2>Guess the Model</h2>
+        <div id="timer-container">01:00</div>
+    </header>
+
+    <div id="game-wrapper">
+        <div id="game-container">
+            <img id="mystery-image" src="747.jpg">
+            <div id="cover-grid"></div>
+        </div>
+    </div>
+
+    <div id="input-area">
+        <input type="text" id="guess-input" placeholder="Type airplane model..." autocomplete="off">
+        <button id="enter-btn">ENTER</button>
+    </div>
+
+    <div id="message"></div>
+
+   <script>
         // --- CONFIGURATION: LEVELS ---
         const LEVELS = [
             {
@@ -199,3 +383,5 @@
         // Start Game
         initGame(); 
     </script>
+</body>
+</html>
