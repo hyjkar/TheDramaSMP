@@ -52,13 +52,14 @@
             overflow: hidden;
             background-color: #F5F5F0;
             overscroll-behavior: none; 
+            touch-action: none; /* Prevent iOS elastic scroll on body */
         }
 
         #app-container {
             height: 100%;
             width: 100%;
             overflow-y: auto; 
-            overscroll-behavior-y: none; 
+            overscroll-behavior-y: contain; 
             -webkit-overflow-scrolling: touch;
             display: flex;
             flex-direction: column;
@@ -96,30 +97,39 @@
             transform: rotate(180deg);
         }
         
-        /* --- IMPROVED DRAGGING VISUALS --- */
-        .draggable-item {
-            transition: transform 0.15s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.2s;
-            touch-action: pan-y; /* Allow vertical scroll but capture horizontal/drag */
+        /* --- FLUID DRAGGING STYLES --- */
+        
+        /* The Placeholder (The empty space in the list) */
+        .draggable-item.placeholder {
+            opacity: 0.3;
+            border: 2px dashed #C5A059;
+            background: #f0f0f0;
+            box-shadow: none;
+        }
+        .draggable-item.placeholder * {
+            visibility: hidden; /* Hide content inside placeholder */
         }
 
-        /* The "Floating" State */
-        .draggable-item.dragging {
-            position: relative;
-            z-index: 50;
-            transform: scale(1.03) rotate(1deg); /* Pop up and tilt slightly */
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1); /* Deep Shadow */
-            border-color: #C5A059 !important; /* Force Gold Border */
+        /* The Ghost (The element following your finger) */
+        .drag-ghost {
+            position: fixed;
+            z-index: 9999;
+            pointer-events: none; /* Let clicks pass through to detect underlying elements */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
             opacity: 0.95;
-            background-color: #FFFCF5; /* Very light cream */
+            transform: scale(1.02) rotate(1deg); /* Slight pop and tilt */
+            transition: transform 0.1s; /* Smooth follow lag */
+            width: 100%; /* Will be overwritten by JS */
+            background: #FFFCF5;
+            border-top: 2px solid #C5A059;
         }
-        
+
         .drag-handle { 
             cursor: grab; 
             touch-action: none; 
-            padding: 1rem; /* Bigger touch target */
+            padding: 1rem; 
             margin: -1rem 0 -1rem -0.5rem;
         }
-        .drag-handle:active { cursor: grabbing; }
         
         /* Animation Classes */
         .anim-obj { transform-origin: center; transform-box: fill-box; will-change: transform; }
@@ -275,7 +285,8 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         const container = document.getElementById('sections-container');
         
         function renderSections(sections) {
-            if (document.querySelector('.draggable-item.dragging')) return; // Don't redraw if currently dragging
+            // Check if we are currently dragging (via class check on body or ghost existence)
+            if (document.querySelector('.drag-ghost')) return; 
 
             container.innerHTML = '';
             
@@ -309,8 +320,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 const el = document.createElement('div');
                 el.className = `draggable-item bg-white rounded-sm border-t-2 ${borderColor} shadow-sm overflow-hidden mb-3 relative`;
                 el.id = sec.id;
-                // Note: We do NOT use HTML5 'draggable=true' anymore. We use Touch Events.
-
+                
                 const deleteBtn = `<button onclick="deleteSection('${sec.id}')" class="admin-only absolute top-0 right-0 bg-red-500 text-white p-2 text-xs font-bold z-20 hover:bg-red-700">DELETE</button>`;
 
                 el.innerHTML = `
@@ -330,54 +340,104 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     </div>
                 `;
                 
-                // Add enhanced drag events
-                addTouchDrag(el);
+                // Add "Ghost" Drag Logic
+                addGhostDrag(el);
                 
                 container.appendChild(el);
             });
         }
 
-        // --- ENHANCED TOUCH DRAG LOGIC (The "Float" Effect) ---
-        function addTouchDrag(item) {
+        // --- GHOST DRAG LOGIC (The "Fluid" Fix) ---
+        function addGhostDrag(item) {
             const handle = item.querySelector('.drag-handle');
             if (!handle) return;
 
             handle.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // Stop scroll
+                // 1. Prevent default scrolling logic
+                e.preventDefault(); 
                 
-                // 1. Haptic Feedback
+                // 2. Haptics
                 if (navigator.vibrate) navigator.vibrate(50);
                 
-                // 2. Visual "Pop"
-                item.classList.add('dragging');
+                // 3. Create Ghost (Clone)
+                const rect = item.getBoundingClientRect();
+                const ghost = item.cloneNode(true);
                 
-                // 3. Track current item
-                window.currentDrag = item;
-            }, { passive: false });
+                // Style the Ghost
+                ghost.classList.add('drag-ghost');
+                ghost.style.width = rect.width + 'px';
+                ghost.style.height = rect.height + 'px'; // Lock height
+                ghost.style.left = rect.left + 'px';
+                ghost.style.top = rect.top + 'px';
+                
+                // Add to Body (so it floats above everything)
+                document.body.appendChild(ghost);
+                
+                // 4. Transform Original into Placeholder
+                item.classList.add('placeholder');
+                
+                // 5. Track state
+                const touchStartX = e.touches[0].clientX;
+                const touchStartY = e.touches[0].clientY;
+                const originalTop = rect.top;
+                const originalLeft = rect.left;
 
-            handle.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                if (!window.currentDrag) return;
-                
-                const touch = e.touches[0];
-                const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-                const dropTarget = elementBelow ? elementBelow.closest('.draggable-item') : null;
-                
-                if (dropTarget && dropTarget !== window.currentDrag) {
-                    const rect = dropTarget.getBoundingClientRect();
-                    const next = (touch.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
-                    container.insertBefore(window.currentDrag, next ? dropTarget.nextSibling : dropTarget);
+                // Move Handler
+                function moveHandler(e) {
+                    const touch = e.touches[0];
+                    const deltaX = touch.clientX - touchStartX;
+                    const deltaY = touch.clientY - touchStartY;
+                    
+                    // Move Ghost
+                    ghost.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.02) rotate(1deg)`;
+                    
+                    // Detect Swap Target
+                    // We hide ghost briefly to check what's underneath
+                    ghost.style.visibility = 'hidden';
+                    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    ghost.style.visibility = 'visible';
+                    
+                    const dropTarget = elementBelow ? elementBelow.closest('.draggable-item') : null;
+                    
+                    if (dropTarget && dropTarget !== item) {
+                        // Check if we are in the upper or lower half of the target
+                        const targetRect = dropTarget.getBoundingClientRect();
+                        const next = (touch.clientY - targetRect.top) / (targetRect.height) > 0.5;
+                        
+                        // Swap the PLACEHOLDER (item) in the DOM
+                        // Because item is 'placeholder' (invisible space), the list rearranges around it
+                        if (next) {
+                            container.insertBefore(item, dropTarget.nextSibling);
+                        } else {
+                            container.insertBefore(item, dropTarget);
+                        }
+                    }
                 }
-            }, { passive: false });
 
-            handle.addEventListener('touchend', () => {
-                if (window.currentDrag) {
-                    // Drop visual
-                    window.currentDrag.classList.remove('dragging');
-                    window.currentDrag = null;
-                    if(!isAdmin) saveUserOrder(); 
+                // End Handler
+                function endHandler() {
+                    // Animate Ghost into final position
+                    const finalRect = item.getBoundingClientRect();
+                    const currentGhostRect = ghost.getBoundingClientRect();
+                    
+                    // Calculate difference for smooth snap-back
+                    // (Simple version: just remove ghost and show item)
+                    ghost.remove();
+                    item.classList.remove('placeholder');
+                    
+                    // Save Order
+                    if(!isAdmin) saveUserOrder();
+
+                    // Clean up listeners
+                    document.removeEventListener('touchmove', moveHandler);
+                    document.removeEventListener('touchend', endHandler);
                 }
-            });
+
+                // Attach Listeners to Document (to catch drags outside handle)
+                document.addEventListener('touchmove', moveHandler, { passive: false });
+                document.addEventListener('touchend', endHandler);
+
+            }, { passive: false });
         }
         
         function saveUserOrder() {
