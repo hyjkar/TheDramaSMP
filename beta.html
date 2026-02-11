@@ -5,19 +5,15 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BD Tour">
-    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BD Tour Alicante 2026</title>
 
     <link rel="apple-touch-icon" href="app-icon-v2.png">
     <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="icon.png">
     <link rel="manifest" href="manifest.json">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     
@@ -26,133 +22,45 @@
             theme: {
                 extend: {
                     colors: {
-                        golf: {
-                            dark: '#0A2615',   /* Augusta Green */
-                            deep: '#1B4D3E',   /* Secondary Green */
-                            gold: '#C5A059',   /* Trophy Gold */
-                            cream: '#F5F5F0',  /* Card Stock */
-                            white: '#FFFFFF'
-                        }
+                        golf: { dark: '#0A2615', deep: '#1B4D3E', gold: '#C5A059', cream: '#F5F5F0', white: '#FFFFFF' }
                     },
-                    fontFamily: {
-                        serif: ['"Playfair Display"', 'serif'],
-                        sans: ['"Lato"', 'sans-serif'],
-                    }
+                    fontFamily: { serif: ['"Playfair Display"', 'serif'], sans: ['"Lato"', 'sans-serif'] }
                 }
             }
         }
     </script>
 
     <style>
-        /* --- VIEWPORT LOCK --- */
-        html, body {
-            position: fixed;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            background-color: #F5F5F0;
-            overscroll-behavior: none; 
-            touch-action: none; 
-        }
-
-        #app-container {
-            height: 100%;
-            width: 100%;
-            overflow-y: auto; 
-            overscroll-behavior-y: contain; 
-            -webkit-overflow-scrolling: touch;
-            display: flex;
-            flex-direction: column;
-            padding-bottom: 20px;
-        }
-        
-        body.admin-mode #app-container {
-            padding-bottom: 100px; 
-        }
-
-        /* Checkbox Styling */
-        input[type="checkbox"]:checked + label {
-            text-decoration: line-through;
-            color: #9CA3AF;
-        }
-
-        /* Links */
+        html, body { position: fixed; height: 100%; width: 100%; overflow: hidden; background-color: #F5F5F0; overscroll-behavior: none; touch-action: none; }
+        #app-container { height: 100%; width: 100%; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; padding-bottom: 20px; }
+        body.admin-mode #app-container { padding-bottom: 100px; }
+        input[type="checkbox"]:checked + label { text-decoration: line-through; color: #9CA3AF; }
         #app-container a { color: #C5A059; text-decoration: underline; font-weight: bold; }
-
-        /* Accordion Animation */
-        .accordion-content {
-            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-        }
-        .accordion-content.open {
-            max-height: 2000px;
-            opacity: 1;
-        }
-        .arrow-icon {
-            transition: transform 0.3s ease;
-        }
-        .arrow-icon.rotate {
-            transform: rotate(180deg);
-        }
-        
-        /* --- FLUID DRAGGING STYLES --- */
-        .draggable-item.placeholder {
-            opacity: 0.3;
-            border: 2px dashed #C5A059;
-            background: #f0f0f0;
-            box-shadow: none;
-        }
+        .accordion-content { transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
+        .accordion-content.open { max-height: 2000px; opacity: 1; }
+        .arrow-icon { transition: transform 0.3s ease; } .arrow-icon.rotate { transform: rotate(180deg); }
+        .draggable-item.placeholder { opacity: 0.3; border: 2px dashed #C5A059; background: #f0f0f0; box-shadow: none; }
         .draggable-item.placeholder * { visibility: hidden; }
-
-        .drag-ghost {
-            position: fixed; z-index: 9999; pointer-events: none;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-            opacity: 0.95; transform: scale(1.02) rotate(1deg); transition: transform 0.1s;
-            width: 100%; background: #FFFCF5; border-top: 2px solid #C5A059;
-        }
-
+        .drag-ghost { position: fixed; z-index: 9999; pointer-events: none; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25); opacity: 0.95; transform: scale(1.02) rotate(1deg); width: 100%; background: #FFFCF5; border-top: 2px solid #C5A059; }
         .drag-handle { cursor: grab; touch-action: none; padding: 1rem; margin: -1rem 0 -1rem -0.5rem; }
-        
-        /* Animation Classes */
         .anim-obj { transform-origin: center; transform-box: fill-box; will-change: transform; }
-
         #landscape-warning { display: none; }
-        @media screen and (orientation: landscape) {
-            #app-container { display: none; }
-            #landscape-warning { display: flex; }
-        }
-
-        /* --- ADMIN MODE STYLES --- */
-        body.admin-mode [contenteditable="true"] {
-            outline: 2px dashed rgba(197, 160, 89, 0.5);
-            padding: 2px;
-            border-radius: 4px;
-            background-color: rgba(255, 255, 255, 0.9);
-            color: #000; /* Ensure text is visible when editing header */
-        }
-        body.admin-mode [contenteditable="true"]:focus {
-            outline: 2px solid #C5A059;
-            background-color: white;
-            color: #000;
-        }
-        .admin-only { display: none !important; }
-        body.admin-mode .admin-only { display: flex !important; }
+        @media screen and (orientation: landscape) { #app-container { display: none; } #landscape-warning { display: flex; } }
+        body.admin-mode [contenteditable="true"] { outline: 2px dashed rgba(197, 160, 89, 0.5); padding: 2px; border-radius: 4px; background-color: rgba(255, 255, 255, 0.9); color: #000; }
+        body.admin-mode [contenteditable="true"]:focus { outline: 2px solid #C5A059; background-color: white; color: #000; }
+        .admin-only { display: none !important; } body.admin-mode .admin-only { display: flex !important; }
+        body.admin-mode .section-header { pointer-events: none; } body.admin-mode .section-header .editable-title { pointer-events: auto; }
+        body.admin-mode .accordion-content { max-height: none !important; opacity: 1 !important; display: block; } body.admin-mode .arrow-icon { display: none; }
         
-        /* Admin Overrides */
-        body.admin-mode .section-header { pointer-events: none; } 
-        body.admin-mode .section-header .editable-title { pointer-events: auto; }
-        body.admin-mode .accordion-content { max-height: none !important; opacity: 1 !important; display: block; }
-        body.admin-mode .arrow-icon { display: none; }
-
+        /* CALENDAR STYLES */
+        .timeline-line { position: absolute; left: 15px; top: 10px; bottom: -20px; width: 2px; background: #e5e7eb; z-index: 0; }
+        .timeline-dot { width: 12px; height: 12px; background: #C5A059; border-radius: 50%; border: 2px solid white; position: relative; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body class="bg-golf-cream text-gray-800 font-sans antialiased">
 
     <div id="landscape-warning" class="fixed inset-0 bg-golf-dark z-[100] flex flex-col items-center justify-center text-golf-gold p-10 text-center">
-        <div class="text-6xl mb-4">⟳</div>
-        <h2 class="font-serif text-3xl mb-2">Portrait Mode Only</h2>
+        <div class="text-6xl mb-4">⟳</div><h2 class="font-serif text-3xl mb-2">Portrait Mode Only</h2>
     </div>
 
     <div id="app-container" class="max-w-md mx-auto bg-golf-cream shadow-2xl relative">
@@ -160,6 +68,10 @@
         <header class="bg-golf-dark pt-10 pb-8 px-6 text-center rounded-b-[30px] shadow-lg z-10 relative overflow-hidden shrink-0">
             <button id="install-btn" onclick="showInstallInstructions()" class="hidden absolute top-6 left-6 text-golf-gold hover:text-white transition z-50 p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg></button>
             
+            <button onclick="openCalendar()" class="absolute top-6 right-6 text-golf-gold hover:text-white transition z-50 p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </button>
+
             <svg id="header-glass" class="absolute bottom-0 right-0 w-48 h-auto opacity-10 text-golf-gold transform translate-x-4 translate-y-2" viewBox="0 0 200 200" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M40 40 L160 40 L100 120 L100 180 M70 180 L130 180" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                 <line x1="50" y1="50" x2="150" y2="50" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity="0.5" />
@@ -171,7 +83,6 @@
                     <div id="app-title-main" class="outline-none">BD TOUR</div>
                     <div id="app-title-sub" class="text-golf-gold italic text-xl outline-none mt-1">Alicante 2026</div>
                 </div>
-                
                 <button onclick="document.getElementById('packing-modal').classList.remove('hidden'); event.stopPropagation();" class="pointer-events-auto mt-4 bg-golf-deep border border-golf-gold text-golf-gold text-[10px] uppercase tracking-widest py-1.5 px-6 rounded-full hover:bg-black transition flex items-center justify-center mx-auto gap-2 shadow-lg"><span>✓</span> Packing List</button>
             </div>
         </header>
@@ -180,9 +91,7 @@
             <div class="text-center text-gray-400 text-xs mt-10">Loading Itinerary...</div>
         </main>
 
-        <div class="admin-only px-4 pb-4">
-            <button onclick="addNewSection()" class="w-full border-2 border-dashed border-golf-gold text-golf-gold font-bold py-3 rounded-sm hover:bg-golf-gold hover:text-white transition uppercase tracking-widest text-xs">+ Add New Section</button>
-        </div>
+        <div class="admin-only px-4 pb-4"><button onclick="addNewSection()" class="w-full border-2 border-dashed border-golf-gold text-golf-gold font-bold py-3 rounded-sm hover:bg-golf-gold hover:text-white transition uppercase tracking-widest text-xs">+ Add New Section</button></div>
 
         <div id="quote-container" class="mt-4 px-10 text-center h-24 flex flex-col items-center justify-center select-none pointer-events-none"><div id="quote-content" class="transition-opacity duration-1000 opacity-0"></div></div>
         <div class="text-center pt-2 pb-6">
@@ -201,6 +110,17 @@
         <button id="btn-save-main" onclick="saveAllChanges()" class="bg-golf-gold text-golf-dark font-bold px-4 py-2 rounded shadow-lg uppercase tracking-widest text-xs hover:bg-white min-w-[100px]">SAVE</button>
     </div>
 
+    <div id="calendar-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex flex-col items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="bg-golf-gold p-3 text-center flex justify-between items-center shrink-0">
+                <div class="w-6"></div><h2 class="font-serif text-lg font-bold text-golf-dark">Schedule</h2><button onclick="document.getElementById('calendar-modal').classList.add('hidden')" class="text-golf-dark font-bold text-xl hover:text-white">×</button>
+            </div>
+            <div id="calendar-content" class="overflow-y-auto flex-1 p-6">
+                </div>
+            <button onclick="document.getElementById('calendar-modal').classList.add('hidden')" class="bg-gray-100 p-3 text-center text-xs font-bold text-gray-500 hover:bg-gray-200 uppercase tracking-wide shrink-0">Close</button>
+        </div>
+    </div>
+
     <div id="packing-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex flex-col items-center justify-center p-6 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div class="bg-golf-gold p-3 text-center flex justify-between items-center shrink-0">
@@ -212,10 +132,7 @@
                     <div class="flex gap-2 mb-4"><input id="new-item-input" type="text" placeholder="Add item..." class="flex-1 bg-gray-50 border border-gray-200 rounded-sm px-2 py-1 text-sm outline-none focus:border-golf-gold"><button onclick="addPersonalItem()" class="bg-golf-deep text-white px-3 py-1 rounded-sm text-xs font-bold hover:bg-black">+</button></div>
                     <div id="list-personal" class="space-y-3"></div>
                 </div>
-                <div class="admin-only pt-4 border-t border-gray-200 mt-4">
-                    <label class="block text-xs font-bold text-golf-dark uppercase mb-1">Edit Essentials (Admin)</label>
-                    <textarea id="edit-packing-essentials" rows="4" class="w-full p-2 text-sm border rounded bg-yellow-50"></textarea>
-                </div>
+                <div class="admin-only pt-4 border-t border-gray-200 mt-4"><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Edit Essentials (Admin)</label><textarea id="edit-packing-essentials" rows="4" class="w-full p-2 text-sm border rounded bg-yellow-50"></textarea></div>
             </div>
             <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="bg-gray-100 p-3 text-center text-xs font-bold text-gray-500 hover:bg-gray-200 uppercase tracking-wide shrink-0">Close</button>
         </div>
@@ -224,11 +141,9 @@
     <div id="install-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-end pb-10 text-white animate-fade-in" onclick="document.getElementById('install-modal').classList.add('hidden')">
         <div class="bg-golf-dark border border-golf-gold p-6 rounded-t-2xl w-full max-w-md text-center shadow-2xl relative">
             <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gray-500 rounded-full"></div>
-            <h3 class="font-serif text-xl text-golf-gold mb-2">Install App</h3>
-            <p class="text-sm text-gray-300 mb-6">For the best experience, add this to your home screen.</p>
+            <h3 class="font-serif text-xl text-golf-gold mb-2">Install App</h3><p class="text-sm text-gray-300 mb-6">For the best experience, add this to your home screen.</p>
             <div class="flex items-center justify-center gap-4 text-sm font-bold text-white mb-2"><span>1. Tap Share</span><svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg></div>
-            <div class="flex items-center justify-center gap-4 text-sm font-bold text-white"><span>2. Add to Home Screen</span><div class="border border-white rounded px-2 text-[10px] uppercase">Plus</div></div>
-            <div class="mt-8 text-xs text-gray-500">Tap anywhere to close</div>
+            <div class="flex items-center justify-center gap-4 text-sm font-bold text-white"><span>2. Add to Home Screen</span><div class="border border-white rounded px-2 text-[10px] uppercase">Plus</div></div><div class="mt-8 text-xs text-gray-500">Tap anywhere to close</div>
         </div>
         <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-golf-gold animate-bounce">↓</div>
     </div>
@@ -271,15 +186,75 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         let sectionsData = [];
         let globalEssentialsList = [];
 
+        // --- CALENDAR LOGIC (SMART PARSER) ---
+        window.openCalendar = function() {
+            const calContent = document.getElementById('calendar-content');
+            calContent.innerHTML = '';
+            
+            let events = [];
+            
+            // 1. Scan sections for timestamps
+            // Looks for formats like: 14:00, 9.30, 8:00 AM, 16.45
+            const timeRegex = /\b([0-1]?[0-9]|2[0-3])[:.]([0-5][0-9])\b/g; 
+
+            sectionsData.forEach(sec => {
+                // Strip HTML to get raw text lines
+                const tempDiv = document.createElement("div");
+                tempDiv.innerHTML = sec.content;
+                const rawLines = tempDiv.innerText.split('\n');
+
+                rawLines.forEach(line => {
+                    const cleanLine = line.trim();
+                    if(!cleanLine) return;
+                    
+                    // Does this line contain a time?
+                    const timeMatch = cleanLine.match(timeRegex);
+                    
+                    if(timeMatch) {
+                        // Create an event object
+                        events.push({
+                            timeStr: timeMatch[0],
+                            text: cleanLine,
+                            section: sec.title
+                        });
+                    }
+                });
+            });
+
+            if(events.length === 0) {
+                calContent.innerHTML = '<div class="text-center text-gray-400 text-sm italic mt-10">No times found in itinerary.<br>Add times (e.g. 14:00) to section text to see them here.</div>';
+            } else {
+                // Note: We can't sort chronologically perfectly without real dates, 
+                // so we display them in the order they appear in the itinerary (Dom Order).
+                let html = '<div class="relative pl-2">';
+                
+                events.forEach((evt, idx) => {
+                    // Highlight the time in the text
+                    const highlightedText = evt.text.replace(evt.timeStr, `<span class="font-bold text-golf-deep">${evt.timeStr}</span>`);
+                    
+                    html += `
+                        <div class="mb-6 relative pl-6">
+                            <div class="timeline-line"></div>
+                            <div class="timeline-dot absolute left-0 top-1.5"></div>
+                            
+                            <div class="text-[10px] uppercase font-bold text-gray-400 mb-1 tracking-widest">${evt.section}</div>
+                            <div class="text-sm text-gray-700 leading-snug">${highlightedText}</div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                calContent.innerHTML = html;
+            }
+
+            document.getElementById('calendar-modal').classList.remove('hidden');
+        };
+
         // --- RENDER SECTIONS ---
         const container = document.getElementById('sections-container');
-        
         function renderSections(sections) {
             if (document.querySelector('.drag-ghost')) return; 
-
             container.innerHTML = '';
             
-            // Check User Order Preference (if not admin mode, we respect user order)
             let displayOrder = sections;
             if (!isAdmin) {
                 const savedOrder = JSON.parse(localStorage.getItem('userSectionOrder') || '[]');
@@ -287,8 +262,7 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                     displayOrder = sections.sort((a, b) => {
                         const indexA = savedOrder.indexOf(a.id);
                         const indexB = savedOrder.indexOf(b.id);
-                        if (indexA === -1) return 1; 
-                        if (indexB === -1) return -1;
+                        if (indexA === -1) return 1; if (indexB === -1) return -1;
                         return indexA - indexB;
                     });
                 }
@@ -337,57 +311,37 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         function addGhostDrag(item) {
             const handle = item.querySelector('.drag-handle');
             if (!handle) return;
-
             handle.addEventListener('touchstart', (e) => {
                 e.preventDefault(); 
                 if (navigator.vibrate) navigator.vibrate(50);
-                
                 const rect = item.getBoundingClientRect();
                 const ghost = item.cloneNode(true);
-                
                 ghost.classList.add('drag-ghost');
-                ghost.style.width = rect.width + 'px';
-                ghost.style.height = rect.height + 'px'; 
-                ghost.style.left = rect.left + 'px';
-                ghost.style.top = rect.top + 'px';
-                
+                ghost.style.width = rect.width + 'px'; ghost.style.height = rect.height + 'px'; ghost.style.left = rect.left + 'px'; ghost.style.top = rect.top + 'px';
                 document.body.appendChild(ghost);
                 item.classList.add('placeholder');
-                
-                const touchStartX = e.touches[0].clientX;
-                const touchStartY = e.touches[0].clientY;
-
+                const touchStartX = e.touches[0].clientX; const touchStartY = e.touches[0].clientY;
                 function moveHandler(e) {
                     const touch = e.touches[0];
-                    const deltaX = touch.clientX - touchStartX;
-                    const deltaY = touch.clientY - touchStartY;
+                    const deltaX = touch.clientX - touchStartX; const deltaY = touch.clientY - touchStartY;
                     ghost.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.02) rotate(1deg)`;
-                    
                     ghost.style.visibility = 'hidden';
                     const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
                     ghost.style.visibility = 'visible';
-                    
                     const dropTarget = elementBelow ? elementBelow.closest('.draggable-item') : null;
-                    
                     if (dropTarget && dropTarget !== item) {
                         const targetRect = dropTarget.getBoundingClientRect();
                         const next = (touch.clientY - targetRect.top) / (targetRect.height) > 0.5;
-                        if (next) container.insertBefore(item, dropTarget.nextSibling);
-                        else container.insertBefore(item, dropTarget);
+                        if (next) container.insertBefore(item, dropTarget.nextSibling); else container.insertBefore(item, dropTarget);
                     }
                 }
-
                 function endHandler() {
-                    ghost.remove();
-                    item.classList.remove('placeholder');
+                    ghost.remove(); item.classList.remove('placeholder');
                     if(!isAdmin) saveUserOrder();
-                    document.removeEventListener('touchmove', moveHandler);
-                    document.removeEventListener('touchend', endHandler);
+                    document.removeEventListener('touchmove', moveHandler); document.removeEventListener('touchend', endHandler);
                 }
-
                 document.addEventListener('touchmove', moveHandler, { passive: false });
                 document.addEventListener('touchend', endHandler);
-
             }, { passive: false });
         }
         
@@ -403,55 +357,28 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
             renderSections(sectionsData);
             setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
         }
-
         window.deleteSection = function(id) {
-            if(confirm("Are you sure you want to delete this section?")) {
-                sectionsData = sectionsData.filter(s => s.id !== id);
-                renderSections(sectionsData);
-            }
+            if(confirm("Delete this section?")) { sectionsData = sectionsData.filter(s => s.id !== id); renderSections(sectionsData); }
         }
-
         window.saveAllChanges = async function() {
             const btn = document.getElementById('btn-save-main');
             btn.innerText = "SAVING...";
-            
-            // 1. Scrape Sections
             const newSections = [];
             container.querySelectorAll('.draggable-item').forEach(el => {
                 const id = el.id;
                 const titleEl = el.querySelector('.editable-title');
                 const contentEl = el.querySelector('.editable-content');
                 if (titleEl && contentEl) {
-                    newSections.push({ 
-                        id: id, 
-                        title: titleEl.innerText, 
-                        content: contentEl.innerHTML 
-                    });
+                    newSections.push({ id: id, title: titleEl.innerText, content: contentEl.innerHTML });
                 }
             });
-
-            // 2. Scrape Title
             const titleMain = document.getElementById('app-title-main').innerText;
             const titleSub = document.getElementById('app-title-sub').innerText;
-
-            // 3. Scrape Packing List
             const packingListRaw = document.getElementById('edit-packing-essentials').value;
-
             try {
-                await setDoc(tripRef, {
-                    titleMain: titleMain,
-                    titleSub: titleSub,
-                    sections: newSections,
-                    packing_list: packingListRaw
-                }, { merge: true });
-                
-                alert("Saved Successfully!");
-                btn.innerText = "SAVE";
-            } catch (error) {
-                console.error(error);
-                alert("Error saving: " + error.message);
-                btn.innerText = "RETRY";
-            }
+                await setDoc(tripRef, { titleMain: titleMain, titleSub: titleSub, sections: newSections, packing_list: packingListRaw }, { merge: true });
+                alert("Saved!"); btn.innerText = "SAVE";
+            } catch (error) { console.error(error); alert("Error: " + error.message); btn.innerText = "RETRY"; }
         };
 
         // --- AUTH ---
@@ -462,30 +389,18 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 await signInWithEmailAndPassword(auth, email, pass);
                 document.getElementById('login-modal').classList.add('hidden');
                 enableAdminMode();
-            } catch (error) {
-                alert("Access Denied: " + error.message);
-            }
+            } catch (error) { alert("Access Denied."); }
         });
-
         function enableAdminMode() {
-            isAdmin = true;
-            document.body.classList.add('admin-mode');
-            
-            // Enable Title Editing
+            isAdmin = true; document.body.classList.add('admin-mode');
             document.getElementById('app-title-main').contentEditable = "true";
             document.getElementById('app-title-sub').contentEditable = "true";
-            
             renderSections(sectionsData);
         }
-
         window.disableAdminMode = function() {
-            isAdmin = false;
-            document.body.classList.remove('admin-mode');
-            
-            // Disable Title Editing
+            isAdmin = false; document.body.classList.remove('admin-mode');
             document.getElementById('app-title-main').contentEditable = "false";
             document.getElementById('app-title-sub').contentEditable = "false";
-            
             renderSections(sectionsData);
         }
 
@@ -495,66 +410,34 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
                 const data = doc.data();
                 const now = new Date();
                 document.getElementById('last-sync').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-                // LOAD TITLES
                 document.getElementById('app-title-main').innerText = data.titleMain || "BD TOUR";
                 document.getElementById('app-title-sub').innerText = data.titleSub || "Alicante 2026";
-
-                // PACKING LIST
-                if (data.packing_list) {
-                    globalEssentialsList = data.packing_list.split('\n');
-                    document.getElementById('edit-packing-essentials').value = data.packing_list;
-                } else {
-                    globalEssentialsList = ["Passport", "Clubs", "Golf Shoes"];
-                }
+                if (data.packing_list) { globalEssentialsList = data.packing_list.split('\n'); document.getElementById('edit-packing-essentials').value = data.packing_list; } 
+                else { globalEssentialsList = ["Passport", "Clubs", "Golf Shoes"]; }
                 renderPackingLists();
-
-                // SECTIONS
-                if (data.sections && Array.isArray(data.sections)) {
-                    sectionsData = data.sections;
-                    renderSections(sectionsData);
-                } else {
-                    console.log("Migrating old data structure...");
-                    sectionsData = [
-                        { id: 'flight', title: 'Flight Plan', content: data.flights || 'No details' },
-                        { id: 'transport', title: 'Transportation', content: data.transport || 'No details' },
-                        { id: 'rounds', title: 'Golf Rounds', content: data.rounds || 'No details' },
-                        { id: 'team1', title: 'Team 1', content: data.team1 || 'No roster' },
-                        { id: 'team2', title: 'Team 2', content: data.team2 || 'No roster' },
-                        { id: 'hotel', title: 'Accommodation', content: data.hotel || 'No details' },
-                        { id: 'dinner', title: 'Dining', content: data.dinner || 'No details' }
-                    ];
+                if (data.sections && Array.isArray(data.sections)) { sectionsData = data.sections; renderSections(sectionsData); } 
+                else {
+                    sectionsData = [ { id: 'flight', title: 'Flight Plan', content: data.flights || 'No details' }, { id: 'transport', title: 'Transportation', content: data.transport || 'No details' }, { id: 'rounds', title: 'Golf Rounds', content: data.rounds || 'No details' }, { id: 'team1', title: 'Team 1', content: data.team1 || 'No roster' }, { id: 'team2', title: 'Team 2', content: data.team2 || 'No roster' }, { id: 'hotel', title: 'Accommodation', content: data.hotel || 'No details' }, { id: 'dinner', title: 'Dining', content: data.dinner || 'No details' } ];
                     renderSections(sectionsData);
                 }
-            } else {
-                console.log("No data found, starting fresh.");
-                sectionsData = [];
-                renderSections(sectionsData);
-            }
+            } else { sectionsData = []; renderSections(sectionsData); }
         });
 
-        // Helpers & Listeners
+        // Helpers
         window.format = function(command) { document.execCommand(command, false, null); };
         window.addLink = function() { const url = prompt("Enter URL:", "https://"); if(url) document.execCommand('createLink', false, url); };
         window.toggleAccordion = function(contentId, arrowId) {
             if(document.body.classList.contains('admin-mode')) return; 
-            const content = document.getElementById(contentId);
-            const arrow = document.getElementById(arrowId);
-            if(!content.classList.contains('open')) { content.classList.add('open'); arrow.classList.add('rotate'); }
-            else { content.classList.remove('open'); arrow.classList.remove('rotate'); }
+            const content = document.getElementById(contentId); const arrow = document.getElementById(arrowId);
+            if(!content.classList.contains('open')) { content.classList.add('open'); arrow.classList.add('rotate'); } else { content.classList.remove('open'); arrow.classList.remove('rotate'); }
         };
-        // Install Logic
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
-        window.showInstallInstructions = function() {
-            if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => deferredPrompt = null); }
-            else { document.getElementById('install-modal').classList.remove('hidden'); }
-        };
+        window.showInstallInstructions = function() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => deferredPrompt = null); } else { document.getElementById('install-modal').classList.remove('hidden'); } };
         if (!window.matchMedia('(display-mode: standalone)').matches) document.getElementById('install-btn').classList.remove('hidden');
-
+        
         // Animation
-        const stickEl = document.getElementById('anim-stick');
-        const ballEl = document.getElementById('anim-ball');
+        const stickEl = document.getElementById('anim-stick'); const ballEl = document.getElementById('anim-ball');
         function animateBubbles() {
             const time = Date.now();
             if(ballEl) ballEl.setAttribute('transform', `translate(${100 + Math.sin(time * 0.0005) * 8}, ${85 + Math.cos(time * 0.0008) * 4})`);
@@ -563,104 +446,46 @@ appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         }
         animateBubbles();
 
-        // Packing List (Standard User View)
+        // Packing
         window.renderPackingLists = function() {
-            const essentialsContainer = document.getElementById('list-essentials');
-            essentialsContainer.innerHTML = '';
+            const essentialsContainer = document.getElementById('list-essentials'); essentialsContainer.innerHTML = '';
             const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}');
-            if (globalEssentialsList.length === 0) {
-                essentialsContainer.innerHTML = '<p class="text-xs text-gray-400 italic">No essentials added yet.</p>';
-            } else {
+            if (globalEssentialsList.length === 0) { essentialsContainer.innerHTML = '<p class="text-xs text-gray-400 italic">No essentials added yet.</p>'; } else {
                 globalEssentialsList.forEach((itemText, index) => {
                     if(!itemText.trim()) return;
-                    const div = document.createElement('div');
-                    div.className = "flex items-center gap-3";
-                    const checkbox = document.createElement('input');
-                    checkbox.type = "checkbox";
-                    checkbox.id = `essential-${index}`;
-                    checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer";
-                    checkbox.checked = !!localChecks[itemText];
-                    checkbox.onchange = () => toggleEssential(itemText);
-                    const label = document.createElement('label');
-                    label.htmlFor = `essential-${index}`;
-                    label.innerText = itemText;
-                    label.className = "cursor-pointer select-none text-sm text-gray-700";
-                    div.appendChild(checkbox);
-                    div.appendChild(label);
-                    essentialsContainer.appendChild(div);
+                    const div = document.createElement('div'); div.className = "flex items-center gap-3";
+                    const checkbox = document.createElement('input'); checkbox.type = "checkbox"; checkbox.id = `essential-${index}`; checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer"; checkbox.checked = !!localChecks[itemText]; checkbox.onchange = () => toggleEssential(itemText);
+                    const label = document.createElement('label'); label.htmlFor = `essential-${index}`; label.innerText = itemText; label.className = "cursor-pointer select-none text-sm text-gray-700";
+                    div.appendChild(checkbox); div.appendChild(label); essentialsContainer.appendChild(div);
                 });
             }
-            const personalContainer = document.getElementById('list-personal');
-            personalContainer.innerHTML = '';
+            const personalContainer = document.getElementById('list-personal'); personalContainer.innerHTML = '';
             const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
-            if (personalItems.length === 0) {
-                personalContainer.innerHTML = '<p class="text-xs text-gray-400 italic">No personal items.</p>';
-            } else {
+            if (personalItems.length === 0) { personalContainer.innerHTML = '<p class="text-xs text-gray-400 italic">No personal items.</p>'; } else {
                 personalItems.forEach((item, index) => {
-                    const div = document.createElement('div');
-                    div.className = "flex items-center justify-between group";
-                    const leftDiv = document.createElement('div');
-                    leftDiv.className = "flex items-center gap-3";
-                    const checkbox = document.createElement('input');
-                    checkbox.type = "checkbox";
-                    checkbox.id = `personal-${index}`;
-                    checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer";
-                    checkbox.checked = item.checked;
-                    checkbox.onchange = () => togglePersonal(index);
-                    const label = document.createElement('label');
-                    label.htmlFor = `personal-${index}`;
-                    label.innerText = item.text;
-                    label.className = "cursor-pointer select-none text-sm text-gray-700";
-                    leftDiv.appendChild(checkbox);
-                    leftDiv.appendChild(label);
-                    const delBtn = document.createElement('button');
-                    delBtn.innerHTML = "&times;";
-                    delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2";
-                    delBtn.onclick = () => deletePersonal(index);
-                    div.appendChild(leftDiv);
-                    div.appendChild(delBtn);
-                    personalContainer.appendChild(div);
+                    const div = document.createElement('div'); div.className = "flex items-center justify-between group";
+                    const leftDiv = document.createElement('div'); leftDiv.className = "flex items-center gap-3";
+                    const checkbox = document.createElement('input'); checkbox.type = "checkbox"; checkbox.id = `personal-${index}`; checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer"; checkbox.checked = item.checked; checkbox.onchange = () => togglePersonal(index);
+                    const label = document.createElement('label'); label.htmlFor = `personal-${index}`; label.innerText = item.text; label.className = "cursor-pointer select-none text-sm text-gray-700";
+                    leftDiv.appendChild(checkbox); leftDiv.appendChild(label);
+                    const delBtn = document.createElement('button'); delBtn.innerHTML = "&times;"; delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2"; delBtn.onclick = () => deletePersonal(index);
+                    div.appendChild(leftDiv); div.appendChild(delBtn); personalContainer.appendChild(div);
                 });
             }
         }
-        window.toggleEssential = function(itemName) {
-            const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}');
-            if (localChecks[itemName]) delete localChecks[itemName];
-            else localChecks[itemName] = true;
-            localStorage.setItem('essentialsChecks', JSON.stringify(localChecks));
-        }
-        window.addPersonalItem = function() {
-            const input = document.getElementById('new-item-input');
-            const text = input.value.trim();
-            if(!text) return;
-            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
-            personalItems.push({ text: text, checked: false });
-            localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
-            input.value = "";
-            renderPackingLists();
-        }
-        window.togglePersonal = function(index) {
-            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
-            personalItems[index].checked = !personalItems[index].checked;
-            localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
-        }
-        window.deletePersonal = function(index) {
-            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
-            personalItems.splice(index, 1);
-            localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
-            renderPackingLists();
-        }
+        window.toggleEssential = function(itemName) { const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}'); if (localChecks[itemName]) delete localChecks[itemName]; else localChecks[itemName] = true; localStorage.setItem('essentialsChecks', JSON.stringify(localChecks)); }
+        window.addPersonalItem = function() { const input = document.getElementById('new-item-input'); const text = input.value.trim(); if(!text) return; const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]'); personalItems.push({ text: text, checked: false }); localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems)); input.value = ""; renderPackingLists(); }
+        window.togglePersonal = function(index) { const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]'); personalItems[index].checked = !personalItems[index].checked; localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems)); }
+        window.deletePersonal = function(index) { const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]'); personalItems.splice(index, 1); localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems)); renderPackingLists(); }
 
         const quotes = ["The most important shot in golf is the next one. – Ben Hogan", "Golf is a good walk spoiled. – Mark Twain", "Drive for show, putt for dough.", "Keep your head down."];
         const quoteContainer = document.getElementById('quote-content');
         function cycleQuote() {
-            quoteContainer.classList.remove('opacity-100');
-            quoteContainer.classList.add('opacity-0');
+            quoteContainer.classList.remove('opacity-100'); quoteContainer.classList.add('opacity-0');
             setTimeout(() => {
                 const r = quotes[Math.floor(Math.random() * quotes.length)].split(' – ');
                 quoteContainer.innerHTML = r.length > 1 ? `<span class="block mb-2 text-sm text-golf-gold">"${r[0]}"</span><span class="block text-[10px] font-sans font-bold tracking-widest uppercase opacity-60 text-golf-gold">&mdash; ${r[1]}</span>` : `<span class="block text-sm text-golf-gold">"${r[0]}"</span>`;
-                quoteContainer.classList.remove('opacity-0');
-                quoteContainer.classList.add('opacity-100');
+                quoteContainer.classList.remove('opacity-0'); quoteContainer.classList.add('opacity-100');
             }, 1000);
         }
         cycleQuote(); setInterval(cycleQuote, 8000);
