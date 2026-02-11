@@ -3,73 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Air Crash Quiz</title>
+    <title>Airplane Quiz - 747 Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --text-color: #f0f0f0;
-            --accent-color: #e74c3c;
-            --grid-color: #333;
+            /* Emirates-inspired Palette */
+            --brand-red: #d71920;
+            --brand-gold: #cfa86e;
+            --brand-dark: #333333;
+            --bg-sand: #fcfbf9;
+            --piece-color: #2c2c2c;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-sand);
+            color: var(--brand-dark);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             margin: 0;
+            background-image: radial-gradient(#e6e6e6 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
-        /* --- Header & Timer --- */
+        /* --- Header --- */
         header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
-        #timer-container {
+        h1 {
+            font-family: 'Playfair Display', serif;
             font-size: 3rem;
+            color: var(--brand-dark);
+            margin: 0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 1rem;
+            color: var(--brand-gold);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        /* --- Timer --- */
+        #timer-container {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--brand-red);
+            margin-top: 15px;
             font-weight: bold;
-            color: #fff;
-            background: #2c3e50;
-            padding: 10px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            display: inline-block;
+            font-feature-settings: "tnum"; /* Tabular numbers for steady timer */
         }
 
         .timer-warning {
-            color: var(--accent-color) !important;
             animation: pulse 1s infinite;
         }
 
         /* --- Game Area --- */
-        #game-container {
-            position: relative;
-            width: 600px;
-            height: 400px;
-            background-color: #000;
-            border: 5px solid #444;
-            border-radius: 4px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        #game-wrapper {
+            padding: 10px;
+            background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%); /* Gold Frame */
+            border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
 
-        /* The actual image to guess */
+        #game-container {
+            position: relative;
+            width: 700px;
+            height: 450px;
+            background-color: #000;
+            overflow: hidden;
+            border: 4px solid #fff; 
+        }
+
         #mystery-image {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* Ensures image fills box without stretching */
             position: absolute;
             top: 0;
             left: 0;
             z-index: 1;
         }
 
-        /* The grid overlay */
+        /* Grid Overlay */
         #cover-grid {
             position: absolute;
             top: 0;
@@ -77,208 +102,271 @@
             width: 100%;
             height: 100%;
             display: grid;
-            grid-template-columns: repeat(20, 1fr); /* 20 columns */
-            grid-template-rows: repeat(15, 1fr);    /* 15 rows */
+            grid-template-columns: repeat(20, 1fr);
+            grid-template-rows: repeat(15, 1fr);
             z-index: 2;
         }
 
         .grid-piece {
-            background-color: var(--grid-color);
-            border: 1px solid #2a2a2a;
-            transition: all 0.5s ease;
+            background-color: var(--piece-color);
+            border: 1px solid #3a3a3a;
+            transition: all 0.6s ease-out;
         }
 
-        /* The effect when a piece is removed */
         .grid-piece.revealed {
             opacity: 0;
-            transform: scale(0.5) rotate(10deg);
-            pointer-events: none;
+            transform: scale(0.8);
+            background-color: var(--brand-gold);
         }
 
         /* --- Input Area --- */
         #input-area {
-            margin-top: 30px;
+            margin-top: 35px;
             display: flex;
-            gap: 10px;
-            width: 600px;
+            justify-content: center;
+            align-items: center;
+            width: 700px;
         }
 
         input[type="text"] {
             flex-grow: 1;
-            padding: 15px;
+            padding: 18px 25px;
             font-size: 1.2rem;
-            border: none;
-            border-radius: 5px;
+            border: 2px solid #ddd;
+            border-right: none;
+            border-radius: 50px 0 0 50px;
             outline: none;
+            font-family: 'Roboto', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--brand-gold);
         }
 
         button {
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            background-color: var(--accent-color);
+            padding: 18px 40px;
+            font-size: 1.1rem;
+            background-color: var(--brand-red);
             color: white;
-            border: none;
-            border-radius: 5px;
+            border: 2px solid var(--brand-red);
+            border-radius: 0 50px 50px 0;
             cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
+            font-weight: 500;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            font-family: 'Roboto', sans-serif;
         }
 
         button:hover {
-            background-color: #c0392b;
+            background-color: #b01319;
+            border-color: #b01319;
         }
 
+        /* --- Feedback Message --- */
         #message {
-            margin-top: 15px;
-            font-size: 1.5rem;
-            height: 30px;
-            font-weight: bold;
+            margin-top: 20px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            height: 40px;
+            opacity: 0;
+            transition: opacity 0.5s;
         }
-
-        .success { color: #2ecc71; }
-        .fail { color: #e74c3c; }
+        
+        #message.visible { opacity: 1; }
+        .success { color: #27ae60; }
+        .fail { color: var(--brand-red); }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Air Crash Quiz</h1>
-        <div id="timer-container">60</div>
+        <h1>Airplane Quiz</h1>
+        <h2>Guess the Model</h2>
+        <div id="timer-container">01:00</div>
     </header>
 
-    <div id="game-container">
-        <img id="mystery-image" src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Concorde_at_Filton.jpg" alt="Mystery Airplane">
-        <div id="cover-grid"></div>
+    <div id="game-wrapper">
+        <div id="game-container">
+            <img id="mystery-image" src="https://upload.wikimedia.org/wikipedia/commons/b/b8/B747_Iberia_EC-HDS.jpg" alt="Mystery Airplane">
+            <div id="cover-grid"></div>
+        </div>
     </div>
 
     <div id="input-area">
-        <input type="text" id="guess-input" placeholder="Name the aircraft..." autocomplete="off">
-        <button onclick="checkAnswer()">GUESS</button>
+        <input type="text" id="guess-input" placeholder="Type answer and hit Enter..." autocomplete="off">
+        <button onclick="checkAnswer()">ENTER</button>
     </div>
 
     <div id="message"></div>
 
     <script>
         // --- CONFIGURATION ---
-        const CORRECT_ANSWERS = ["concorde", "the concorde", "bac concorde"]; // Acceptable answers
-        const GAME_DURATION = 60; // Seconds
-        const REVEAL_SPEED = 200; // Milliseconds between block removals (lower is faster)
         
-        // --- VARIABLES ---
+        // List of accepted answers (normalized to lowercase)
+        const ACCEPTED_ANSWERS = [
+            "boeing 747",
+            "747",
+            "b747",
+            "b 747",
+            "jumbo jet",
+            "the jumbo jet",
+            "queen of the skies",
+            "boeing747"
+        ];
+        
+        const GAME_DURATION = 60; 
+        const REVEAL_SPEED = 200; // ms
+        
+        // --- STATE ---
         let timeLeft = GAME_DURATION;
         let timerInterval;
         let revealInterval;
         let isGameRunning = true;
         
-        // --- DOM ELEMENTS ---
+        // --- DOM ---
         const gridContainer = document.getElementById('cover-grid');
         const timerDisplay = document.getElementById('timer-container');
         const inputField = document.getElementById('guess-input');
         const messageDisplay = document.getElementById('message');
 
-        // --- INITIALIZATION ---
+        // --- INIT ---
         function initGame() {
-            // Create the grid pieces (20 cols * 15 rows = 300 pieces)
+            // Create Grid (300 pieces)
             for (let i = 0; i < 300; i++) {
                 const piece = document.createElement('div');
                 piece.classList.add('grid-piece');
                 gridContainer.appendChild(piece);
             }
 
-            // Start Timers
             timerInterval = setInterval(updateTimer, 1000);
             revealInterval = setInterval(revealRandomPiece, REVEAL_SPEED);
 
-            // Allow "Enter" key to submit
             inputField.addEventListener("keypress", function(event) {
                 if (event.key === "Enter") {
                     checkAnswer();
                 }
             });
-
             inputField.focus();
         }
 
-        // --- LOGIC ---
-
+        // --- GAME LOOP ---
         function updateTimer() {
             if (!isGameRunning) return;
 
             timeLeft--;
-            timerDisplay.textContent = timeLeft;
+            
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-            // Visual effect when time is running out (under 10 seconds)
-            if (timeLeft <= 10) {
-                timerDisplay.classList.add('timer-warning');
-            }
-
-            if (timeLeft <= 0) {
-                endGame(false);
-            }
+            if (timeLeft <= 10) timerDisplay.classList.add('timer-warning');
+            if (timeLeft <= 0) endGame(false);
         }
 
         function revealRandomPiece() {
             if (!isGameRunning) return;
-
-            // Get all pieces that aren't revealed yet
             const hiddenPieces = document.querySelectorAll('.grid-piece:not(.revealed)');
+            if (hiddenPieces.length === 0) return;
             
-            if (hiddenPieces.length === 0) {
-                // If all pieces are gone but time remains, do nothing, just wait for timer/guess
-                return;
-            }
-
-            // Pick a random index
             const randomIndex = Math.floor(Math.random() * hiddenPieces.length);
-            const piece = hiddenPieces[randomIndex];
-
-            // Add class to trigger CSS transition
-            piece.classList.add('revealed');
+            hiddenPieces[randomIndex].classList.add('revealed');
         }
 
+        // --- LOGIC: ANSWER CHECKING ---
+        
         function checkAnswer() {
             if (!isGameRunning) return;
 
             const userGuess = inputField.value.trim().toLowerCase();
-
-            if (CORRECT_ANSWERS.includes(userGuess)) {
+            
+            if (isMatch(userGuess)) {
                 endGame(true);
             } else {
-                // Shake effect or red text for wrong answer
-                inputField.style.borderColor = "red";
-                setTimeout(() => inputField.style.borderColor = "", 500);
+                // Shake effect for wrong answer
+                inputField.style.borderColor = "var(--brand-red)";
+                inputField.style.color = "var(--brand-red)";
+                setTimeout(() => {
+                    inputField.style.borderColor = "#ddd";
+                    inputField.style.color = "var(--brand-dark)";
+                }, 500);
             }
+        }
+
+        // Returns true if the guess matches any accepted answer (with fuzzy logic)
+        function isMatch(guess) {
+            // 1. Direct match check
+            if (ACCEPTED_ANSWERS.includes(guess)) return true;
+
+            // 2. Fuzzy match (Levenshtein Distance)
+            // We allow up to 2 typos for longer words, but 0 typos for short words (like "747")
+            for (let answer of ACCEPTED_ANSWERS) {
+                // If the answer is short (less than 4 chars), require exact match
+                if (answer.length < 4) {
+                    if (guess === answer) return true;
+                    continue;
+                }
+                
+                // For longer answers, calculate edit distance
+                const dist = levenshteinDistance(guess, answer);
+                // Allow 1 error for medium words, 2 errors for long words
+                const allowedErrors = answer.length > 8 ? 2 : 1;
+                
+                if (dist <= allowedErrors) return true;
+            }
+            return false;
+        }
+
+        // Standard Levenshtein Distance Algorithm (measures "edits" needed to match)
+        function levenshteinDistance(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+            for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) == a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1, // substitution
+                            Math.min(
+                                matrix[i][j - 1] + 1, // insertion
+                                matrix[i - 1][j] + 1  // deletion
+                            )
+                        );
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
         }
 
         function endGame(isWin) {
             isGameRunning = false;
             clearInterval(timerInterval);
             clearInterval(revealInterval);
+            
+            messageDisplay.classList.add('visible');
 
             if (isWin) {
-                messageDisplay.textContent = "Correct! It was the Concorde.";
+                messageDisplay.textContent = "Correct! It is the Boeing 747.";
                 messageDisplay.classList.add("success");
-                timerDisplay.style.backgroundColor = "#2ecc71";
-                // Reveal remaining blocks quickly for satisfaction
-                document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+                timerDisplay.style.color = "#27ae60";
             } else {
-                messageDisplay.textContent = "Time's up! Game Over.";
+                messageDisplay.textContent = "Time's up! It was the Boeing 747.";
                 messageDisplay.classList.add("fail");
-                timerDisplay.textContent = "0";
-                // Reveal everything so they see what they missed
-                document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
             }
             
+            document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
             inputField.disabled = true;
         }
 
-        // Run the game
         window.onload = initGame;
 
     </script>
