@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Airplane Quiz - Deluxe</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <title>Airplane Quiz - Flight Selector</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -13,29 +13,29 @@
             --brand-dark: #333333;
             --bg-sand: #fcfbf9;
             --piece-color: #2c2c2c;
+            --locked-gray: #bdc3c7;
         }
 
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--bg-sand);
             color: var(--brand-dark);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding-top: 20px;
             overscroll-behavior: none; 
         }
 
-        header { text-align: center; margin-bottom: 15px; }
-
+        /* --- TYPOGRAPHY --- */
         h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
+            font-size: 2rem;
             color: var(--brand-dark);
-            margin: 0;
+            margin: 0 0 10px 0;
+            text-align: center;
             text-transform: uppercase;
         }
 
@@ -44,15 +44,93 @@
             color: var(--brand-gold);
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-top: 5px;
+            margin: 0 0 20px 0;
+            text-align: center;
         }
 
+        /* --- VIEWS --- */
+        .view-section {
+            width: 100%;
+            max-width: 600px;
+            display: none; /* Hidden by default, JS toggles this */
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .view-section.active {
+            display: flex;
+        }
+
+        /* --- LEVEL SELECTOR GRID --- */
+        #level-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2 columns */
+            gap: 15px;
+            width: 100%;
+        }
+
+        .level-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-card h3 {
+            margin: 0;
+            font-family: 'Playfair Display', serif;
+            color: var(--brand-red);
+        }
+
+        .level-card .status {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            color: #777;
+        }
+
+        /* Styles for different states */
+        .level-card.locked {
+            background-color: #f0f0f0;
+            border-color: #eee;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .level-card.locked h3 { color: var(--locked-gray); }
+
+        .level-card.completed {
+            border-color: var(--brand-gold);
+            background: linear-gradient(to bottom, #fff, #fffcf5);
+        }
+        .level-card.completed::after {
+            content: "★";
+            position: absolute;
+            top: 5px; right: 10px;
+            color: var(--brand-gold);
+            font-size: 1.2rem;
+        }
+
+        .level-card.cooldown {
+            background-color: var(--brand-dark);
+            border-color: var(--brand-dark);
+            cursor: wait;
+        }
+        .level-card.cooldown h3 { color: #fff; }
+        .level-card.cooldown .status { color: var(--brand-gold); font-weight: bold; }
+
+        /* --- GAME UI --- */
         #timer-container {
             font-family: 'Playfair Display', serif;
             font-size: 2rem;
             color: var(--brand-red);
-            margin-top: 10px;
             font-weight: bold;
+            margin-bottom: 10px;
         }
 
         #game-wrapper {
@@ -60,8 +138,7 @@
             background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
             border-radius: 8px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            width: 90vw;
-            max-width: 600px; 
+            width: 100%;
             margin-bottom: 20px;
         }
 
@@ -75,16 +152,13 @@
         }
 
         #mystery-image {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             object-fit: cover;
-            position: absolute;
-            top: 0; left: 0; z-index: 1;
+            position: absolute; top: 0; left: 0;
         }
 
         #cover-grid {
-            position: absolute;
-            top: 0; left: 0;
+            position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
             display: grid;
             grid-template-columns: repeat(10, 1fr); 
@@ -97,53 +171,37 @@
             border: 1px solid #3a3a3a;
             transition: all 0.6s ease-out;
         }
-
         .grid-piece.revealed {
-            opacity: 0;
-            transform: scale(0.8);
+            opacity: 0; transform: scale(0.8);
             background-color: var(--brand-gold);
         }
 
         #input-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            width: 90vw;
-            max-width: 600px;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 10px; width: 100%;
         }
 
         input[type="text"] {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 15px;
-            font-size: 16px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            outline: none;
-            text-align: center;
-            font-family: 'Roboto', sans-serif;
+            width: 100%; box-sizing: border-box; padding: 15px;
+            font-size: 16px; border: 2px solid #ddd; border-radius: 10px;
+            outline: none; text-align: center;
         }
-
         input[type="text"]:focus { border-color: var(--brand-gold); }
 
         button {
-            width: 100%;
-            padding: 15px;
-            font-size: 1.1rem;
-            background-color: var(--brand-red);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 500;
-            letter-spacing: 1px;
-            touch-action: manipulation; 
+            width: 100%; padding: 15px; font-size: 1.1rem;
+            background-color: var(--brand-red); color: white;
+            border: none; border-radius: 10px; cursor: pointer;
+            font-weight: 500; letter-spacing: 1px;
         }
-        
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .back-btn {
+            background-color: transparent;
+            color: #777;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+            font-size: 0.9rem;
         }
 
         #message {
@@ -151,105 +209,90 @@
             font-family: 'Playfair Display', serif;
             font-size: 1.4rem;
             text-align: center;
-            opacity: 0;
-            transition: opacity 0.5s;
-            padding: 0 20px;
+            opacity: 0; transition: opacity 0.5s;
         }
-        
         #message.visible { opacity: 1; }
         .success { color: #27ae60; }
         .fail { color: var(--brand-red); }
 
-        #cooldown-overlay {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            color: #fff;
-            z-index: 10;
-            text-align: center;
-        }
-        
-        #cooldown-timer {
-            font-size: 3rem;
-            font-family: 'Playfair Display', serif;
-            color: var(--brand-gold);
-            margin: 20px 0;
-        }
-
         .timer-warning { animation: pulse 1s infinite; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Airplane Quiz</h1>
-        <h2 id="level-indicator">Level 1</h2>
-        <div id="timer-container">00:30</div>
-    </header>
+    <div id="selector-view" class="view-section active">
+        <h1>Flight Selector</h1>
+        <h2>Choose Your Destination</h2>
+        <div id="level-grid">
+            </div>
+    </div>
 
-    <div id="game-wrapper">
-        <div id="game-container">
-            <img id="mystery-image" src="" alt="Mystery Airplane">
-            <div id="cover-grid"></div>
-            
-            <div id="cooldown-overlay">
-                <div>NEXT FLIGHT DEPARTS IN:</div>
-                <div id="cooldown-timer">05:00</div>
-                <div style="font-size: 0.9rem; opacity: 0.7;">Please wait...</div>
+    <div id="game-view" class="view-section">
+        <header>
+            <h1 id="game-title">Airplane Quiz</h1>
+            <h2 id="level-indicator">Level 1</h2>
+            <div id="timer-container">00:30</div>
+        </header>
+
+        <div id="game-wrapper">
+            <div id="game-container">
+                <img id="mystery-image" src="" alt="Mystery Airplane">
+                <div id="cover-grid"></div>
             </div>
         </div>
+
+        <div id="input-area">
+            <input type="text" id="guess-input" placeholder="Type airplane model..." autocomplete="off">
+            <button id="enter-btn">ENTER</button>
+            <button class="back-btn" onclick="showSelector()">← Back to Menu</button>
+        </div>
+
+        <div id="message"></div>
     </div>
 
-    <div id="input-area">
-        <input type="text" id="guess-input" placeholder="Type airplane model..." autocomplete="off">
-        <button id="enter-btn">ENTER</button>
-    </div>
-
-    <div id="message"></div>
-
- <script>
+    <script>
         // --- CONFIGURATION ---
-        const TEST_MODE = true; // <--- SET TO FALSE WHEN YOU ARE READY TO PUBLISH
+        // SET THIS TO FALSE FOR REAL 5 MINUTE TIMER
+        const TEST_MODE = true; 
 
         const LEVELS = [
             {
-                image: "https://upload.wikimedia.org/wikipedia/commons/b/b8/B747_Iberia_EC-HDS.jpg", 
+                image: "747.jpg", 
                 answers: ["boeing 747", "747", "b747", "jumbo jet"],
                 name: "Boeing 747"
             },
             {
-                image: "https://upload.wikimedia.org/wikipedia/commons/2/2b/A6-EDA_A380_Emirates_31_aug_2011_jfk_%286095692695%29.jpg", 
+                image: "a320.jpg", 
                 answers: ["airbus a380", "a380", "super jumbo"],
                 name: "Airbus A380"
             },
             {
-                 image: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Concorde_at_Filton.jpg",
+                 image: "concorde.jpg",
                  answers: ["concorde"],
                  name: "Concorde"
             }
         ];
 
         const GAME_DURATION = 30; 
-        const TOTAL_TILES = 100; 
-        const REVEAL_SPEED = (GAME_DURATION * 1000) / TOTAL_TILES; 
+        const COOLDOWN_DURATION = TEST_MODE ? 10 : 300; // 10 sec for test, 300 sec (5min) for real
         
-        // IF testing, wait 5 seconds. IF real game, wait 300 seconds (5 mins)
-        const COOLDOWN_DURATION = TEST_MODE ? 5 : 300; 
-        
-        // --- STATE ---
+        // --- GLOBAL STATE ---
         let currentLevelIndex = 0;
+        let maxUnlockedIndex = 0; // Highest level reached
+        
         let timeLeft = GAME_DURATION;
         let timerInterval;
         let revealInterval;
-        let cooldownInterval;
-        let isGameRunning = true;
+        let menuUpdateInterval; // Updates the cooldown text on menu
+        let isGameRunning = false;
         
-        // --- DOM ---
+        // --- DOM ELEMENTS ---
+        const selectorView = document.getElementById('selector-view');
+        const gameView = document.getElementById('game-view');
+        const levelGrid = document.getElementById('level-grid');
+        
         const gridContainer = document.getElementById('cover-grid');
         const timerDisplay = document.getElementById('timer-container');
         const inputField = document.getElementById('guess-input');
@@ -257,64 +300,147 @@
         const messageDisplay = document.getElementById('message');
         const mysteryImage = document.getElementById('mystery-image');
         const levelHeader = document.getElementById('level-indicator');
-        const cooldownOverlay = document.getElementById('cooldown-overlay');
-        const cooldownTimerDisplay = document.getElementById('cooldown-timer');
 
-        function initGame() {
-            // 1. Restore Saved Level (So refreshing doesn't reset to Level 1)
-            const savedLevel = localStorage.getItem('quizLevelIndex');
-            if (savedLevel) {
-                currentLevelIndex = parseInt(savedLevel);
-            }
+        // --- INITIALIZATION ---
+        function initApp() {
+            // Load progress from LocalStorage
+            const savedMax = localStorage.getItem('quizMaxLevel');
+            if (savedMax) maxUnlockedIndex = parseInt(savedMax);
 
-            // 2. Check for active Cooldown
-            const savedCooldown = localStorage.getItem('quizCooldownEnd');
-            if (savedCooldown) {
-                const now = Date.now();
-                if (now < parseInt(savedCooldown)) {
-                    // We are in a cooldown, show the screen immediately
-                    startCooldown(parseInt(savedCooldown));
-                    return;
-                }
-            }
+            renderLevelSelector();
+            
+            // Start the menu loop to update timers
+            menuUpdateInterval = setInterval(updateMenuTimers, 1000);
 
-            // 3. If no cooldown, start the level
-            loadLevel(currentLevelIndex);
-
+            // Game Inputs
             enterBtn.onclick = checkAnswer;
             inputField.addEventListener("keypress", function(event) {
                 if (event.key === "Enter") {
                     checkAnswer();
-                    inputField.blur(); 
+                    inputField.blur();
                 }
             });
         }
 
-        function loadLevel(index) {
-            // Check if game over
-            if (index >= LEVELS.length) {
-                messageDisplay.textContent = "ALL FLIGHTS COMPLETE!";
-                messageDisplay.classList.add('visible');
-                // Optional: Reset game loop
-                // localStorage.clear(); 
-                return;
-            }
+        // --- VIEW 1: LEVEL SELECTOR LOGIC ---
+        
+        function renderLevelSelector() {
+            levelGrid.innerHTML = ""; // Clear existing
 
+            LEVELS.forEach((level, index) => {
+                const card = document.createElement('div');
+                card.classList.add('level-card');
+                card.id = `level-card-${index}`;
+
+                const title = document.createElement('h3');
+                title.textContent = `Flight ${index + 1}`;
+                
+                const status = document.createElement('div');
+                status.classList.add('status');
+                status.id = `level-status-${index}`;
+
+                // LOGIC: DETERMINE CARD STATE
+                
+                // Case 1: Locked
+                if (index > maxUnlockedIndex) {
+                    card.classList.add('locked');
+                    status.textContent = "🔒 Locked";
+                } 
+                // Case 2: Unlocked (Check for Cooldown)
+                else {
+                    const cooldownEnd = localStorage.getItem('quizCooldownEnd');
+                    const now = Date.now();
+                    
+                    // Only apply cooldown to the NEWEST unlocked level
+                    if (index === maxUnlockedIndex && cooldownEnd && now < parseInt(cooldownEnd)) {
+                        card.classList.add('cooldown');
+                        status.textContent = "Loading..."; // Will be updated by timer
+                        // Card is not clickable during cooldown
+                    } else {
+                        // Playable
+                        status.textContent = "✈️ Ready to Board";
+                        if (index < maxUnlockedIndex) {
+                            card.classList.add('completed');
+                            status.textContent = "★ Completed";
+                        }
+                        card.onclick = () => startGame(index);
+                    }
+                }
+
+                card.appendChild(title);
+                card.appendChild(status);
+                levelGrid.appendChild(card);
+            });
+        }
+
+        function updateMenuTimers() {
+            // This runs every second to update cooldown text on the menu
+            const cooldownEnd = localStorage.getItem('quizCooldownEnd');
+            if (!cooldownEnd) return;
+
+            const now = Date.now();
+            const diff = Math.ceil((parseInt(cooldownEnd) - now) / 1000);
+
+            // Find the active level card (Max Unlocked)
+            const statusDiv = document.getElementById(`level-status-${maxUnlockedIndex}`);
+            const cardDiv = document.getElementById(`level-card-${maxUnlockedIndex}`);
+
+            if (diff > 0) {
+                // Timer Running
+                if (statusDiv) {
+                    const m = Math.floor(diff / 60);
+                    const s = diff % 60;
+                    statusDiv.textContent = `Next Flight in ${m}:${s.toString().padStart(2, '0')}`;
+                    
+                    // Ensure visual state is correct
+                    if(cardDiv && !cardDiv.classList.contains('cooldown')) {
+                        renderLevelSelector(); // Re-render if state changed unexpectedly
+                    }
+                }
+            } else {
+                // Timer Finished!
+                if (statusDiv && statusDiv.textContent.includes("Next Flight")) {
+                    localStorage.removeItem('quizCooldownEnd'); // Clear saved time
+                    renderLevelSelector(); // Refresh grid to make it clickable
+                }
+            }
+        }
+
+        function showSelector() {
+            // Switch Views
+            gameView.classList.remove('active');
+            selectorView.classList.add('active');
+            
+            // Stop game logic
+            isGameRunning = false;
+            clearInterval(timerInterval);
+            clearInterval(revealInterval);
+            
+            // Refresh grid
+            renderLevelSelector();
+        }
+
+        // --- VIEW 2: GAME LOGIC ---
+
+        function startGame(index) {
+            currentLevelIndex = index;
+            
+            // Switch Views
+            selectorView.classList.remove('active');
+            gameView.classList.add('active');
+
+            // Setup Level
             const levelData = LEVELS[index];
             timeLeft = GAME_DURATION;
             isGameRunning = true;
             
-            // Save current level progress
-            localStorage.setItem('quizLevelIndex', index);
-
             // UI Reset
             messageDisplay.textContent = "";
             messageDisplay.className = "";
             inputField.value = "";
             inputField.disabled = false;
             enterBtn.disabled = false;
-            cooldownOverlay.style.display = "none";
-            levelHeader.textContent = `LEVEL ${index + 1}`;
+            levelHeader.textContent = `Flight ${index + 1}: ${levelData.name === "???" ? "Unknown" : "Classified"}`;
             mysteryImage.src = levelData.image;
             
             updateTimerDisplay();
@@ -323,25 +449,27 @@
 
             // Reset Grid
             gridContainer.innerHTML = ''; 
-            for (let i = 0; i < TOTAL_TILES; i++) {
+            // 100 tiles for the grid
+            const REVEAL_SPEED = (GAME_DURATION * 1000) / 100;
+            for (let i = 0; i < 100; i++) {
                 const piece = document.createElement('div');
                 piece.classList.add('grid-piece');
                 gridContainer.appendChild(piece);
             }
 
+            // Start Loops
             clearInterval(timerInterval);
             clearInterval(revealInterval);
-            clearInterval(cooldownInterval);
-
             timerInterval = setInterval(gameTick, 1000);
             revealInterval = setInterval(revealRandomPiece, REVEAL_SPEED);
+            
+            inputField.focus();
         }
 
         function gameTick() {
             if (!isGameRunning) return;
             timeLeft--;
             updateTimerDisplay();
-            
             if (timeLeft <= 10) timerDisplay.classList.add('timer-warning');
             if (timeLeft <= 0) handleRoundEnd(false);
         }
@@ -384,6 +512,49 @@
             return false;
         }
 
+        function handleRoundEnd(isWin) {
+            isGameRunning = false;
+            clearInterval(timerInterval);
+            clearInterval(revealInterval);
+            
+            document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+            inputField.disabled = true;
+            enterBtn.disabled = true;
+
+            messageDisplay.classList.add('visible');
+            const planeName = LEVELS[currentLevelIndex].name;
+
+            if (isWin) {
+                messageDisplay.textContent = `Correct! It is the ${planeName}.`;
+                messageDisplay.className = "visible success";
+                timerDisplay.style.color = "#27ae60";
+                triggerConfetti();
+                
+                // PROGRESS LOGIC
+                // If this was the newest level, unlock the next one
+                if (currentLevelIndex === maxUnlockedIndex) {
+                    if (maxUnlockedIndex < LEVELS.length - 1) {
+                        maxUnlockedIndex++;
+                        localStorage.setItem('quizMaxLevel', maxUnlockedIndex);
+                        
+                        // Set Cooldown for the NEXT level
+                        const cooldownEnd = Date.now() + (COOLDOWN_DURATION * 1000);
+                        localStorage.setItem('quizCooldownEnd', cooldownEnd);
+                    }
+                }
+
+                // Return to Menu after 3.5 seconds
+                setTimeout(showSelector, 3500);
+
+            } else {
+                messageDisplay.textContent = `Time's up! It was the ${planeName}.`;
+                messageDisplay.className = "visible fail";
+                // Return to menu (no progress made)
+                setTimeout(showSelector, 4000);
+            }
+        }
+
+        // Utils
         function levenshteinDistance(a, b) {
             const matrix = [];
             for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
@@ -400,48 +571,10 @@
             return matrix[b.length][a.length];
         }
 
-        function handleRoundEnd(isWin) {
-            isGameRunning = false;
-            clearInterval(timerInterval);
-            clearInterval(revealInterval);
-            
-            document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
-            inputField.disabled = true;
-            enterBtn.disabled = true;
-
-            messageDisplay.classList.add('visible');
-            const planeName = LEVELS[currentLevelIndex].name;
-            const nextLevelDelay = 3000; // 3 seconds before cooldown screen
-
-            // Function to trigger next steps
-            const proceedToNext = () => {
-                currentLevelIndex++;
-                // Save the new level index so refresh works
-                localStorage.setItem('quizLevelIndex', currentLevelIndex);
-                
-                const cooldownEnd = Date.now() + (COOLDOWN_DURATION * 1000);
-                localStorage.setItem('quizCooldownEnd', cooldownEnd);
-                
-                startCooldown(cooldownEnd);
-            };
-
-            if (isWin) {
-                messageDisplay.textContent = `Correct! It is the ${planeName}.`;
-                messageDisplay.className = "visible success";
-                timerDisplay.style.color = "#27ae60";
-                triggerConfetti();
-                setTimeout(proceedToNext, nextLevelDelay);
-            } else {
-                messageDisplay.textContent = `Time's up! It was the ${planeName}.`;
-                messageDisplay.className = "visible fail";
-                setTimeout(proceedToNext, nextLevelDelay);
-            }
-        }
-
         function triggerConfetti() {
             var duration = 3 * 1000;
             var animationEnd = Date.now() + duration;
-            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 }; // High Z-Index
             var interval = setInterval(function() {
                 var timeLeft = animationEnd - Date.now();
                 if (timeLeft <= 0) return clearInterval(interval);
@@ -450,35 +583,9 @@
             }, 250);
         }
 
-        function startCooldown(endTime) {
-            cooldownOverlay.style.display = "flex";
-            
-            // Clear any existing cooldown interval just in case
-            clearInterval(cooldownInterval);
+        // BOOT
+        initApp();
 
-            cooldownInterval = setInterval(() => {
-                const now = Date.now();
-                // Check if time is up
-                const diff = Math.ceil((endTime - now) / 1000);
-
-                if (diff <= 0) {
-                    // TIMER FINISHED!
-                    clearInterval(cooldownInterval);
-                    localStorage.removeItem('quizCooldownEnd');
-                    
-                    // Proceed to next level
-                    loadLevel(currentLevelIndex);
-                } else {
-                    // Update display
-                    const m = Math.floor(diff / 60);
-                    const s = diff % 60;
-                    cooldownTimerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                }
-            }, 1000);
-        }
-
-        // Start Game
-        initGame(); 
     </script>
 </body>
 </html>
