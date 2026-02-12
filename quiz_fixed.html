@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Airplane Quiz - Deluxe</title>
+    <title>Airplane Quiz - Tactical</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -13,7 +13,7 @@
             --brand-dark: #202020;
             --bg-sand: #fcfbf9;
             --piece-color: #2c2c2c;
-            --locked-gray: #bdc3c7;
+            --piece-hover: #3d3d3d;
         }
 
         body {
@@ -21,21 +21,22 @@
             background-color: var(--bg-sand);
             color: var(--brand-dark);
             margin: 0;
-            padding: 20px 20px 100px 20px; 
+            padding: 20px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             overscroll-behavior: none; 
             box-sizing: border-box;
+            user-select: none; /* Prevent text selection while tapping tiles */
         }
 
         /* --- TYPOGRAPHY --- */
         h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 2rem;
+            font-size: 1.8rem;
             color: var(--brand-dark);
-            margin: 0 0 5px 0;
+            margin: 0;
             text-align: center;
             text-transform: uppercase;
         }
@@ -45,23 +46,8 @@
             color: var(--brand-gold);
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin: 0 0 15px 0;
+            margin: 5px 0 20px 0;
             text-align: center;
-        }
-
-        /* --- SCORE BOARD --- */
-        .score-pill {
-            background: var(--brand-dark);
-            color: var(--brand-gold);
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-family: 'Playfair Display', serif;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         /* --- VIEWS --- */
@@ -73,138 +59,33 @@
             align-items: center;
             animation: fadeIn 0.5s ease;
         }
-
         .view-section.active { display: flex; }
 
-        /* --- LEVEL SELECTOR GRID --- */
-        #level-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            width: 100%;
-            margin-bottom: 30px;
-        }
-
-        .level-card {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .level-card h3 {
-            margin: 0;
-            font-family: 'Playfair Display', serif;
-            color: var(--brand-red);
-            font-size: 1.2rem;
-        }
-
-        .level-card .status {
-            font-size: 0.8rem;
-            margin-top: 5px;
-            color: #777;
-        }
-
-        .level-card.locked {
-            background-color: #f0f0f0;
-            border-color: #eee;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        .level-card.locked h3 { color: var(--locked-gray); }
-
-        .level-card.completed {
-            border-color: var(--brand-gold);
-            background: linear-gradient(to bottom, #fff, #fffcf5);
-        }
-        .level-card.completed::after {
-            content: "★";
-            position: absolute;
-            top: 5px; right: 10px;
-            color: var(--brand-gold);
-            font-size: 1.2rem;
-        }
-
-        .level-card.cooldown {
-            background-color: var(--brand-dark);
-            border-color: var(--brand-dark);
-            cursor: wait;
-        }
-        .level-card.cooldown h3 { color: #fff; opacity: 0.5; }
-        .level-card.cooldown .status { color: var(--brand-gold); }
-
-        /* --- RESET BUTTON --- */
-        .reset-btn {
-            padding: 12px 25px;
-            background-color: transparent;
-            color: #999;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
-        .reset-btn:hover {
-            color: var(--brand-red);
-            border-color: var(--brand-red);
-            background-color: #fff0f0;
-        }
-
-        /* --- GLOBAL BOTTOM TIMER BAR --- */
-        #global-timer-bar {
-            position: fixed;
-            bottom: 0; left: 0;
-            width: 100%;
-            background-color: var(--brand-dark);
-            color: #fff;
-            padding: 20px;
-            box-sizing: border-box;
+        /* --- SCOREBOARD --- */
+        .score-board {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
-            border-top: 4px solid var(--brand-red);
-            z-index: 1000;
-            transform: translateY(110%);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        #global-timer-bar.visible { transform: translateY(0); }
-
-        #global-timer-label {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #bbb;
-            margin-bottom: 5px;
-        }
-
-        #global-timer-display {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
-            color: var(--brand-gold);
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* --- GAME UI --- */
-        #timer-container {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            color: var(--brand-red);
-            font-weight: bold;
+            justify-content: space-between;
+            width: 100%;
             margin-bottom: 10px;
+            font-family: 'Playfair Display', serif;
         }
 
+        .score-box {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            text-align: center;
+            flex: 1;
+            margin: 0 5px;
+        }
+        
+        .score-label { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 1px; }
+        .score-val { font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; }
+        .score-val.danger { color: var(--brand-red); animation: pulse 0.5s infinite; }
+
+        /* --- GAME AREA --- */
         #game-wrapper {
             padding: 8px;
             background: linear-gradient(135deg, #d4af37 0%, #c5a028 100%);
@@ -212,6 +93,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             width: 100%;
             margin-bottom: 20px;
+            position: relative;
         }
 
         #game-container {
@@ -221,6 +103,7 @@
             background-color: #000;
             overflow: hidden;
             border: 3px solid #fff;
+            cursor: pointer;
         }
 
         #mystery-image {
@@ -229,6 +112,7 @@
             position: absolute; top: 0; left: 0;
         }
 
+        /* --- INTERACTIVE GRID --- */
         #cover-grid {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
@@ -241,13 +125,36 @@
         .grid-piece {
             background-color: var(--piece-color);
             border: 1px solid #3a3a3a;
-            transition: all 0.6s ease-out;
-        }
-        .grid-piece.revealed {
-            opacity: 0; transform: scale(0.8);
-            background-color: var(--brand-gold);
+            transition: transform 0.2s, opacity 0.3s;
+            position: relative;
         }
 
+        /* Hover effect to show it's clickable */
+        .grid-piece:hover {
+            background-color: var(--piece-hover);
+        }
+
+        .grid-piece:active {
+            background-color: var(--brand-red);
+        }
+
+        .grid-piece.revealed {
+            opacity: 0; 
+            pointer-events: none; /* Click goes through to image */
+        }
+
+        /* Floating text animation when points lost */
+        .float-text {
+            position: absolute;
+            color: var(--brand-red);
+            font-weight: bold;
+            font-size: 1.2rem;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            z-index: 10;
+        }
+
+        /* --- INPUT --- */
         #input-area {
             display: flex; flex-direction: column;
             align-items: center; gap: 10px; width: 100%;
@@ -266,71 +173,60 @@
             border: none; border-radius: 10px; cursor: pointer;
             font-weight: 500; letter-spacing: 1px;
         }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
 
-        .back-btn {
-            background-color: transparent;
-            color: #777;
-            border: 1px solid #ccc;
-            margin-top: 20px;
-            font-size: 0.9rem;
+        /* --- MENU GRID --- */
+        #level-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; margin-top: 20px;
         }
-
+        .level-card {
+            background: white; border: 1px solid #ddd; border-radius: 10px;
+            padding: 20px; text-align: center; cursor: pointer;
+        }
+        .level-card.locked { background: #f0f0f0; opacity: 0.6; pointer-events: none; }
+        
+        /* --- UTILS --- */
         #message {
-            margin-top: 15px;
-            font-family: 'Playfair Display', serif;
-            font-size: 1.4rem;
-            text-align: center;
-            opacity: 0; transition: opacity 0.5s;
+            margin-top: 15px; font-family: 'Playfair Display', serif;
+            font-size: 1.4rem; text-align: center; height: 30px;
         }
-        #message.visible { opacity: 1; }
         .success { color: #27ae60; }
         .fail { color: var(--brand-red); }
 
-        /* Animations */
-        .timer-warning { animation: pulse 1s infinite; }
-        .plane-icon { animation: float 2s ease-in-out infinite; color: var(--brand-red); font-size: 1.5rem; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-3px); } 100% { transform: translateY(0px); } }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-30px); } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     </style>
 </head>
 <body>
 
-    <div id="global-timer-bar">
-        <div id="global-timer-label">Next Flight In</div>
-        <div id="global-timer-display">
-            <span class="plane-icon">✈</span>
-            <span id="global-countdown-text">05:00</span>
-        </div>
-    </div>
-
     <div id="selector-view" class="view-section active">
         <h1>Flight Selector</h1>
-        <h2>Choose Your Destination</h2>
+        <h2>Choose Your Mission</h2>
         
-        <div class="score-pill">
-            <span>🏆 Score:</span>
-            <span id="menu-score">0</span>
+        <div class="score-board">
+            <div class="score-box">
+                <div class="score-label">Total Score</div>
+                <div class="score-val" id="total-score-display">0</div>
+            </div>
         </div>
 
-        <div id="level-grid">
-            </div>
-
-        <button class="reset-btn" onclick="resetGame()">Start New Game</button>
+        <div id="level-grid"></div>
+        <button onclick="resetProgress()" style="margin-top:20px; background:transparent; border:1px solid #ccc; color:#777;">Reset Game</button>
     </div>
 
     <div id="game-view" class="view-section">
         <header>
-            <h1 id="game-title">Airplane Quiz</h1>
-            <div style="display: flex; justify-content: space-between; width: 100%; padding: 0 10px; box-sizing: border-box; align-items: center;">
-                <h2 id="level-indicator" style="margin:0;">Level 1</h2>
-                <div style="font-weight: bold; color: var(--brand-gold);">Score: <span id="game-score">0</span></div>
-            </div>
-            <div id="timer-container">00:30</div>
+            <h1 id="level-title">Flight 1</h1>
+            <h2>Tap tiles to reveal (-15 pts)</h2>
         </header>
+
+        <div class="score-board">
+            <div class="score-box">
+                <div class="score-label">Fuel (Points)</div>
+                <div class="score-val" id="level-score-display">1000</div>
+            </div>
+        </div>
 
         <div id="game-wrapper">
             <div id="game-container">
@@ -341,8 +237,8 @@
 
         <div id="input-area">
             <input type="text" id="guess-input" placeholder="Type airplane model..." autocomplete="off">
-            <button id="enter-btn">ENTER</button>
-            <button class="back-btn" onclick="showSelector()">← Back to Menu</button>
+            <button id="enter-btn">ENTER FLIGHT PLAN</button>
+            <button onclick="showSelector()" style="background:transparent; border:1px solid #ccc; color:#777;">Abort Mission</button>
         </div>
 
         <div id="message"></div>
@@ -350,262 +246,212 @@
 
     <script>
         // --- CONFIGURATION ---
-        const TEST_MODE = true; // Set to FALSE for real 5 minute timer
-
         const LEVELS = [
-            {
-                image: "747.jpg", 
-                answers: ["boeing 747", "747", "b747", "jumbo jet"],
-                name: "Boeing 747"
-            },
-            {
-                // Updated to A320 based on your file list
-                image: "a320.jpg", 
-                answers: ["airbus a320", "a320", "320"],
-                name: "Airbus A320"
-            },
-            {
-                 image: "concorde.jpg",
-                 answers: ["concorde"],
-                 name: "Concorde"
-            }
+            { image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
+            { image: "a320.jpg", answers: ["airbus a320", "a320", "320"], name: "Airbus A320" },
+            { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" }
         ];
 
-        const GAME_DURATION = 30; 
-        const COOLDOWN_DURATION = TEST_MODE ? 10 : 300; 
-        
-        // --- GLOBAL STATE ---
-        let currentLevelIndex = 0;
-        let maxUnlockedIndex = 0; 
+        const STARTING_FUEL = 1000;
+        const TILE_COST = 15;
+        const WRONG_GUESS_PENALTY = 200;
+
+        // --- STATE ---
+        let currentLevelIdx = 0;
+        let maxUnlockedIdx = 0;
         let totalScore = 0;
-        
-        let timeLeft = GAME_DURATION;
-        let timerInterval;
-        let revealInterval;
-        let menuUpdateInterval; 
-        let isGameRunning = false;
-        
-        // --- DOM ELEMENTS ---
+        let currentLevelScore = 0;
+        let gameActive = false;
+
+        // --- DOM ---
         const selectorView = document.getElementById('selector-view');
         const gameView = document.getElementById('game-view');
         const levelGrid = document.getElementById('level-grid');
-        const globalTimerBar = document.getElementById('global-timer-bar');
-        const globalCountdownText = document.getElementById('global-countdown-text');
-        
-        const menuScoreDisplay = document.getElementById('menu-score');
-        const gameScoreDisplay = document.getElementById('game-score');
-
         const gridContainer = document.getElementById('cover-grid');
-        const timerDisplay = document.getElementById('timer-container');
+        const levelScoreDisplay = document.getElementById('level-score-display');
+        const totalScoreDisplay = document.getElementById('total-score-display');
         const inputField = document.getElementById('guess-input');
-        const enterBtn = document.getElementById('enter-btn');
         const messageDisplay = document.getElementById('message');
-        const mysteryImage = document.getElementById('mystery-image');
-        const levelHeader = document.getElementById('level-indicator');
 
-        // --- INITIALIZATION ---
-        function initApp() {
-            // Load Levels
-            const savedMax = localStorage.getItem('quizMaxLevel');
-            if (savedMax) maxUnlockedIndex = parseInt(savedMax);
-
-            // Load Score
-            const savedScore = localStorage.getItem('quizScore');
-            if (savedScore) totalScore = parseInt(savedScore);
-            updateScoreUI();
-
-            renderLevelSelector();
+        // --- INIT ---
+        window.onload = function() {
+            if(localStorage.getItem('quizMaxIdx')) maxUnlockedIdx = parseInt(localStorage.getItem('quizMaxIdx'));
+            if(localStorage.getItem('quizTotalScore')) totalScore = parseInt(localStorage.getItem('quizTotalScore'));
             
-            updateMenuTimers(); 
-            menuUpdateInterval = setInterval(updateMenuTimers, 1000);
+            updateTotalScoreUI();
+            renderMenu();
 
-            enterBtn.onclick = checkAnswer;
+            // Enter key support
             inputField.addEventListener("keypress", function(event) {
-                if (event.key === "Enter") {
-                    checkAnswer();
-                    inputField.blur();
-                }
+                if (event.key === "Enter") checkAnswer();
             });
-        }
+            document.getElementById('enter-btn').onclick = checkAnswer;
+        };
 
-        function updateScoreUI() {
-            menuScoreDisplay.textContent = totalScore;
-            gameScoreDisplay.textContent = totalScore;
-        }
-
-        function resetGame() {
-            if(confirm("Are you sure you want to delete all progress and start over?")) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
-        // --- VIEW 1: LEVEL SELECTOR ---
-        
-        function renderLevelSelector() {
-            levelGrid.innerHTML = ""; 
-
-            LEVELS.forEach((level, index) => {
+        // --- MENU LOGIC ---
+        function renderMenu() {
+            levelGrid.innerHTML = "";
+            LEVELS.forEach((lvl, idx) => {
                 const card = document.createElement('div');
-                card.classList.add('level-card');
-                card.id = `level-card-${index}`;
-
-                const title = document.createElement('h3');
-                title.textContent = `Flight ${index + 1}`;
+                card.className = `level-card ${idx > maxUnlockedIdx ? 'locked' : ''}`;
                 
-                const status = document.createElement('div');
-                status.classList.add('status');
-
-                if (index > maxUnlockedIndex) {
-                    card.classList.add('locked');
-                    status.textContent = "🔒 Locked";
-                } 
-                else {
-                    const cooldownEnd = localStorage.getItem('quizCooldownEnd');
-                    const now = Date.now();
-                    
-                    if (index === maxUnlockedIndex && cooldownEnd && now < parseInt(cooldownEnd)) {
-                        card.classList.add('cooldown');
-                        status.textContent = "⛽ Refueling..."; 
-                    } else {
-                        status.textContent = "✈️ Ready to Board";
-                        if (index < maxUnlockedIndex) {
-                            card.classList.add('completed');
-                            status.textContent = "★ Completed";
-                        }
-                        card.onclick = () => startGame(index);
-                    }
+                let icon = idx > maxUnlockedIdx ? "🔒" : "✈️";
+                if (idx < maxUnlockedIdx) icon = "★";
+                
+                card.innerHTML = `<div style="font-size:2rem; margin-bottom:10px;">${icon}</div><h3>Flight ${idx + 1}</h3>`;
+                
+                if (idx <= maxUnlockedIdx) {
+                    card.onclick = () => startGame(idx);
                 }
-
-                card.appendChild(title);
-                card.appendChild(status);
                 levelGrid.appendChild(card);
             });
         }
 
-        function updateMenuTimers() {
-            const cooldownEnd = localStorage.getItem('quizCooldownEnd');
-            
-            if (!cooldownEnd) {
-                globalTimerBar.classList.remove('visible');
-                return;
-            }
-
-            const now = Date.now();
-            const diff = Math.ceil((parseInt(cooldownEnd) - now) / 1000);
-
-            if (diff > 0) {
-                globalTimerBar.classList.add('visible');
-                const m = Math.floor(diff / 60);
-                const s = diff % 60;
-                globalCountdownText.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                
-                const cardDiv = document.getElementById(`level-card-${maxUnlockedIndex}`);
-                if(cardDiv && !cardDiv.classList.contains('cooldown')) {
-                    renderLevelSelector(); 
-                }
-            } else {
-                globalTimerBar.classList.remove('visible');
-                localStorage.removeItem('quizCooldownEnd'); 
-                renderLevelSelector(); 
-            }
-        }
-
         function showSelector() {
+            gameActive = false;
             gameView.classList.remove('active');
             selectorView.classList.add('active');
-            isGameRunning = false;
-            clearInterval(timerInterval);
-            clearInterval(revealInterval);
-            renderLevelSelector();
-            updateMenuTimers(); 
+            renderMenu();
         }
 
-        // --- VIEW 2: GAMEPLAY ---
+        // --- GAME LOGIC ---
+        function startGame(idx) {
+            currentLevelIdx = idx;
+            currentLevelScore = STARTING_FUEL;
+            gameActive = true;
 
-        function startGame(index) {
-            currentLevelIndex = index;
+            // Switch Views
             selectorView.classList.remove('active');
             gameView.classList.add('active');
-            globalTimerBar.classList.remove('visible');
 
-            const levelData = LEVELS[index];
-            timeLeft = GAME_DURATION;
-            isGameRunning = true;
-            
-            messageDisplay.textContent = "";
-            messageDisplay.className = "";
+            // Setup UI
+            document.getElementById('level-title').textContent = `Flight ${idx+1}`;
+            document.getElementById('mystery-image').src = LEVELS[idx].image;
             inputField.value = "";
             inputField.disabled = false;
-            enterBtn.disabled = false;
-            levelHeader.textContent = `Flight ${index + 1}: ${levelData.name === "???" ? "Unknown" : "Classified"}`;
-            mysteryImage.src = levelData.image; // Using local file names now
-            
-            updateTimerDisplay();
-            timerDisplay.style.color = "var(--brand-red)";
-            timerDisplay.classList.remove('timer-warning');
+            messageDisplay.textContent = "";
+            updateLevelScoreUI();
 
-            gridContainer.innerHTML = ''; 
-            const REVEAL_SPEED = (GAME_DURATION * 1000) / 100;
+            // Build Grid
+            gridContainer.innerHTML = "";
+            // Create 100 tiles (10x10)
             for (let i = 0; i < 100; i++) {
-                const piece = document.createElement('div');
-                piece.classList.add('grid-piece');
-                gridContainer.appendChild(piece);
+                const tile = document.createElement('div');
+                tile.className = 'grid-piece';
+                // Add click event for removing tile
+                tile.onmousedown = (e) => handleTileClick(e, tile);
+                // Touch support for mobile
+                tile.ontouchstart = (e) => { e.preventDefault(); handleTileClick(e, tile); };
+                gridContainer.appendChild(tile);
             }
-
-            clearInterval(timerInterval);
-            clearInterval(revealInterval);
-            timerInterval = setInterval(gameTick, 1000);
-            revealInterval = setInterval(revealRandomPiece, REVEAL_SPEED);
             
             inputField.focus();
         }
 
-        function gameTick() {
-            if (!isGameRunning) return;
-            timeLeft--;
-            updateTimerDisplay();
-            if (timeLeft <= 10) timerDisplay.classList.add('timer-warning');
-            if (timeLeft <= 0) handleRoundEnd(false);
-        }
+        function handleTileClick(e, tile) {
+            if (!gameActive || tile.classList.contains('revealed')) return;
 
-        function updateTimerDisplay() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
+            // 1. Reveal the tile
+            tile.classList.add('revealed');
 
-        function revealRandomPiece() {
-            if (!isGameRunning) return;
-            const hiddenPieces = document.querySelectorAll('.grid-piece:not(.revealed)');
-            if (hiddenPieces.length === 0) return;
-            const randomIndex = Math.floor(Math.random() * hiddenPieces.length);
-            hiddenPieces[randomIndex].classList.add('revealed');
-        }
+            // 2. Deduct Score
+            currentLevelScore -= TILE_COST;
+            if (currentLevelScore < 0) currentLevelScore = 0;
+            updateLevelScoreUI();
 
-        function checkAnswer() {
-            if (!isGameRunning) return;
-            const userGuess = inputField.value.trim().toLowerCase();
-            const currentAnswers = LEVELS[currentLevelIndex].answers;
+            // 3. Visual "Floating Text" Effect
+            showFloatingText(e.clientX, e.clientY, `-${TILE_COST}`);
 
-            if (isMatch(userGuess, currentAnswers)) {
-                handleRoundEnd(true);
-            } else {
-                // PENALTY LOGIC
-                totalScore -= 200;
-                localStorage.setItem('quizScore', totalScore);
-                updateScoreUI();
-                
-                // Visual Feedback
-                inputField.style.borderColor = "var(--brand-red)";
-                gameScoreDisplay.style.color = "var(--brand-red)";
-                setTimeout(() => {
-                    inputField.style.borderColor = "#ddd";
-                    gameScoreDisplay.style.color = "";
-                }, 500);
+            // 4. Check Loss Condition
+            if (currentLevelScore <= 0) {
+                endGame(false, "Out of Fuel!");
             }
         }
 
+        function showFloatingText(x, y, text) {
+            const floatEl = document.createElement('div');
+            floatEl.className = 'float-text';
+            floatEl.textContent = text;
+            
+            // Adjust position slightly so it doesn't appear under finger
+            // If checking mobile vs desktop, we might need offset correction
+            // but fixed position relative to viewport works nicely here
+            floatEl.style.left = (x - 20) + 'px';
+            floatEl.style.top = (y - 40) + 'px';
+            
+            document.body.appendChild(floatEl);
+            
+            // Remove from DOM after animation finishes
+            setTimeout(() => { floatEl.remove(); }, 1000);
+        }
+
+        function updateLevelScoreUI() {
+            levelScoreDisplay.textContent = currentLevelScore;
+            if (currentLevelScore <= 200) {
+                levelScoreDisplay.classList.add('danger');
+            } else {
+                levelScoreDisplay.classList.remove('danger');
+            }
+        }
+
+        function updateTotalScoreUI() {
+            totalScoreDisplay.textContent = totalScore;
+        }
+
+        function checkAnswer() {
+            if (!gameActive) return;
+
+            const guess = inputField.value.trim().toLowerCase();
+            const answers = LEVELS[currentLevelIdx].answers;
+
+            if (isMatch(guess, answers)) {
+                endGame(true, "Target Identified!");
+            } else {
+                // Penalty
+                currentLevelScore -= WRONG_GUESS_PENALTY;
+                if (currentLevelScore < 0) currentLevelScore = 0;
+                updateLevelScoreUI();
+                
+                // Shake effect
+                inputField.style.borderColor = "var(--brand-red)";
+                setTimeout(() => inputField.style.borderColor = "#ddd", 500);
+                
+                if (currentLevelScore <= 0) {
+                    endGame(false, "Out of Fuel!");
+                }
+            }
+        }
+
+        function endGame(win, msgText) {
+            gameActive = false;
+            messageDisplay.textContent = msgText;
+            
+            if (win) {
+                messageDisplay.className = "success";
+                document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+                
+                triggerConfetti();
+
+                // Save Progress
+                totalScore += currentLevelScore;
+                localStorage.setItem('quizTotalScore', totalScore);
+                
+                if (currentLevelIdx >= maxUnlockedIdx && maxUnlockedIdx < LEVELS.length - 1) {
+                    maxUnlockedIdx++;
+                    localStorage.setItem('quizMaxIdx', maxUnlockedIdx);
+                }
+
+                updateTotalScoreUI();
+                setTimeout(showSelector, 3000);
+            } else {
+                messageDisplay.className = "fail";
+                // Show full image on loss so they know what it was
+                document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+                setTimeout(showSelector, 3000);
+            }
+        }
+
+        // --- UTILS ---
         function isMatch(guess, answers) {
             if (answers.includes(guess)) return true;
             for (let answer of answers) {
@@ -617,78 +463,29 @@
             return false;
         }
 
-        function handleRoundEnd(isWin) {
-            isGameRunning = false;
-            clearInterval(timerInterval);
-            clearInterval(revealInterval);
-            
-            document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
-            inputField.disabled = true;
-            enterBtn.disabled = true;
-
-            messageDisplay.classList.add('visible');
-            const planeName = LEVELS[currentLevelIndex].name;
-
-            if (isWin) {
-                // SCORE LOGIC: Base 1000 + (50 * Seconds Left)
-                const timeBonus = timeLeft * 50;
-                const levelScore = 1000 + timeBonus;
-                totalScore += levelScore;
-                localStorage.setItem('quizScore', totalScore);
-                updateScoreUI();
-
-                messageDisplay.textContent = `Correct! +${levelScore} Points!`;
-                messageDisplay.className = "visible success";
-                timerDisplay.style.color = "#27ae60";
-                triggerConfetti();
-                
-                if (currentLevelIndex === maxUnlockedIndex) {
-                    if (maxUnlockedIndex < LEVELS.length - 1) {
-                        maxUnlockedIndex++;
-                        localStorage.setItem('quizMaxLevel', maxUnlockedIndex);
-                        const cooldownEnd = Date.now() + (COOLDOWN_DURATION * 1000);
-                        localStorage.setItem('quizCooldownEnd', cooldownEnd);
-                    }
-                }
-                setTimeout(showSelector, 3500);
-
-            } else {
-                messageDisplay.textContent = `Time's up! It was the ${planeName}.`;
-                messageDisplay.className = "visible fail";
-                setTimeout(showSelector, 4000);
-            }
-        }
-
         function levenshteinDistance(a, b) {
             const matrix = [];
             for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
             for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
             for (let i = 1; i <= b.length; i++) {
                 for (let j = 1; j <= a.length; j++) {
-                    if (b.charAt(i - 1) == a.charAt(j - 1)) {
-                        matrix[i][j] = matrix[i - 1][j - 1];
-                    } else {
-                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
-                    }
+                    if (b.charAt(i - 1) == a.charAt(j - 1)) matrix[i][j] = matrix[i - 1][j - 1];
+                    else matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
                 }
             }
             return matrix[b.length][a.length];
         }
 
         function triggerConfetti() {
-            var duration = 3 * 1000;
-            var animationEnd = Date.now() + duration;
-            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
-            var interval = setInterval(function() {
-                var timeLeft = animationEnd - Date.now();
-                if (timeLeft <= 0) return clearInterval(interval);
-                var particleCount = 50 * (timeLeft / duration);
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
-            }, 250);
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
         }
 
-        initApp();
-
+        function resetProgress() {
+            if(confirm("Reset all progress?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
     </script>
 </body>
 </html>
