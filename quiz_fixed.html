@@ -212,11 +212,12 @@
 
     <div id="message"></div>
 
-    <script>
+ <script>
         // --- CONFIGURATION ---
+        const TEST_MODE = true; // <--- SET TO FALSE WHEN YOU ARE READY TO PUBLISH
+
         const LEVELS = [
             {
-                // Note: Ensure 747.jpg is in your folder
                 image: "https://upload.wikimedia.org/wikipedia/commons/b/b8/B747_Iberia_EC-HDS.jpg", 
                 answers: ["boeing 747", "747", "b747", "jumbo jet"],
                 name: "Boeing 747"
@@ -225,20 +226,24 @@
                 image: "https://upload.wikimedia.org/wikipedia/commons/2/2b/A6-EDA_A380_Emirates_31_aug_2011_jfk_%286095692695%29.jpg", 
                 answers: ["airbus a380", "a380", "super jumbo"],
                 name: "Airbus A380"
+            },
+            {
+                 image: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Concorde_at_Filton.jpg",
+                 answers: ["concorde"],
+                 name: "Concorde"
             }
         ];
 
-        const GAME_DURATION = 30; // 30 Seconds Total
-        const TOTAL_TILES = 100; // 10x10 Grid
-        // Calculate speed to ensure last tile vanishes exactly at 0 seconds
-        // 30000ms / 100 tiles = 300ms per tile
+        const GAME_DURATION = 30; 
+        const TOTAL_TILES = 100; 
         const REVEAL_SPEED = (GAME_DURATION * 1000) / TOTAL_TILES; 
-        const COOLDOWN_DURATION = 300; // 5 Minutes in seconds
+        
+        // IF testing, wait 5 seconds. IF real game, wait 300 seconds (5 mins)
+        const COOLDOWN_DURATION = TEST_MODE ? 5 : 300; 
         
         // --- STATE ---
         let currentLevelIndex = 0;
         let timeLeft = GAME_DURATION;
-        let cooldownTime = COOLDOWN_DURATION;
         let timerInterval;
         let revealInterval;
         let cooldownInterval;
@@ -256,16 +261,24 @@
         const cooldownTimerDisplay = document.getElementById('cooldown-timer');
 
         function initGame() {
-            // Check if user is already in cooldown (from LocalStorage)
+            // 1. Restore Saved Level (So refreshing doesn't reset to Level 1)
+            const savedLevel = localStorage.getItem('quizLevelIndex');
+            if (savedLevel) {
+                currentLevelIndex = parseInt(savedLevel);
+            }
+
+            // 2. Check for active Cooldown
             const savedCooldown = localStorage.getItem('quizCooldownEnd');
             if (savedCooldown) {
                 const now = Date.now();
                 if (now < parseInt(savedCooldown)) {
+                    // We are in a cooldown, show the screen immediately
                     startCooldown(parseInt(savedCooldown));
                     return;
                 }
             }
 
+            // 3. If no cooldown, start the level
             loadLevel(currentLevelIndex);
 
             enterBtn.onclick = checkAnswer;
@@ -278,8 +291,12 @@
         }
 
         function loadLevel(index) {
+            // Check if game over
             if (index >= LEVELS.length) {
                 messageDisplay.textContent = "ALL FLIGHTS COMPLETE!";
+                messageDisplay.classList.add('visible');
+                // Optional: Reset game loop
+                // localStorage.clear(); 
                 return;
             }
 
@@ -287,18 +304,19 @@
             timeLeft = GAME_DURATION;
             isGameRunning = true;
             
+            // Save current level progress
+            localStorage.setItem('quizLevelIndex', index);
+
             // UI Reset
             messageDisplay.textContent = "";
             messageDisplay.className = "";
             inputField.value = "";
             inputField.disabled = false;
             enterBtn.disabled = false;
-            enterBtn.textContent = "ENTER";
             cooldownOverlay.style.display = "none";
             levelHeader.textContent = `LEVEL ${index + 1}`;
             mysteryImage.src = levelData.image;
             
-            // Format initial timer properly (00:30)
             updateTimerDisplay();
             timerDisplay.style.color = "var(--brand-red)";
             timerDisplay.classList.remove('timer-warning');
@@ -311,7 +329,6 @@
                 gridContainer.appendChild(piece);
             }
 
-            // Start Timers
             clearInterval(timerInterval);
             clearInterval(revealInterval);
             clearInterval(cooldownInterval);
@@ -358,7 +375,6 @@
 
         function isMatch(guess, answers) {
             if (answers.includes(guess)) return true;
-            // Fuzzy logic for typos
             for (let answer of answers) {
                 if (answer.length < 4) { if (guess === answer) return true; continue; }
                 const dist = levenshteinDistance(guess, answer);
@@ -395,31 +411,30 @@
 
             messageDisplay.classList.add('visible');
             const planeName = LEVELS[currentLevelIndex].name;
+            const nextLevelDelay = 3000; // 3 seconds before cooldown screen
+
+            // Function to trigger next steps
+            const proceedToNext = () => {
+                currentLevelIndex++;
+                // Save the new level index so refresh works
+                localStorage.setItem('quizLevelIndex', currentLevelIndex);
+                
+                const cooldownEnd = Date.now() + (COOLDOWN_DURATION * 1000);
+                localStorage.setItem('quizCooldownEnd', cooldownEnd);
+                
+                startCooldown(cooldownEnd);
+            };
 
             if (isWin) {
                 messageDisplay.textContent = `Correct! It is the ${planeName}.`;
                 messageDisplay.className = "visible success";
                 timerDisplay.style.color = "#27ae60";
                 triggerConfetti();
-                
-                // Start 5 minute cooldown
-                setTimeout(() => {
-                    const cooldownEnd = Date.now() + (COOLDOWN_DURATION * 1000);
-                    localStorage.setItem('quizCooldownEnd', cooldownEnd);
-                    currentLevelIndex++;
-                    startCooldown(cooldownEnd);
-                }, 3000);
+                setTimeout(proceedToNext, nextLevelDelay);
             } else {
                 messageDisplay.textContent = `Time's up! It was the ${planeName}.`;
                 messageDisplay.className = "visible fail";
-                // Even if they lose, we move to next level but maybe without cooldown? 
-                // For now, let's apply cooldown to create tension.
-                setTimeout(() => {
-                    const cooldownEnd = Date.now() + (COOLDOWN_DURATION * 1000);
-                    localStorage.setItem('quizCooldownEnd', cooldownEnd);
-                    currentLevelIndex++;
-                    startCooldown(cooldownEnd);
-                }, 3000);
+                setTimeout(proceedToNext, nextLevelDelay);
             }
         }
 
@@ -427,14 +442,9 @@
             var duration = 3 * 1000;
             var animationEnd = Date.now() + duration;
             var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
             var interval = setInterval(function() {
                 var timeLeft = animationEnd - Date.now();
-
-                if (timeLeft <= 0) {
-                    return clearInterval(interval);
-                }
-
+                if (timeLeft <= 0) return clearInterval(interval);
                 var particleCount = 50 * (timeLeft / duration);
                 confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
             }, 250);
@@ -443,15 +453,23 @@
         function startCooldown(endTime) {
             cooldownOverlay.style.display = "flex";
             
+            // Clear any existing cooldown interval just in case
+            clearInterval(cooldownInterval);
+
             cooldownInterval = setInterval(() => {
                 const now = Date.now();
+                // Check if time is up
                 const diff = Math.ceil((endTime - now) / 1000);
 
                 if (diff <= 0) {
+                    // TIMER FINISHED!
                     clearInterval(cooldownInterval);
                     localStorage.removeItem('quizCooldownEnd');
+                    
+                    // Proceed to next level
                     loadLevel(currentLevelIndex);
                 } else {
+                    // Update display
                     const m = Math.floor(diff / 60);
                     const s = diff % 60;
                     cooldownTimerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
