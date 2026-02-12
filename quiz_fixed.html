@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Airplane Quiz - Tactical</title>
+    <title>Airplane Quiz - Random Reveal</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
@@ -13,7 +13,6 @@
             --brand-dark: #202020;
             --bg-sand: #fcfbf9;
             --piece-color: #2c2c2c;
-            --piece-hover: #3d3d3d;
         }
 
         body {
@@ -28,7 +27,7 @@
             align-items: center;
             overscroll-behavior: none; 
             box-sizing: border-box;
-            user-select: none; /* Prevent text selection while tapping tiles */
+            user-select: none; 
         }
 
         /* --- TYPOGRAPHY --- */
@@ -103,7 +102,7 @@
             background-color: #000;
             overflow: hidden;
             border: 3px solid #fff;
-            cursor: pointer;
+            cursor: pointer; /* Indicates clickable */
         }
 
         #mystery-image {
@@ -112,7 +111,7 @@
             position: absolute; top: 0; left: 0;
         }
 
-        /* --- INTERACTIVE GRID --- */
+        /* --- GRID --- */
         #cover-grid {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
@@ -126,32 +125,28 @@
             background-color: var(--piece-color);
             border: 1px solid #3a3a3a;
             transition: transform 0.2s, opacity 0.3s;
-            position: relative;
         }
 
-        /* Hover effect to show it's clickable */
-        .grid-piece:hover {
-            background-color: var(--piece-hover);
-        }
-
-        .grid-piece:active {
-            background-color: var(--brand-red);
+        /* Effect when clicked (visual feedback for the whole grid) */
+        #cover-grid:active .grid-piece:not(.revealed) {
+            background-color: #3d3d3d; 
         }
 
         .grid-piece.revealed {
             opacity: 0; 
-            pointer-events: none; /* Click goes through to image */
+            pointer-events: none;
         }
 
-        /* Floating text animation when points lost */
+        /* Floating text animation */
         .float-text {
-            position: absolute;
+            position: fixed; /* Fixed prevents scrolling issues */
             color: var(--brand-red);
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             pointer-events: none;
-            animation: floatUp 1s ease-out forwards;
-            z-index: 10;
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 999;
+            text-shadow: 0 2px 4px rgba(255,255,255,0.8);
         }
 
         /* --- INPUT --- */
@@ -192,7 +187,7 @@
         .success { color: #27ae60; }
         .fail { color: var(--brand-red); }
 
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-30px); } }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -218,7 +213,7 @@
     <div id="game-view" class="view-section">
         <header>
             <h1 id="level-title">Flight 1</h1>
-            <h2>Tap tiles to reveal (-15 pts)</h2>
+            <h2>Tap image to reveal random area (-15 pts)</h2>
         </header>
 
         <div class="score-board">
@@ -281,7 +276,6 @@
             updateTotalScoreUI();
             renderMenu();
 
-            // Enter key support
             inputField.addEventListener("keypress", function(event) {
                 if (event.key === "Enter") checkAnswer();
             });
@@ -332,37 +326,58 @@
             messageDisplay.textContent = "";
             updateLevelScoreUI();
 
-            // Build Grid
+            // Build Grid (10x10)
             gridContainer.innerHTML = "";
-            // Create 100 tiles (10x10)
             for (let i = 0; i < 100; i++) {
                 const tile = document.createElement('div');
                 tile.className = 'grid-piece';
-                // Add click event for removing tile
-                tile.onmousedown = (e) => handleTileClick(e, tile);
-                // Touch support for mobile
-                tile.ontouchstart = (e) => { e.preventDefault(); handleTileClick(e, tile); };
                 gridContainer.appendChild(tile);
             }
             
+            // Add Global Click Listener to the Grid Container
+            // We use onmousedown for desktop and ontouchstart for mobile for instant reaction
+            gridContainer.onmousedown = handleGridInteraction;
+            gridContainer.ontouchstart = (e) => {
+                e.preventDefault(); // Prevent scroll/zoom on tap
+                handleGridInteraction(e);
+            }
+
             inputField.focus();
         }
 
-        function handleTileClick(e, tile) {
-            if (!gameActive || tile.classList.contains('revealed')) return;
+        function handleGridInteraction(e) {
+            if (!gameActive) return;
+            
+            // 1. Get all hidden tiles
+            const hiddenTiles = document.querySelectorAll('.grid-piece:not(.revealed)');
+            
+            // If no tiles left, do nothing
+            if (hiddenTiles.length === 0) return;
 
-            // 1. Reveal the tile
-            tile.classList.add('revealed');
+            // 2. Pick a RANDOM tile
+            const randomIndex = Math.floor(Math.random() * hiddenTiles.length);
+            const tileToRemove = hiddenTiles[randomIndex];
+            tileToRemove.classList.add('revealed');
 
-            // 2. Deduct Score
+            // 3. Deduct Score
             currentLevelScore -= TILE_COST;
             if (currentLevelScore < 0) currentLevelScore = 0;
             updateLevelScoreUI();
 
-            // 3. Visual "Floating Text" Effect
-            showFloatingText(e.clientX, e.clientY, `-${TILE_COST}`);
+            // 4. Calculate coordinates for floating text
+            // If it's a touch event, use touches[0], otherwise use mouse coordinates
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
 
-            // 4. Check Loss Condition
+            showFloatingText(clientX, clientY, `-${TILE_COST}`);
+
+            // 5. Check Loss Condition
             if (currentLevelScore <= 0) {
                 endGame(false, "Out of Fuel!");
             }
@@ -373,16 +388,11 @@
             floatEl.className = 'float-text';
             floatEl.textContent = text;
             
-            // Adjust position slightly so it doesn't appear under finger
-            // If checking mobile vs desktop, we might need offset correction
-            // but fixed position relative to viewport works nicely here
-            floatEl.style.left = (x - 20) + 'px';
-            floatEl.style.top = (y - 40) + 'px';
+            floatEl.style.left = x + 'px';
+            floatEl.style.top = (y - 50) + 'px'; // -50 to float above finger
             
             document.body.appendChild(floatEl);
-            
-            // Remove from DOM after animation finishes
-            setTimeout(() => { floatEl.remove(); }, 1000);
+            setTimeout(() => { floatEl.remove(); }, 800);
         }
 
         function updateLevelScoreUI() {
@@ -412,7 +422,7 @@
                 if (currentLevelScore < 0) currentLevelScore = 0;
                 updateLevelScoreUI();
                 
-                // Shake effect
+                // Visual Shake
                 inputField.style.borderColor = "var(--brand-red)";
                 setTimeout(() => inputField.style.borderColor = "#ddd", 500);
                 
@@ -445,7 +455,6 @@
                 setTimeout(showSelector, 3000);
             } else {
                 messageDisplay.className = "fail";
-                // Show full image on loss so they know what it was
                 document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
                 setTimeout(showSelector, 3000);
             }
@@ -477,7 +486,9 @@
         }
 
         function triggerConfetti() {
-            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            try {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            } catch(e) { console.log("Confetti blocked"); }
         }
 
         function resetProgress() {
