@@ -21,6 +21,7 @@
             background-color: var(--bg-sand);
             color: var(--brand-dark);
             margin: 0;
+            /* Add padding to bottom so the fixed bar doesn't cover content */
             padding: 20px 20px 100px 20px; 
             min-height: 100vh;
             display: flex;
@@ -35,7 +36,7 @@
             font-family: 'Playfair Display', serif;
             font-size: 2rem;
             color: var(--brand-dark);
-            margin: 0 0 5px 0;
+            margin: 0 0 10px 0;
             text-align: center;
             text-transform: uppercase;
         }
@@ -45,23 +46,8 @@
             color: var(--brand-gold);
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin: 0 0 15px 0;
+            margin: 0 0 20px 0;
             text-align: center;
-        }
-
-        /* --- SCORE BOARD --- */
-        .score-pill {
-            background: var(--brand-dark);
-            color: var(--brand-gold);
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-family: 'Playfair Display', serif;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         /* --- VIEWS --- */
@@ -82,7 +68,6 @@
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             width: 100%;
-            margin-bottom: 30px;
         }
 
         .level-card {
@@ -111,6 +96,7 @@
             color: #777;
         }
 
+        /* States */
         .level-card.locked {
             background-color: #f0f0f0;
             border-color: #eee;
@@ -131,6 +117,7 @@
             font-size: 1.2rem;
         }
 
+        /* The Card waiting for cooldown (Dark) */
         .level-card.cooldown {
             background-color: var(--brand-dark);
             border-color: var(--brand-dark);
@@ -138,23 +125,6 @@
         }
         .level-card.cooldown h3 { color: #fff; opacity: 0.5; }
         .level-card.cooldown .status { color: var(--brand-gold); }
-
-        /* --- RESET BUTTON --- */
-        .reset-btn {
-            padding: 12px 25px;
-            background-color: transparent;
-            color: #999;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
-        .reset-btn:hover {
-            color: var(--brand-red);
-            border-color: var(--brand-red);
-            background-color: #fff0f0;
-        }
 
         /* --- GLOBAL BOTTOM TIMER BAR --- */
         #global-timer-bar {
@@ -172,11 +142,15 @@
             box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
             border-top: 4px solid var(--brand-red);
             z-index: 1000;
+            
+            /* Hidden by default (Slide down) */
             transform: translateY(110%);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        #global-timer-bar.visible { transform: translateY(0); }
+        #global-timer-bar.visible {
+            transform: translateY(0);
+        }
 
         #global-timer-label {
             font-size: 0.8rem;
@@ -285,4 +259,371 @@
         }
         #message.visible { opacity: 1; }
         .success { color: #27ae60; }
-        .fail
+        .fail { color: var(--brand-red); }
+
+        .timer-warning { animation: pulse 1s infinite; }
+        .plane-icon { animation: float 2s ease-in-out infinite; color: var(--brand-red); font-size: 1.5rem; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-3px); } 100% { transform: translateY(0px); } }
+
+    </style>
+</head>
+<body>
+
+    <div id="global-timer-bar">
+        <div id="global-timer-label">Next Flight In</div>
+        <div id="global-timer-display">
+            <span class="plane-icon">✈</span>
+            <span id="global-countdown-text">05:00</span>
+        </div>
+    </div>
+
+    <div id="selector-view" class="view-section active">
+        <h1>Flight Selector</h1>
+        <h2>Choose Your Destination</h2>
+        <div id="level-grid">
+            </div>
+    </div>
+
+    <div id="game-view" class="view-section">
+        <header>
+            <h1 id="game-title">Airplane Quiz</h1>
+            <h2 id="level-indicator">Level 1</h2>
+            <div id="timer-container">00:30</div>
+        </header>
+
+        <div id="game-wrapper">
+            <div id="game-container">
+                <img id="mystery-image" src="" alt="Mystery Airplane">
+                <div id="cover-grid"></div>
+            </div>
+        </div>
+
+        <div id="input-area">
+            <input type="text" id="guess-input" placeholder="Type airplane model..." autocomplete="off">
+            <button id="enter-btn">ENTER</button>
+            <button class="back-btn" onclick="showSelector()">← Back to Menu</button>
+        </div>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const TEST_MODE = true; // Set to false for 5 minutes
+
+        const LEVELS = [
+            {
+                image: "https://upload.wikimedia.org/wikipedia/commons/b/b8/B747_Iberia_EC-HDS.jpg", 
+                answers: ["boeing 747", "747", "b747", "jumbo jet"],
+                name: "Boeing 747"
+            },
+            {
+                image: "https://upload.wikimedia.org/wikipedia/commons/2/2b/A6-EDA_A380_Emirates_31_aug_2011_jfk_%286095692695%29.jpg", 
+                answers: ["airbus a380", "a380", "super jumbo"],
+                name: "Airbus A380"
+            },
+            {
+                 image: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Concorde_at_Filton.jpg",
+                 answers: ["concorde"],
+                 name: "Concorde"
+            }
+        ];
+
+        const GAME_DURATION = 30; 
+        const COOLDOWN_DURATION = TEST_MODE ? 10 : 300; 
+        
+        // --- GLOBAL STATE ---
+        let currentLevelIndex = 0;
+        let maxUnlockedIndex = 0; 
+        
+        let timeLeft = GAME_DURATION;
+        let timerInterval;
+        let revealInterval;
+        let menuUpdateInterval; 
+        let isGameRunning = false;
+        
+        // --- DOM ELEMENTS ---
+        const selectorView = document.getElementById('selector-view');
+        const gameView = document.getElementById('game-view');
+        const levelGrid = document.getElementById('level-grid');
+        const globalTimerBar = document.getElementById('global-timer-bar');
+        const globalCountdownText = document.getElementById('global-countdown-text');
+        
+        const gridContainer = document.getElementById('cover-grid');
+        const timerDisplay = document.getElementById('timer-container');
+        const inputField = document.getElementById('guess-input');
+        const enterBtn = document.getElementById('enter-btn');
+        const messageDisplay = document.getElementById('message');
+        const mysteryImage = document.getElementById('mystery-image');
+        const levelHeader = document.getElementById('level-indicator');
+
+        // --- INITIALIZATION ---
+        function initApp() {
+            const savedMax = localStorage.getItem('quizMaxLevel');
+            if (savedMax) maxUnlockedIndex = parseInt(savedMax);
+
+            renderLevelSelector();
+            
+            // Check immediately so bar appears on load if needed
+            updateMenuTimers(); 
+            menuUpdateInterval = setInterval(updateMenuTimers, 1000);
+
+            enterBtn.onclick = checkAnswer;
+            inputField.addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    checkAnswer();
+                    inputField.blur();
+                }
+            });
+        }
+
+        // --- VIEW 1: LEVEL SELECTOR LOGIC ---
+        
+        function renderLevelSelector() {
+            levelGrid.innerHTML = ""; 
+
+            LEVELS.forEach((level, index) => {
+                const card = document.createElement('div');
+                card.classList.add('level-card');
+                card.id = `level-card-${index}`;
+
+                const title = document.createElement('h3');
+                title.textContent = `Flight ${index + 1}`;
+                
+                const status = document.createElement('div');
+                status.classList.add('status');
+
+                // Logic: Determine Card State
+                
+                // 1. Locked (Future Levels)
+                if (index > maxUnlockedIndex) {
+                    card.classList.add('locked');
+                    status.textContent = "🔒 Locked";
+                } 
+                // 2. Unlocked
+                else {
+                    const cooldownEnd = localStorage.getItem('quizCooldownEnd');
+                    const now = Date.now();
+                    
+                    // Is this the SPECIFIC level we are waiting for?
+                    if (index === maxUnlockedIndex && cooldownEnd && now < parseInt(cooldownEnd)) {
+                        card.classList.add('cooldown');
+                        status.textContent = "⛽ Refueling..."; 
+                    } else {
+                        status.textContent = "✈️ Ready to Board";
+                        if (index < maxUnlockedIndex) {
+                            card.classList.add('completed');
+                            status.textContent = "★ Completed";
+                        }
+                        card.onclick = () => startGame(index);
+                    }
+                }
+
+                card.appendChild(title);
+                card.appendChild(status);
+                levelGrid.appendChild(card);
+            });
+        }
+
+        function updateMenuTimers() {
+            const cooldownEnd = localStorage.getItem('quizCooldownEnd');
+            
+            // If no cooldown, hide bar and return
+            if (!cooldownEnd) {
+                globalTimerBar.classList.remove('visible');
+                return;
+            }
+
+            const now = Date.now();
+            const diff = Math.ceil((parseInt(cooldownEnd) - now) / 1000);
+
+            if (diff > 0) {
+                // Show Bar
+                globalTimerBar.classList.add('visible');
+                
+                const m = Math.floor(diff / 60);
+                const s = diff % 60;
+                globalCountdownText.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                
+                // If user is staring at the menu, we want the card to look "waiting"
+                const cardDiv = document.getElementById(`level-card-${maxUnlockedIndex}`);
+                if(cardDiv && !cardDiv.classList.contains('cooldown')) {
+                    renderLevelSelector(); 
+                }
+            } else {
+                // Timer Finished
+                globalTimerBar.classList.remove('visible');
+                localStorage.removeItem('quizCooldownEnd'); 
+                renderLevelSelector(); // Unlock the card
+            }
+        }
+
+        function showSelector() {
+            gameView.classList.remove('active');
+            selectorView.classList.add('active');
+            isGameRunning = false;
+            clearInterval(timerInterval);
+            clearInterval(revealInterval);
+            renderLevelSelector();
+            updateMenuTimers(); // Ensure bar pops up if needed
+        }
+
+        // --- VIEW 2: GAME LOGIC ---
+
+        function startGame(index) {
+            currentLevelIndex = index;
+            selectorView.classList.remove('active');
+            gameView.classList.add('active');
+            
+            // Hide the global bar while playing (distracting)
+            globalTimerBar.classList.remove('visible');
+
+            const levelData = LEVELS[index];
+            timeLeft = GAME_DURATION;
+            isGameRunning = true;
+            
+            messageDisplay.textContent = "";
+            messageDisplay.className = "";
+            inputField.value = "";
+            inputField.disabled = false;
+            enterBtn.disabled = false;
+            levelHeader.textContent = `Flight ${index + 1}: ${levelData.name === "???" ? "Unknown" : "Classified"}`;
+            mysteryImage.src = levelData.image;
+            
+            updateTimerDisplay();
+            timerDisplay.style.color = "var(--brand-red)";
+            timerDisplay.classList.remove('timer-warning');
+
+            gridContainer.innerHTML = ''; 
+            const REVEAL_SPEED = (GAME_DURATION * 1000) / 100;
+            for (let i = 0; i < 100; i++) {
+                const piece = document.createElement('div');
+                piece.classList.add('grid-piece');
+                gridContainer.appendChild(piece);
+            }
+
+            clearInterval(timerInterval);
+            clearInterval(revealInterval);
+            timerInterval = setInterval(gameTick, 1000);
+            revealInterval = setInterval(revealRandomPiece, REVEAL_SPEED);
+            
+            inputField.focus();
+        }
+
+        function gameTick() {
+            if (!isGameRunning) return;
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 10) timerDisplay.classList.add('timer-warning');
+            if (timeLeft <= 0) handleRoundEnd(false);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function revealRandomPiece() {
+            if (!isGameRunning) return;
+            const hiddenPieces = document.querySelectorAll('.grid-piece:not(.revealed)');
+            if (hiddenPieces.length === 0) return;
+            const randomIndex = Math.floor(Math.random() * hiddenPieces.length);
+            hiddenPieces[randomIndex].classList.add('revealed');
+        }
+
+        function checkAnswer() {
+            if (!isGameRunning) return;
+            const userGuess = inputField.value.trim().toLowerCase();
+            const currentAnswers = LEVELS[currentLevelIndex].answers;
+
+            if (isMatch(userGuess, currentAnswers)) {
+                handleRoundEnd(true);
+            } else {
+                inputField.style.borderColor = "var(--brand-red)";
+                setTimeout(() => inputField.style.borderColor = "#ddd", 500);
+            }
+        }
+
+        function isMatch(guess, answers) {
+            if (answers.includes(guess)) return true;
+            for (let answer of answers) {
+                if (answer.length < 4) { if (guess === answer) return true; continue; }
+                const dist = levenshteinDistance(guess, answer);
+                const allowedErrors = answer.length > 8 ? 2 : 1;
+                if (dist <= allowedErrors) return true;
+            }
+            return false;
+        }
+
+        function handleRoundEnd(isWin) {
+            isGameRunning = false;
+            clearInterval(timerInterval);
+            clearInterval(revealInterval);
+            
+            document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
+            inputField.disabled = true;
+            enterBtn.disabled = true;
+
+            messageDisplay.classList.add('visible');
+            const planeName = LEVELS[currentLevelIndex].name;
+
+            if (isWin) {
+                messageDisplay.textContent = `Correct! It is the ${planeName}.`;
+                messageDisplay.className = "visible success";
+                timerDisplay.style.color = "#27ae60";
+                triggerConfetti();
+                
+                if (currentLevelIndex === maxUnlockedIndex) {
+                    if (maxUnlockedIndex < LEVELS.length - 1) {
+                        maxUnlockedIndex++;
+                        localStorage.setItem('quizMaxLevel', maxUnlockedIndex);
+                        const cooldownEnd = Date.now() + (COOLDOWN_DURATION * 1000);
+                        localStorage.setItem('quizCooldownEnd', cooldownEnd);
+                    }
+                }
+                setTimeout(showSelector, 3500);
+
+            } else {
+                messageDisplay.textContent = `Time's up! It was the ${planeName}.`;
+                messageDisplay.className = "visible fail";
+                setTimeout(showSelector, 4000);
+            }
+        }
+
+        function levenshteinDistance(a, b) {
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+            for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) == a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+                    }
+                }
+            }
+            return matrix[b.length][a.length];
+        }
+
+        function triggerConfetti() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
+        initApp();
+
+    </script>
+</body>
+</html>
