@@ -2,329 +2,377 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BD Tour">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BD Tour Alicante 2026</title>
+
+    <link rel="apple-touch-icon" href="app-icon-v2.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icon.png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#d71920">
-    <link rel="icon" type="image/svg+xml" href="icon.svg">
-    <title>Fuel Command</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        golf: {
+                            dark: '#0A2615',   /* Augusta Green */
+                            deep: '#1B4D3E',   /* Secondary Green */
+                            gold: '#C5A059',   /* Trophy Gold */
+                            cream: '#F5F5F0',  /* Card Stock */
+                            white: '#FFFFFF'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['"Lato"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        :root {
-            --brand-red: #d71920;
-            --brand-gold: #cfa86e;
-            --brand-dark: #1a1a1a;
-            --bg-sand: #fcfbf9;
-            --piece-color: #2c2c2c;
-            --gauge-green: #2ecc71;
-            --gauge-orange: #f39c12;
-            --gauge-red: #e74c3c;
-        }
-        * { box-sizing: border-box; }
-        
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--bg-sand);
-            color: var(--brand-dark);
-            margin: 0; padding: 10px; 
-            height: 100vh; height: 100dvh; 
-            display: flex; flex-direction: column; align-items: center;
-            overflow: hidden; user-select: none; 
+        /* --- VIEWPORT LOCK --- */
+        html, body {
+            position: fixed;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #F5F5F0;
+            overscroll-behavior: none; 
         }
 
-        /* --- OVERLAYS --- */
-        #orientation-lock, #login-overlay, #restart-overlay, #refuel-overlay, #game-over-overlay {
-            display: none; 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #111; color: var(--brand-gold);
-            z-index: 10000;
-            flex-direction: column; justify-content: center; align-items: center; text-align: center;
-            padding: 20px;
-        }
-        #restart-overlay, #refuel-overlay { background: rgba(0,0,0,0.92); backdrop-filter: blur(5px); }
-        #game-over-overlay { background: rgba(0,0,0,0.85); backdrop-filter: grayscale(1); }
-        
-        @media screen and (orientation: landscape) and (max-height: 600px) {
-            #orientation-lock { display: flex; }
+        #app-container {
+            height: 100%;
+            width: 100%;
+            overflow-y: auto; 
+            overscroll-behavior-y: none; 
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
         }
 
-        h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--brand-dark); margin: 0; text-align: center; text-transform: uppercase; }
-        h2 { font-size: 0.8rem; color: #777; text-transform: uppercase; letter-spacing: 2px; margin: 2px 0 10px 0; text-align: center; }
-
-        .view-section { 
-            width: 100%; max-width: 500px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: space-between; 
-            padding-bottom: 20px; 
-            transition: filter 2s ease;
-        }
-        .view-section.active { display: flex; }
-        
-        .gray-out { filter: grayscale(100%) contrast(1.2); }
-
-        .modal-box {
-            background: #222; border: 2px solid var(--brand-gold);
-            padding: 25px; border-radius: 12px; width: 100%; max-width: 350px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .modal-box.danger { border-color: var(--brand-red); box-shadow: 0 0 20px rgba(215, 25, 32, 0.2); }
-        .modal-box.success { border-color: var(--gauge-green); box-shadow: 0 0 20px rgba(46, 204, 113, 0.2); }
-
-        /* --- DASHBOARD --- */
-        .dashboard-header { width: 100%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
-        
-        .fuel-tank-container {
-            background: #222; padding: 15px; border-radius: 12px; width: 100%; text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 2px solid #444; position: relative; flex-shrink: 0; 
-        }
-        .fuel-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 5px; }
-        .fuel-value { font-family: 'Share Tech Mono', monospace; font-size: 2.5rem; font-weight: bold; color: var(--gauge-green); text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); transition: color 0.5s; line-height: 1; }
-        .fuel-bar-bg { width: 100%; height: 8px; background: #444; margin-top: 8px; border-radius: 5px; overflow: hidden; }
-        .fuel-bar-fill { height: 100%; width: 100%; background: var(--gauge-green); transition: width 0.5s, background-color 0.5s; }
-
-        /* --- LIST VIEW --- */
-        #level-list-container {
-            display: flex; flex-direction: column; gap: 8px; width: 100%;
-            margin: 10px 0; flex-grow: 1; overflow-y: auto; padding-right: 5px; 
-        }
-        #level-list-container::-webkit-scrollbar { width: 5px; }
-        #level-list-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
-
-        .world-folder {
-            border: 1px solid #ddd; border-radius: 10px; background: white;
-            overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0; 
-            transition: opacity 0.3s;
-        }
-        .world-folder.locked-world { opacity: 0.6; pointer-events: none; background: #f0f0f0; }
-        
-        .world-header {
-            padding: 12px 15px; background: #f8f8f8; cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid transparent; transition: all 0.2s;
-        }
-        .world-header:active { background: #eee; }
-        .world-folder.open .world-header { background: var(--brand-dark); color: white; border-bottom: 1px solid #444; }
-        .world-folder.open .world-header h3 { color: var(--brand-gold); }
-        .world-folder.open .arrow { transform: rotate(180deg); }
-        .world-title-group h3 { margin: 0; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-dark); }
-        .arrow { transition: transform 0.3s ease; font-size: 1.2rem; color: #888; }
-        .world-content { display: none; flex-direction: column; gap: 8px; padding: 10px; background: #fff; }
-        .world-folder.open .world-content { display: flex; }
-
-        .level-strip {
-            background: white; border: 1px solid #eee; border-radius: 6px; 
-            padding: 12px; width: 100%; min-height: 60px;
-            display: flex; align-items: center; justify-content: space-between;
-            cursor: pointer; transition: transform 0.1s;
-        }
-        .level-strip:active { transform: scale(0.98); background-color: #f9f9f9; }
-        .level-strip.classified { border: 1px solid var(--brand-red); background: #fff5f5; }
-        .strip-icon { font-size: 1.4rem; width: 30px; text-align: center; margin-right: 10px; }
-        .strip-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-        .strip-title { font-size: 0.95rem; color: var(--brand-dark); font-weight: bold; margin: 0; }
-        .strip-status { font-size: 0.7rem; font-weight: bold; color: #888; text-align: right; min-width: 70px; }
-        .status-ready { color: var(--brand-red); }
-        .status-done { color: #27ae60; }
-        .status-locked { color: #bbb; }
-        .level-strip.locked { background: #f9f9f9; border-color: #eee; cursor: not-allowed; opacity: 0.7; }
-        .level-strip.locked .strip-title { color: #aaa; }
-        .level-strip.locked .strip-icon { color: #ccc; }
-
-        /* --- BUTTONS --- */
-        .footer-buttons { 
-            width: 100%; flex-shrink: 0; display: flex; flex-direction: column; 
-            gap: 8px; margin-top: 5px; padding-top: 10px; border-top: 1px solid #eee; 
-            padding-bottom: 20px; margin-bottom: env(safe-area-inset-bottom);
-        }
-        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        button { width: 100%; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; }
-        .primary-btn { background-color: var(--brand-red); color: white; }
-        .gold-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
-        .outline-btn { background: transparent; border: 1px solid #ccc; color: #777; }
-        .danger-btn { background-color: var(--brand-red); color: white; font-weight: bold; }
-        .cancel-btn { background: transparent; border: 1px solid #666; color: #ccc; }
-        .dark-btn { background: #2c2c2c; color: #fff; display: none; } 
-
-        /* --- GAMEPLAY --- */
-        .game-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 5px; padding: 0 5px; flex-shrink: 0; }
-        .mini-fuel { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; color: var(--brand-dark); font-weight: bold; }
-        .mini-fuel.danger { color: var(--brand-red); animation: pulse 1s infinite; }
-        
-        #game-wrapper {
-            background: transparent; box-shadow: none; border-radius: 0; padding: 0;
-            width: 100%; margin-bottom: 10px; position: relative;
-            flex-grow: 1; min-height: 0; display: flex; justify-content: center; align-items: center;
-        }
-        #game-container { 
-            position: relative; width: 100%; aspect-ratio: 4/3; max-height: 100%; 
-            background-color: #000; overflow: hidden; border: 2px solid #ccc; cursor: pointer; 
-        }
-        #game-container img { object-fit: cover; width: 100%; height: 100%; }
-        #mystery-image { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
-        
-        #cover-grid { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; 
-        }
-        .grid-piece { background-color: var(--piece-color); border: 1px solid #3a3a3a; transition: opacity 0.3s; }
-        .grid-piece.revealed { opacity: 0; pointer-events: none; }
-        
-        /* BOMB BUTTON */
-        #bomb-wrapper { margin-bottom: 5px; width: 100%; text-align: center; }
-        #smart-bomb-btn {
-            background: linear-gradient(135deg, #8e44ad, #9b59b6);
-            color: #fff; border: 1px solid #fff; box-shadow: 0 0 10px rgba(142, 68, 173, 0.4);
-            padding: 8px; font-size: 0.9rem; letter-spacing: 1px;
-            display: none; /* Hidden by default */
+        /* Checkbox Styling */
+        input[type="checkbox"]:checked + label {
+            text-decoration: line-through;
+            color: #9CA3AF;
         }
         
-        /* SHAKE ANIMATION */
-        .shake-it { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+        /* Editor Styles */
+        .rich-editor {
+            min-height: 80px;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: white;
+            overscroll-behavior-y: contain; 
         }
-
-        #input-area { display: flex; flex-direction: column; gap: 5px; width: 100%; flex-shrink: 0; margin-bottom: 0px; }
-        input[type="text"] { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 8px; outline: none; text-align: center; background: white; color: #333; }
-        input[type="text"]:focus { border-color: var(--brand-gold); }
-        #enter-btn { background-color: var(--brand-gold); color: #1a1a1a; font-weight: bold; }
+        .rich-editor:focus {
+            outline: 2px solid #C5A059;
+        }
         
-        #message { margin-top: 5px; font-size: 1rem; text-align: center; height: 20px; font-weight: bold; flex-shrink: 0;}
-        .success { color: #27ae60; } .fail { color: var(--brand-red); }
-
-        @media (max-height: 500px) {
-            .game-header { display: none !important; }
-            #game-wrapper { margin-bottom: 5px; }
-            h1 { display: none; }
+        /* Admin Link Styling (Inside contenteditable) */
+        .rich-editor a {
+            color: blue;
+            text-decoration: underline;
         }
 
-        /* --- LEADERBOARD --- */
-        #leaderboard-list {
-            width: 100%; flex-grow: 1; overflow-y: auto; text-align: left;
-            background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 10px;
+        /* Front-End Link Styling */
+        #app-container a {
+            color: #C5A059; /* Golf Gold */
+            text-decoration: underline;
+            font-weight: bold;
         }
-        .lb-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; align-items: center; }
-        .lb-rank { font-weight: bold; width: 30px; color: var(--brand-red); }
-        .lb-name { flex-grow: 1; font-weight: 500;}
-        .lb-fuel { font-family: 'Share Tech Mono', monospace; font-weight: bold; color: var(--brand-dark); }
-        .lb-row.me { background-color: #fff9e6; border-left: 3px solid var(--brand-gold); padding-left: 5px;}
 
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .float-text { position: fixed; color: var(--brand-red); font-weight: bold; font-size: 1.5rem; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 999; text-shadow: 0 2px 4px rgba(255,255,255,0.8); }
+        /* Accordion Animation */
+        .accordion-content {
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .accordion-content.open {
+            max-height: 1000px; 
+            opacity: 1;
+        }
+        .arrow-icon {
+            transition: transform 0.3s ease;
+        }
+        .arrow-icon.rotate {
+            transform: rotate(180deg);
+        }
+        
+        /* Animation Classes */
+        .anim-obj {
+            transform-origin: center;
+            transform-box: fill-box;
+            will-change: transform; 
+        }
+
+        #landscape-warning { display: none; }
+        @media screen and (orientation: landscape) {
+            #app-container { display: none; }
+            #landscape-warning { display: flex; }
+        }
     </style>
 </head>
-<body>
+<body class="bg-golf-cream text-gray-800 font-sans antialiased">
 
-    <div id="orientation-lock">
-        <div style="font-size: 4rem; margin-bottom: 20px;">↻</div>
-        <h2 style="color: #fff; margin-bottom: 10px;">ROTATE DEVICE</h2>
-        <p>This mission requires Portrait Mode.</p>
+    <div id="landscape-warning" class="fixed inset-0 bg-golf-dark z-[100] flex flex-col items-center justify-center text-golf-gold p-10 text-center">
+        <div class="text-6xl mb-4">⟳</div>
+        <h2 class="font-serif text-3xl mb-2">Portrait Mode Only</h2>
     </div>
 
-    <div id="game-over-overlay">
-        <div class="modal-box danger">
-            <h1 style="color: var(--brand-red); margin-bottom: 10px; font-size: 1.8rem;">MISSION FAILED</h1>
-            <p style="margin-bottom: 5px; color: #fff; font-size: 1rem; font-weight: bold;">FUEL DEPLETED</p>
-            <button class="gold-btn" onclick="confirmReset()">RETIRE & RESTART</button>
-        </div>
-    </div>
+    <div id="app-container" class="max-w-md mx-auto bg-golf-cream shadow-2xl relative">
 
-    <div id="restart-overlay">
-        <div class="modal-box danger">
-            <h1 style="color: var(--brand-red); margin-bottom: 10px;">SYSTEM PURGE</h1>
-            <p style="margin-bottom: 10px; color: #ccc; font-size: 0.9rem;">Delete all data?</p>
-            <div class="modal-buttons">
-                <button class="cancel-btn" onclick="cancelReset()">CANCEL</button>
-                <button class="danger-btn" onclick="confirmReset()">CONFIRM</button>
+        <header class="bg-golf-dark pt-10 pb-8 px-6 text-center rounded-b-[30px] shadow-lg z-10 relative overflow-hidden shrink-0">
+            
+            <button id="install-btn" onclick="showInstallInstructions()" class="hidden absolute top-6 left-6 text-golf-gold hover:text-white transition z-50 p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+            </button>
+
+            <svg id="header-glass" class="absolute bottom-0 right-0 w-48 h-auto opacity-10 text-golf-gold transform translate-x-4 translate-y-2" viewBox="0 0 200 200" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M40 40 L160 40 L100 120 L100 180 M70 180 L130 180" stroke="currentColor" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="50" y1="50" x2="150" y2="50" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity="0.5" />
+                <g>
+                    <g id="anim-stick" class="anim-obj"><line x1="0" y1="20" x2="20" y2="-20" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></g>
+                    <g id="anim-ball" class="anim-obj">
+                        <circle cx="0" cy="0" r="18" fill="currentColor"/>
+                        <circle cx="-5" cy="-5" r="2" fill="white" opacity="0.5"/>
+                        <circle cx="5" cy="-5" r="2" fill="white" opacity="0.5"/>
+                    </g>
+                </g>
+            </svg>
+
+            <div class="relative z-10 pointer-events-none">
+                <h1 class="font-serif text-2xl text-white tracking-wide leading-tight drop-shadow-md">
+                    BD TOUR<br>
+                    <span class="text-golf-gold italic text-xl">Alicante 2026</span>
+                </h1>
+                
+                <button onclick="document.getElementById('packing-modal').classList.remove('hidden'); event.stopPropagation();" class="pointer-events-auto mt-4 bg-golf-deep border border-golf-gold text-golf-gold text-[10px] uppercase tracking-widest py-1.5 px-6 rounded-full hover:bg-black transition flex items-center justify-center mx-auto gap-2 shadow-lg">
+                    <span>✓</span> Packing List
+                </button>
             </div>
-        </div>
-    </div>
+        </header>
 
-    <div id="refuel-overlay">
-        <div class="modal-box success">
-            <div style="font-size: 3rem;">⛽</div>
-            <h1 style="color: var(--gauge-green); margin-bottom: 10px;">SUPPLY DROP</h1>
-            <p style="margin-bottom: 10px; color: #fff; font-size: 1.1rem;">
-                Hangar Completed.<br>
-                <strong>+2000 Liters Added</strong>
-            </p>
-            <button class="gold-btn" onclick="closeRefuel()">CONTINUE</button>
-        </div>
-    </div>
-
-    <div id="login-overlay">
-        <div class="modal-box">
-            <h1 style="color: var(--brand-gold); margin-bottom: 10px;">IDENTIFY PILOT</h1>
-            <input type="text" id="callsign-input" placeholder="Callsign" maxlength="12" style="margin-bottom: 15px;">
-            <button class="gold-btn" onclick="registerPilot()">CONFIRM IDENTITY</button>
-        </div>
-    </div>
-
-    <div id="selector-view" class="view-section">
-        <div class="dashboard-header">
-            <h1>Fuel Command</h1>
-            <h2 id="pilot-greeting">Welcome Pilot</h2>
-            <div class="fuel-tank-container">
-                <div class="fuel-label">Global Fuel Reserves</div>
-                <div class="fuel-value"><span id="total-fuel-display">4000</span></div>
-                <div class="fuel-bar-bg"><div class="fuel-bar-fill" id="fuel-bar"></div></div>
-                <div id="unlock-message" style="font-size: 0.75rem; margin-top:8px; color:#888;"></div>
+        <main class="p-4 space-y-3 flex-1">
+            
+            <div class="bg-white rounded-sm border-t-2 border-golf-gold shadow-sm overflow-hidden">
+                <button onclick="toggleAccordion('acc-flight', 'arrow-flight')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-golf-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                        <h3 class="font-serif text-base text-golf-deep font-bold">Flight Plan</h3>
+                    </div>
+                    <svg id="arrow-flight" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="acc-flight" class="accordion-content border-t border-gray-100">
+                    <div class="p-4 pt-2">
+                        <div id="view-flight" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <div id="level-list-container"></div>
+            <div class="bg-white rounded-sm border-t-2 border-golf-deep shadow-sm overflow-hidden">
+                <button onclick="toggleAccordion('acc-transport', 'arrow-transport')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-golf-deep" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                        <h3 class="font-serif text-base text-golf-deep font-bold">Transportation</h3>
+                    </div>
+                    <svg id="arrow-transport" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="acc-transport" class="accordion-content border-t border-gray-100">
+                    <div class="p-4 pt-2">
+                        <div id="view-transport" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-sm border-t-2 border-golf-gold shadow-sm overflow-hidden">
+                <button onclick="toggleAccordion('acc-rounds', 'arrow-rounds')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-golf-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 21v-8a2 2 0 012-2h14l-3 4 3 4H5a2 2 0 01-2-2z"></path></svg>
+                        <h3 class="font-serif text-base text-golf-deep font-bold">Golf Rounds</h3>
+                    </div>
+                    <svg id="arrow-rounds" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="acc-rounds" class="accordion-content border-t border-gray-100">
+                    <div class="p-4 pt-2">
+                        <div id="view-rounds" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-sm border-t-2 border-golf-deep shadow-sm overflow-hidden">
+                <button onclick="toggleAccordion('acc-teams', 'arrow-teams')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-golf-deep" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <h3 class="font-serif text-base text-golf-deep font-bold">Team Rosters</h3>
+                    </div>
+                    <svg id="arrow-teams" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="acc-teams" class="accordion-content border-t border-gray-100">
+                    <div class="p-4 pt-2">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-bold text-xs text-golf-gold uppercase mb-2 border-b border-gray-100 pb-1">Team 1</h4>
+                                <div id="view-team1" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-golf-deep uppercase mb-2 border-b border-gray-100 pb-1">Team 2</h4>
+                                <div id="view-team2" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-sm border-t-2 border-golf-gold shadow-sm overflow-hidden">
+                <button onclick="toggleAccordion('acc-hotel', 'arrow-hotel')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-golf-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <h3 class="font-serif text-base text-golf-deep font-bold">Accommodation</h3>
+                    </div>
+                    <svg id="arrow-hotel" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="acc-hotel" class="accordion-content border-t border-gray-100">
+                    <div class="p-4 pt-2">
+                        <div id="view-hotel" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-sm border-t-2 border-golf-deep shadow-sm overflow-hidden">
+                <button onclick="toggleAccordion('acc-dinner', 'arrow-dinner')" class="w-full flex justify-between items-center p-4 bg-white hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-golf-deep" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                        <h3 class="font-serif text-base text-golf-deep font-bold">Dining & Events</h3>
+                    </div>
+                    <svg id="arrow-dinner" class="arrow-icon w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="acc-dinner" class="accordion-content border-t border-gray-100">
+                    <div class="p-4 pt-2">
+                        <div id="view-dinner" class="text-xs leading-relaxed text-gray-600 whitespace-pre-line">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="quote-container" class="mt-4 px-10 text-center h-24 flex flex-col items-center justify-center select-none pointer-events-none">
+                <div id="quote-content" class="transition-opacity duration-1000 opacity-0"></div>
+            </div>
+
+            <div class="text-center pt-2 pb-6">
+                <button onclick="document.getElementById('login-modal').classList.remove('hidden')" class="text-[9px] text-gray-300 hover:text-golf-gold uppercase tracking-widest opacity-50 mb-2">
+                    Chairman Access
+                </button>
+                <p class="text-[9px] text-gray-300">
+                    Last sync: <span id="last-sync">...</span>
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <div id="install-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-end pb-10 text-white animate-fade-in" onclick="document.getElementById('install-modal').classList.add('hidden')">
+        <div class="bg-golf-dark border border-golf-gold p-6 rounded-t-2xl w-full max-w-md text-center shadow-2xl relative">
+            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gray-500 rounded-full"></div>
+            <h3 class="font-serif text-xl text-golf-gold mb-2">Install App</h3>
+            <p class="text-sm text-gray-300 mb-6">For the best experience, add this to your home screen.</p>
+            <div class="flex items-center justify-center gap-4 text-sm font-bold text-white mb-2"><span>1. Tap Share</span><svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg></div>
+            <div class="flex items-center justify-center gap-4 text-sm font-bold text-white"><span>2. Add to Home Screen</span><div class="border border-white rounded px-2 text-[10px] uppercase">Plus</div></div>
+            <div class="mt-8 text-xs text-gray-500">Tap anywhere to close</div>
+        </div>
+        <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-golf-gold animate-bounce">↓</div>
+    </div>
+
+    <div id="packing-modal" class="hidden fixed inset-0 bg-golf-dark/95 z-50 flex flex-col items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="bg-golf-gold p-3 text-center flex justify-between items-center shrink-0">
+                <div class="w-6"></div>
+                <h2 class="font-serif text-lg font-bold text-golf-dark">Packing List</h2>
+                <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="text-golf-dark font-bold text-xl hover:text-white">×</button>
+            </div>
+            <div class="overflow-y-auto flex-1 p-6 space-y-6">
+                <div>
+                    <h3 class="text-xs font-bold text-golf-deep uppercase tracking-widest mb-3 border-b border-gray-100 pb-1">Essentials</h3>
+                    <div id="list-essentials" class="space-y-3"><p class="text-xs text-gray-400 italic">Loading...</p></div>
+                </div>
+                <div>
+                    <h3 class="text-xs font-bold text-golf-deep uppercase tracking-widest mb-3 border-b border-gray-100 pb-1">Personal Items</h3>
+                    <div class="flex gap-2 mb-4">
+                        <input id="new-item-input" type="text" placeholder="Add item..." class="flex-1 bg-gray-50 border border-gray-200 rounded-sm px-2 py-1 text-sm outline-none focus:border-golf-gold">
+                        <button onclick="addPersonalItem()" class="bg-golf-deep text-white px-3 py-1 rounded-sm text-xs font-bold hover:bg-black">+</button>
+                    </div>
+                    <div id="list-personal" class="space-y-3"></div>
+                </div>
+            </div>
+            <button onclick="document.getElementById('packing-modal').classList.add('hidden')" class="bg-gray-100 p-3 text-center text-xs font-bold text-gray-500 hover:bg-gray-200 uppercase tracking-wide shrink-0">Close</button>
+        </div>
+    </div>
+
+    <div id="login-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-xs p-8 rounded-sm shadow-2xl text-center">
+            <h2 class="font-serif text-2xl text-golf-dark mb-6">Chairman Login</h2>
+            <input type="email" id="email" placeholder="Email" class="w-full bg-gray-50 border-b-2 border-gray-200 p-3 mb-4 outline-none">
+            <input type="password" id="password" placeholder="Password" class="w-full bg-gray-50 border-b-2 border-gray-200 p-3 mb-6 outline-none">
+            <button id="btn-login" class="w-full bg-golf-dark text-golf-gold font-bold py-3 uppercase tracking-wider text-sm">Authenticate</button>
+            <button onclick="document.getElementById('login-modal').classList.add('hidden')" class="mt-4 text-xs text-gray-400 underline">Cancel</button>
+        </div>
+    </div>
+
+    <div id="editor-panel" class="hidden fixed inset-0 bg-gray-100 z-[60] flex flex-col">
         
-        <div class="footer-buttons">
-            <button class="outline-btn" onclick="openLeaderboard()">🏆 Global Leaderboard</button>
-            <button id="install-btn" class="dark-btn">📲 Install App</button>
-            <button class="outline-btn" onclick="triggerResetUI()">Restart Game</button>
-        </div>
-    </div>
-
-    <div id="game-view" class="view-section">
-        <div class="game-header">
-            <div id="level-title" style="font-weight:bold;">Flight 1</div>
-            <div class="mini-fuel" id="current-fuel-display">4000</div>
+        <div class="bg-golf-deep text-white p-4 flex justify-between items-center shadow-md shrink-0">
+            <h2 class="font-serif font-bold">Edit Itinerary</h2>
+            <button onclick="document.getElementById('editor-panel').classList.add('hidden')" class="text-xs bg-black/20 px-3 py-1 rounded hover:bg-black/40">Close</button>
         </div>
         
-        <div id="bomb-wrapper">
-            <button id="smart-bomb-btn" onclick="triggerSmartBomb()">💣 SMART BOMB (1 LEFT)</button>
+        <div class="bg-gray-200 p-3 border-b border-gray-300 sticky top-0 z-20 grid grid-cols-3 gap-2 justify-center shadow-sm">
+            <button onmousedown="event.preventDefault(); format('bold')" class="bg-golf-gold text-golf-dark font-bold text-xs uppercase tracking-widest py-3 px-2 rounded shadow hover:brightness-110 flex items-center justify-center gap-2">
+                <span><b>B</b></span> Bold
+            </button>
+            <button onmousedown="event.preventDefault(); format('strikeThrough')" class="bg-golf-gold text-golf-dark font-bold text-xs uppercase tracking-widest py-3 px-2 rounded shadow hover:brightness-110 flex items-center justify-center gap-2">
+                <span><s>S</s></span> Done
+            </button>
+            <button onmousedown="event.preventDefault(); addLink()" class="bg-golf-gold text-golf-dark font-bold text-xs uppercase tracking-widest py-3 px-2 rounded shadow hover:brightness-110 flex items-center justify-center gap-2">
+                <span>🔗</span> Link
+            </button>
         </div>
 
-        <div id="game-wrapper">
-            <div id="game-container">
-                <img id="mystery-image" src="" alt="Mystery Airplane">
-                <div id="cover-grid"></div>
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+            <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Flight Plan</label><div id="edit-flight" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div></div>
+            <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Transportation</label><div id="edit-transport" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div></div>
+            <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Golf Rounds</label><div id="edit-rounds" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div></div>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 1</label><div id="edit-team1" contenteditable="true" class="rich-editor w-full p-2 text-sm border rounded"></div></div>
+                <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Team 2</label><div id="edit-team2" contenteditable="true" class="rich-editor w-full p-2 text-sm border rounded"></div></div>
             </div>
-        </div>
-        <div id="input-area">
-            <input type="text" id="guess-input" placeholder="Identify aircraft..." autocomplete="off">
-            <button id="enter-btn">ENTER</button>
-            <button class="outline-btn" onclick="saveAndExit()">Continue Later</button>
-        </div>
-        <div id="message"></div>
-    </div>
-
-    <div id="leaderboard-view" class="view-section">
-        <div style="flex-shrink: 0; width:100%; text-align:center;">
-            <h1>Global Standings</h1>
-            <h2 style="margin-bottom: 10px;">Top Fuel Reserves</h2>
-        </div>
-        <div id="leaderboard-list">Connecting to HQ...</div>
-        <div class="footer-buttons">
-            <button class="primary-btn" onclick="closeLeaderboard()">Back to Command</button>
+            <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Accommodation</label><div id="edit-hotel" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div></div>
+            <div><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Dining</label><div id="edit-dinner" contenteditable="true" class="rich-editor w-full p-3 text-sm border rounded"></div></div>
+            <div class="bg-yellow-50 p-3 rounded border border-yellow-100"><label class="block text-xs font-bold text-golf-dark uppercase mb-1">Essentials Packing List</label><textarea id="edit-packing-essentials" rows="6" class="w-full p-3 text-sm border rounded font-sans"></textarea></div>
+            <button id="btn-save" class="w-full bg-golf-deep text-white font-bold py-4 rounded shadow-lg text-sm uppercase tracking-widest mt-4 mb-10">Save Updates Live</button>
         </div>
     </div>
 
-    <script>
-        // --- 🔥 FIREBASE CONFIGURATION 🔥 ---
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // 🔥🔥🔥 PASTE FIREBASE CONFIG HERE 🔥🔥🔥
         const firebaseConfig = {
 apiKey: "AIzaSyBQZPcQ6FcnglNHg10d__6PQDdd_OjT74U",
 authDomain: "golfapp-10c53.firebaseapp.com",
@@ -333,443 +381,278 @@ storageBucket: "golfapp-10c53.firebasestorage.app",
 messagingSenderId: "251112200135",
 appId: "1:251112200135:web:6b1d0386a2cc042ae8abe2"
         };
+        // 🔥🔥🔥 END PASTE 🔥🔥🔥
 
-        let db;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-        } catch(e) { console.error("Firebase Init Error", e); }
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const tripRef = doc(db, "trip", "details");
 
-        // --- PLANES DATA (Randomized Pools) ---
-        const AIRCRAFT_DATA = {
-            standard: [
-                { image: "747.jpg", answers: ["boeing 747", "747", "b747", "jumbo jet"], name: "Boeing 747" },
-                { image: "a380.jpg", answers: ["airbus a380", "a380", "super jumbo", "380"], name: "Airbus A380" },
-                { image: "787.jpg", answers: ["787", "boeing 787", "dreamliner", "b787"], name: "Boeing 787" },
-                { image: "e175.jpg", answers: ["e175", "embraer 175", "embraer e175", "e-175"], name: "Embraer E175" },
-                { image: "concorde.jpg", answers: ["concorde"], name: "Concorde" },
-                { image: "antonov.jpg", answers: ["an225", "an-225", "mriya", "antonov 225"], name: "Antonov An-225" },
-                { image: "a350.jpg", answers: ["a350", "airbus a350", "350"], name: "Airbus A350" }
-            ],
-            classified: [
-                { image: "f22.jpg", answers: ["f22", "f-22", "raptor", "f22 raptor"], name: "F-22 Raptor" },
-                { image: "sr71.jpg", answers: ["sr71", "sr-71", "blackbird", "sr 71"], name: "SR-71 Blackbird" },
-                { image: "spitfire.jpg", answers: ["spitfire", "supermarine spitfire", "mk xvi", "spitfire mk xvi"], name: "Supermarine Spitfire" },
-                { image: "p51.jpg", answers: ["p51", "p-51", "mustang", "p51d", "p-51d"], name: "P-51D Mustang" }
-            ]
-        };
-
-        const STARTING_GLOBAL_FUEL = 4000;
-        const REFUEL_AMOUNT = 2000; 
-        const TILE_COST = 15;
-        const WRONG_GUESS_PENALTY = 200;
-
-        // --- STATE ---
-        let globalState = {
-            username: null,
-            currentFuel: STARTING_GLOBAL_FUEL,
-            levels: [],
-            hasSmartBomb: true, // NEW
-            world1Complete: false,
-            world2Complete: false
-        };
-        let activeLevelIdx = 0;
-
-        // --- DOM ---
-        const selectorView = document.getElementById('selector-view');
-        const gameView = document.getElementById('game-view');
-        const lbView = document.getElementById('leaderboard-view');
-        const loginOverlay = document.getElementById('login-overlay');
-        const restartOverlay = document.getElementById('restart-overlay');
-        const refuelOverlay = document.getElementById('refuel-overlay');
-        const gameOverOverlay = document.getElementById('game-over-overlay');
-        const pilotGreeting = document.getElementById('pilot-greeting');
-        const bombBtn = document.getElementById('smart-bomb-btn');
-        
-        // --- INIT ---
-        window.onload = function() {
-            loadState();
-            if (!globalState.username) {
-                loginOverlay.style.display = 'flex';
-            } else {
-                selectorView.classList.add('active');
-                pilotGreeting.textContent = `Pilot: ${globalState.username}`;
-                renderDashboard();
-                if (isAllWorldsComplete()) syncScoreToCloud();
-            }
-            document.getElementById('guess-input').addEventListener("keypress", (e) => { if (e.key === "Enter") checkAnswer(); });
-            document.getElementById('enter-btn').onclick = checkAnswer;
-        };
-
-        // --- GENERATOR ---
-        function generateGameLevels() {
-            let levels = [];
-            // Shuffle Standard Planes
-            let pool = [...AIRCRAFT_DATA.standard].sort(() => Math.random() - 0.5);
-            
-            // Hangar 1: 4 Random Planes
-            pool.slice(0, 4).forEach(p => levels.push({ ...p, hangar: 1, isClassified: false, revealedTiles: [], completed: false }));
-            
-            // Hangar 2: Remaining 3 Planes
-            pool.slice(4, 7).forEach(p => levels.push({ ...p, hangar: 2, isClassified: false, revealedTiles: [], completed: false }));
-            
-            // Hangar 3: Fixed Classified Planes
-            AIRCRAFT_DATA.classified.forEach(p => levels.push({ ...p, hangar: 3, isClassified: true, revealedTiles: [], completed: false }));
-            
-            return levels;
+        // --- MIGRATION: RECOVER OLD DATA ---
+        if (localStorage.getItem('userPackingList') && !localStorage.getItem('userPackingPersonal')) {
+            localStorage.setItem('userPackingPersonal', localStorage.getItem('userPackingList'));
+            localStorage.removeItem('userPackingList');
+            console.log("Migrated Old List to Personal List");
         }
 
-        // --- LOGIC ---
-        function registerPilot() {
-            const name = document.getElementById('callsign-input').value.trim();
-            if (name.length < 2) { alert("Callsign too short."); return; }
-            globalState.username = name;
-            saveState();
-            loginOverlay.style.display = 'none';
-            selectorView.classList.add('active');
-            pilotGreeting.textContent = `Pilot: ${globalState.username}`;
-            renderDashboard();
-        }
-
-        function syncScoreToCloud() {
-            if (!db || !globalState.username) return;
-            db.collection("fuel_command_v2").doc(globalState.username).set({
-                name: globalState.username,
-                score: globalState.currentFuel,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(console.error);
-        }
-
-        function openLeaderboard() {
-            selectorView.classList.remove('active');
-            lbView.classList.add('active');
-            const list = document.getElementById('leaderboard-list');
-            list.innerHTML = "Fetching Data...";
-            if(!db) { list.innerHTML = "⚠️ Database not connected."; return; }
-
-            db.collection("fuel_command_v2").orderBy("score", "desc").limit(20).get()
-            .then((querySnapshot) => {
-                let html = "";
-                let rank = 1;
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const isMe = data.name === globalState.username;
-                    html += `<div class="lb-row ${isMe ? 'me' : ''}"><div class="lb-rank">#${rank++}</div><div class="lb-name">${data.name}</div><div class="lb-fuel">${data.score}L</div></div>`;
-                });
-                if(html === "") html = "<div style='text-align:center; padding:20px; color:#777;'>No completed missions yet.</div>";
-                list.innerHTML = html;
-            });
-        }
-
-        function closeLeaderboard() { lbView.classList.remove('active'); selectorView.classList.add('active'); }
-
-        function loadState() {
-            const saved = localStorage.getItem('fuelQuizState_v23'); // Version bump for Bomb
-            if (saved) {
-                globalState = JSON.parse(saved);
-                if(!globalState.levels || globalState.levels.length === 0) {
-                    globalState.levels = generateGameLevels();
-                }
-                if(globalState.hasSmartBomb === undefined) globalState.hasSmartBomb = true; // migration
-            } else {
-                globalState.currentFuel = STARTING_GLOBAL_FUEL;
-                globalState.levels = generateGameLevels();
-                globalState.hasSmartBomb = true;
-            }
-        }
-
-        function saveState() { localStorage.setItem('fuelQuizState_v23', JSON.stringify(globalState)); }
-        
-        function isHangarComplete(hNum) {
-            return globalState.levels.filter(l => l.hangar === hNum).every(l => l.completed);
-        }
-        function isAllWorldsComplete() {
-            return globalState.levels.every(l => l.completed);
-        }
-
-        function renderDashboard() {
-            document.getElementById('total-fuel-display').textContent = globalState.currentFuel;
-            const pct = Math.min(100, Math.max(0, (globalState.currentFuel / STARTING_GLOBAL_FUEL) * 100));
-            document.getElementById('fuel-bar').style.width = pct + "%";
-            
-            const h1Done = isHangarComplete(1);
-            const h2Done = isHangarComplete(2);
-            
-            if (h1Done && !globalState.world1Complete) {
-                globalState.world1Complete = true;
-                triggerRefuel();
-            }
-            if (h2Done && !globalState.world2Complete) {
-                globalState.world2Complete = true;
-                triggerRefuel();
-            }
-
-            const unlockMsg = document.getElementById('unlock-message');
-            if(h2Done) unlockMsg.innerHTML = "Classified Ops: <span style='color:#2ecc71'>GRANTED</span>";
-            else if(h1Done) unlockMsg.innerHTML = "Hangar 2: <span style='color:#2ecc71'>UNLOCKED</span>";
-            else unlockMsg.innerHTML = "Complete Hangar 1 to advance";
-
-            const listContainer = document.getElementById('level-list-container');
-            listContainer.innerHTML = "";
-
-            const hangars = { 1: [], 2: [], 3: [] };
-            globalState.levels.forEach((level, index) => {
-                hangars[level.hangar].push({ ...level, originalIndex: index });
-            });
-
-            let activeHangar = 1;
-            if (h1Done) activeHangar = 2;
-            if (h2Done) activeHangar = 3;
-
-            [1, 2, 3].forEach(hNum => {
-                const levels = hangars[hNum];
-                if(levels.length === 0) return;
-
-                const folder = document.createElement('div');
-                let isFolderLocked = false;
-                if (hNum === 2 && !h1Done) isFolderLocked = true;
-                if (hNum === 3 && !h2Done) isFolderLocked = true;
-
-                folder.className = `world-folder ${isFolderLocked ? 'locked-world' : ''} ${hNum === activeHangar ? 'open' : ''}`;
-                
-                const header = document.createElement('div');
-                header.className = 'world-header';
-                let lockIcon = isFolderLocked ? '🔒 ' : '';
-                header.innerHTML = `
-                    <div class="world-title-group"><h3>${lockIcon}Hangar ${hNum}</h3></div>
-                    <div class="arrow">▼</div>
-                `;
-                if (!isFolderLocked) {
-                    header.onclick = () => folder.classList.toggle('open');
-                }
-
-                const content = document.createElement('div');
-                content.className = 'world-content';
-
-                levels.forEach(levelData => {
-                    const idx = levelData.originalIndex;
-                    const card = document.createElement('div');
-                    
-                    if (levelData.isClassified) {
-                        card.className = "level-strip classified";
-                    } else {
-                        card.className = "level-strip";
-                    }
-
-                    let icon = "✈️";
-                    let title = `Flight ${idx + 1}`;
-                    if(levelData.isClassified) { icon = "🚀"; title = "Classified"; }
-
-                    let statusHtml = `<div class="strip-status status-ready">Ready</div>`;
-                    
-                    if (levelData.completed) {
-                        title = levelData.name; icon = "★"; statusHtml = `<div class="strip-status status-done">Identified</div>`;
-                    } else if (levelData.revealedTiles.length > 0) {
-                        statusHtml = `<div class="strip-status status-ready">In Progress</div>`;
-                    }
-
-                    if (globalState.currentFuel <= 0 && !levelData.completed) {
-                         card.className += " locked";
-                         statusHtml = `<div class="strip-status" style="color:red">EMPTY</div>`;
-                         card.onclick = () => triggerGameOver();
-                    } else {
-                        card.onclick = () => launchLevel(idx);
-                    }
-                    card.innerHTML = `<div class="strip-icon">${icon}</div><div class="strip-info"><div class="strip-title">${title}</div></div>${statusHtml}`;
-                    
-                    content.appendChild(card);
-                });
-
-                folder.appendChild(header);
-                folder.appendChild(content);
-                listContainer.appendChild(folder);
-            });
-        }
-
-        function triggerRefuel() {
-            globalState.currentFuel += REFUEL_AMOUNT;
-            saveState();
-            setTimeout(() => { refuelOverlay.style.display = 'flex'; }, 500);
-        }
-
-        function launchLevel(idx) {
-            activeLevelIdx = idx;
-            const lState = globalState.levels[idx];
-            selectorView.classList.remove('active');
-            gameView.classList.add('active');
-
-            let title = `Flight ${idx+1}`;
-            if (lState.completed) title = lState.name;
-            else if (lState.isClassified) title = "Classified";
-            
-            document.getElementById('level-title').textContent = title;
-            document.getElementById('mystery-image').src = lState.image;
-            document.getElementById('guess-input').value = "";
-            document.getElementById('guess-input').disabled = lState.completed; 
-            document.getElementById('enter-btn').disabled = lState.completed;
-            document.getElementById('message').textContent = lState.completed ? "Identified" : "";
-            
-            // SHOW/HIDE BOMB
-            if (globalState.hasSmartBomb && !lState.completed) {
-                bombBtn.style.display = "inline-block";
-            } else {
-                bombBtn.style.display = "none";
-            }
-            
-            updateMiniFuelUI();
-
-            const grid = document.getElementById('cover-grid');
-            grid.innerHTML = "";
-            for (let i = 0; i < 100; i++) {
-                const tile = document.createElement('div');
-                tile.className = 'grid-piece';
-                if (lState.revealedTiles.includes(i) || lState.completed) tile.classList.add('revealed');
-                grid.appendChild(tile);
-            }
-
-            if (!lState.completed && globalState.currentFuel > 0) {
-                grid.onmousedown = handleInteraction;
-                grid.ontouchstart = (e) => { e.preventDefault(); handleInteraction(e); };
-            } else {
-                grid.onmousedown = null; grid.ontouchstart = null;
-            }
-        }
-
-        // --- BOMB LOGIC ---
-        function triggerSmartBomb() {
-            if (!globalState.hasSmartBomb) return;
-            
-            // Visuals
-            const wrapper = document.getElementById('game-wrapper');
-            wrapper.classList.add('shake-it');
-            setTimeout(() => wrapper.classList.remove('shake-it'), 500);
-            
-            // Logic
-            document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
-            
-            // Update State
-            globalState.hasSmartBomb = false;
-            // Mark all tiles as revealed for this specific level
-            globalState.levels[activeLevelIdx].revealedTiles = [...Array(100).keys()];
-            
-            saveState();
-            bombBtn.style.display = "none"; // Hide button
-        }
-
-        function handleInteraction(e) {
-            const lState = globalState.levels[activeLevelIdx];
-            if (lState.completed || globalState.currentFuel <= 0) return;
-            
-            const hidden = Array.from(document.querySelectorAll('.grid-piece')).filter((el, idx) => !lState.revealedTiles.includes(idx));
-            if (hidden.length === 0) return;
-
-            const tile = hidden[Math.floor(Math.random() * hidden.length)];
-            const idx = Array.from(document.getElementById('cover-grid').children).indexOf(tile);
-
-            tile.classList.add('revealed');
-            lState.revealedTiles.push(idx);
-            
-            globalState.currentFuel = Math.max(0, globalState.currentFuel - TILE_COST);
-            saveState();
-            updateMiniFuelUI();
-
-            let cx = e.clientX || (e.touches && e.touches[0].clientX);
-            let cy = e.clientY || (e.touches && e.touches[0].clientY);
-            if (cx && cy) showFloat(cx, cy, `-${TILE_COST}`);
-
-            if (globalState.currentFuel <= 0) triggerGameOver();
-        }
-
-        function checkAnswer() {
-            const lState = globalState.levels[activeLevelIdx];
-            if (lState.completed || globalState.currentFuel <= 0) return;
-
-            const guess = document.getElementById('guess-input').value.trim().toLowerCase();
-            const answers = lState.answers;
-
-            if (isMatch(guess, answers)) {
-                endGame(true, "Target Verified");
-            } else {
-                globalState.currentFuel = Math.max(0, globalState.currentFuel - WRONG_GUESS_PENALTY);
-                saveState();
-                updateMiniFuelUI();
-                const inp = document.getElementById('guess-input');
-                inp.style.borderColor = "var(--brand-red)";
-                setTimeout(() => inp.style.borderColor = "#ddd", 500);
-                if (globalState.currentFuel <= 0) triggerGameOver();
-            }
-        }
-
-        function endGame(win, msg) {
-            document.getElementById('message').textContent = msg;
-            if (win) {
-                document.getElementById('message').className = "success";
-                const lState = globalState.levels[activeLevelIdx];
-                lState.completed = true;
-                document.querySelectorAll('.grid-piece').forEach(p => p.classList.add('revealed'));
-                triggerConfetti();
-                
-                document.getElementById('level-title').textContent = lState.name;
-                bombBtn.style.display = "none"; // Hide bomb on win
-                saveState();
-                if (isAllWorldsComplete()) syncScoreToCloud();
-                
-                setTimeout(saveAndExit, 2000);
-            } else {
-                document.getElementById('message').className = "fail";
-            }
-        }
-
-        function triggerGameOver() {
-            document.getElementById('game-view').classList.add('gray-out');
-            document.getElementById('selector-view').classList.add('gray-out');
-            setTimeout(() => { gameOverOverlay.style.display = 'flex'; }, 500);
-        }
-
-        function closeRefuel() { refuelOverlay.style.display = 'none'; saveAndExit(); }
-        function updateMiniFuelUI() {
-            const el = document.getElementById('current-fuel-display');
-            el.textContent = globalState.currentFuel;
-            if (globalState.currentFuel <= 200) el.classList.add('danger');
-            else el.classList.remove('danger');
-        }
-
-        function saveAndExit() { renderDashboard(); gameView.classList.remove('active'); selectorView.classList.add('active'); }
-        function triggerResetUI() { restartOverlay.style.display = 'flex'; }
-        function cancelReset() { restartOverlay.style.display = 'none'; }
-        function confirmReset() { localStorage.clear(); location.reload(); }
-
-        function showFloat(x, y, text) {
-            const el = document.createElement('div'); el.className = 'float-text'; el.textContent = text;
-            el.style.left = x + 'px'; el.style.top = (y - 50) + 'px';
-            document.body.appendChild(el); setTimeout(() => el.remove(), 800);
-        }
-
-        function isMatch(guess, answers) {
-            if (answers.includes(guess)) return true;
-            for (let a of answers) {
-                if (a.length < 4 && guess === a) return true;
-                if (levenshtein(guess, a) <= (a.length > 8 ? 2 : 1)) return true;
-            }
-            return false;
-        }
-
-        function levenshtein(a, b) {
-            const m = []; for(let i=0; i<=b.length; i++) m[i]=[i]; for(let j=0; j<=a.length; j++) m[0][j]=j;
-            for(let i=1; i<=b.length; i++) for(let j=1; j<=a.length; j++) 
-                m[i][j] = (b.charAt(i-1)==a.charAt(j-1)) ? m[i-1][j-1] : Math.min(m[i-1][j-1]+1, Math.min(m[i][j-1]+1, m[i-1][j]+1));
-            return m[b.length][a.length];
-        }
-
-        function triggerConfetti() { try { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); } catch(e){} }
-
+        // INSTALL BUTTON
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const installBtn = document.getElementById('install-btn');
         let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            const btn = document.getElementById('install-btn'); btn.style.display = 'block';
-            btn.addEventListener('click', () => { btn.style.display = 'none'; deferredPrompt.prompt(); deferredPrompt = null; });
+        if (!isStandalone) installBtn.classList.remove('hidden');
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+        window.showInstallInstructions = function() {
+            if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => deferredPrompt = null); }
+            else { document.getElementById('install-modal').classList.remove('hidden'); }
+        };
+
+        // ANIMATION
+        const stickEl = document.getElementById('anim-stick');
+        const ballEl = document.getElementById('anim-ball');
+        function animateBubbles() {
+            const time = Date.now();
+            const ballX = 100 + Math.sin(time * 0.0005) * 8; 
+            const ballY = 85 + Math.cos(time * 0.0008) * 4; 
+            if(ballEl) ballEl.setAttribute('transform', `translate(${ballX}, ${ballY})`);
+            const stickX = 100 + Math.sin(time * 0.0003 + 2) * 10;
+            const stickY = 65 + Math.cos(time * 0.0004) * 5;
+            const stickRot = Math.sin(time * 0.0002) * 8;
+            if(stickEl) stickEl.setAttribute('transform', `translate(${stickX}, ${stickY}) rotate(${stickRot})`);
+            requestAnimationFrame(animateBubbles);
+        }
+        animateBubbles();
+
+        // VARS
+        let globalEssentialsList = [];
+
+        // PACKING LIST
+        window.renderPackingLists = function() {
+            const essentialsContainer = document.getElementById('list-essentials');
+            essentialsContainer.innerHTML = '';
+            const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}');
+            if (globalEssentialsList.length === 0) {
+                essentialsContainer.innerHTML = '<p class="text-xs text-gray-400 italic">No essentials added yet.</p>';
+            } else {
+                globalEssentialsList.forEach((itemText, index) => {
+                    if(!itemText.trim()) return;
+                    const div = document.createElement('div');
+                    div.className = "flex items-center gap-3";
+                    const checkbox = document.createElement('input');
+                    checkbox.type = "checkbox";
+                    checkbox.id = `essential-${index}`;
+                    checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer";
+                    checkbox.checked = !!localChecks[itemText];
+                    checkbox.onchange = () => toggleEssential(itemText);
+                    const label = document.createElement('label');
+                    label.htmlFor = `essential-${index}`;
+                    label.innerText = itemText;
+                    label.className = "cursor-pointer select-none text-sm text-gray-700";
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    essentialsContainer.appendChild(div);
+                });
+            }
+            const personalContainer = document.getElementById('list-personal');
+            personalContainer.innerHTML = '';
+            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
+            if (personalItems.length === 0) {
+                personalContainer.innerHTML = '<p class="text-xs text-gray-400 italic">No personal items.</p>';
+            } else {
+                personalItems.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center justify-between group";
+                    const leftDiv = document.createElement('div');
+                    leftDiv.className = "flex items-center gap-3";
+                    const checkbox = document.createElement('input');
+                    checkbox.type = "checkbox";
+                    checkbox.id = `personal-${index}`;
+                    checkbox.className = "w-5 h-5 accent-golf-deep rounded cursor-pointer";
+                    checkbox.checked = item.checked;
+                    checkbox.onchange = () => togglePersonal(index);
+                    const label = document.createElement('label');
+                    label.htmlFor = `personal-${index}`;
+                    label.innerText = item.text;
+                    label.className = "cursor-pointer select-none text-sm text-gray-700";
+                    leftDiv.appendChild(checkbox);
+                    leftDiv.appendChild(label);
+                    const delBtn = document.createElement('button');
+                    delBtn.innerHTML = "&times;";
+                    delBtn.className = "text-gray-300 hover:text-red-500 font-bold text-lg px-2";
+                    delBtn.onclick = () => deletePersonal(index);
+                    div.appendChild(leftDiv);
+                    div.appendChild(delBtn);
+                    personalContainer.appendChild(div);
+                });
+            }
+        }
+
+        window.toggleEssential = function(itemName) {
+            const localChecks = JSON.parse(localStorage.getItem('essentialsChecks') || '{}');
+            if (localChecks[itemName]) delete localChecks[itemName];
+            else localChecks[itemName] = true;
+            localStorage.setItem('essentialsChecks', JSON.stringify(localChecks));
+        }
+        window.addPersonalItem = function() {
+            const input = document.getElementById('new-item-input');
+            const text = input.value.trim();
+            if(!text) return;
+            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
+            personalItems.push({ text: text, checked: false });
+            localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
+            input.value = "";
+            renderPackingLists();
+        }
+        window.togglePersonal = function(index) {
+            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
+            personalItems[index].checked = !personalItems[index].checked;
+            localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
+        }
+        window.deletePersonal = function(index) {
+            const personalItems = JSON.parse(localStorage.getItem('userPackingPersonal') || '[]');
+            personalItems.splice(index, 1);
+            localStorage.setItem('userPackingPersonal', JSON.stringify(personalItems));
+            renderPackingLists();
+        }
+
+        // QUOTES
+        const quotes = [
+            "The most important shot in golf is the next one. – Ben Hogan",
+            "Golf is a good walk spoiled. – Mark Twain",
+            "Success in golf depends less on strength of body than upon strength of mind. – Arnold Palmer",
+            "I have a tip that can take five strokes off anyone's game: it's called an eraser. – Arnold Palmer",
+            "Golf is deceptive. It looks so simple, yet it's endlessly complicated. – Arnold Palmer",
+            "A bad day at golf is better than a good day at work. – Unknown",
+            "Golf is a game of inches. The most important are the six inches between your ears. – Bobby Jones",
+            "The harder you work, the luckier you get. – Gary Player",
+            "My swing is so bad I look like a caveman killing his lunch. – Lee Trevino",
+            "Golf is 90% mental and 10% mental. – Humor",
+            "If you watch a game, it's fun. If you play it, it's recreation. If you work at it, it's golf. – Bob Hope",
+            "I play with friends, but we don't play friendly games. – Ben Hogan",
+            "Forget your opponents; always play against par. – Sam Snead",
+            "The object of golf is not just to win. It is to play like a gentleman, and win. – Phil Mickelson",
+            "Swing hard in case you hit it. – Dan Marino",
+            "It takes hundreds of good golf shots to gain confidence, but only one bad one to lose it. – Jack Nicklaus",
+            "You don’t know what pressure is until you play for five bucks with only two bucks in your pocket. – Lee Trevino",
+            "Golf... is the infallible test of integrity and self-control. – P.G. Wodehouse",
+            "Keep your head down and follow through. – Unknown",
+            "Drive for show, putt for dough. – Unknown"
+        ];
+
+        const quoteContainer = document.getElementById('quote-content');
+        function cycleQuote() {
+            quoteContainer.classList.remove('opacity-100');
+            quoteContainer.classList.add('opacity-0');
+            setTimeout(() => {
+                const rawQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                const parts = rawQuote.split(' – ');
+                let html = "";
+                if(parts.length > 1) {
+                    html = `
+                        <span class="block mb-2 text-sm text-golf-gold">"${parts[0]}"</span>
+                        <span class="block text-[10px] font-sans font-bold tracking-widest uppercase opacity-60 text-golf-gold">&mdash; ${parts[1]}</span>
+                    `;
+                } else {
+                    html = `<span class="block text-sm text-golf-gold">"${rawQuote}"</span>`;
+                }
+                quoteContainer.innerHTML = html;
+                quoteContainer.classList.remove('opacity-0');
+                quoteContainer.classList.add('opacity-100');
+            }, 1000); 
+        }
+        cycleQuote();
+        setInterval(cycleQuote, 8000); 
+
+        // GLOBAL HELPER FUNCTIONS
+        window.format = function(command) { document.execCommand(command, false, null); };
+        
+        // NEW: Link Creator
+        window.addLink = function() {
+            const url = prompt("Enter the URL:", "https://");
+            if (url) {
+                document.execCommand('createLink', false, url);
+            }
+        };
+
+        window.toggleAccordion = function(contentId, arrowId) {
+            const clickedContent = document.getElementById(contentId);
+            const clickedArrow = document.getElementById(arrowId);
+            const isAlreadyOpen = clickedContent.classList.contains('open');
+            const allContents = document.querySelectorAll('.accordion-content');
+            const allArrows = document.querySelectorAll('.arrow-icon');
+            allContents.forEach(el => el.classList.remove('open'));
+            allArrows.forEach(el => el.classList.remove('rotate'));
+            if (!isAlreadyOpen) {
+                clickedContent.classList.add('open');
+                clickedArrow.classList.add('rotate');
+            }
+        };
+
+        // DATA
+        onSnapshot(tripRef, (doc) => {
+            if (doc.exists()) {
+                const data = doc.data();
+                const now = new Date();
+                document.getElementById('last-sync').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                document.getElementById('view-flight').innerHTML = data.flights || "Details pending...";
+                document.getElementById('view-transport').innerHTML = data.transport || "Details pending...";
+                document.getElementById('view-rounds').innerHTML = data.rounds || "Course details pending...";
+                document.getElementById('view-team1').innerHTML = data.team1 || "Roster pending...";
+                document.getElementById('view-team2').innerHTML = data.team2 || "Roster pending...";
+                document.getElementById('view-hotel').innerHTML = data.hotel || "Details pending...";
+                document.getElementById('view-dinner').innerHTML = data.dinner || "Details pending...";
+                
+                document.getElementById('edit-flight').innerHTML = data.flights || "";
+                document.getElementById('edit-transport').innerHTML = data.transport || "";
+                document.getElementById('edit-rounds').innerHTML = data.rounds || "";
+                document.getElementById('edit-team1').innerHTML = data.team1 || "";
+                document.getElementById('edit-team2').innerHTML = data.team2 || "";
+                document.getElementById('edit-hotel').innerHTML = data.hotel || "";
+                document.getElementById('edit-dinner').innerHTML = data.dinner || "";
+                document.getElementById('edit-packing-essentials').value = data.packing_list || "";
+
+                if (data.packing_list) {
+                    globalEssentialsList = data.packing_list.split('\n');
+                } else {
+                    globalEssentialsList = ["Passport", "Clubs", "Golf Shoes", "Tees"];
+                }
+                renderPackingLists();
+            }
         });
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
+
+        // AUTH & SAVE
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('editor-panel').classList.remove('hidden');
+            } catch (error) {
+                alert("Access Denied.");
+            }
+        });
+
+        document.getElementById('btn-save').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-save');
+            btn.innerText = "Saving...";
+            try {
+                await updateDoc(tripRef, {
+                    flights: document.getElementById('edit-flight').innerHTML,
+                    transport: document.getElementById('edit-transport').innerHTML,
+                    rounds: document.getElementById('edit-rounds').innerHTML,
+                    team1: document.getElementById('edit-team1').innerHTML,
+                    team2: document.getElementById('edit-team2').innerHTML,
+                    hotel: document.getElementById('edit-hotel').innerHTML,
+                    dinner: document.getElementById('edit-dinner').innerHTML,
+                    packing_list: document.getElementById('edit-packing-essentials').value
+                });
+                document.getElementById('editor-panel').classList.add('hidden');
+            } catch (error) {
+                alert("Error saving: " + error.message);
+            }
+            btn.innerText = "Save Updates Live";
+        });
     </script>
 </body>
 </html>
