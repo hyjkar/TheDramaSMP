@@ -2,73 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Grocery List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mobile Grocery List</title>
     <style>
-        /* This section styles the app to make it look clean and modern */
+        /* Mobile-first base styles */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f3f4f6;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
             margin: 0;
+            padding: 0;
+            /* Prevents the browser's "pull-to-refresh" behavior */
+            overscroll-behavior-y: none; 
         }
         .container {
-            background-color: white;
-            padding: 20px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
+            padding: 20px;
+            min-height: 100vh; /* Takes up full screen height */
+            box-sizing: border-box;
         }
         h1 {
             text-align: center;
             color: #333;
-            margin-top: 0;
+            margin-top: 10px;
+            font-size: 26px;
         }
         .input-group {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            /* Keeps the input box stuck to the top if the list gets super long */
+            position: sticky;
+            top: 0;
+            background: white;
+            padding-top: 10px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
         }
         input {
             flex: 1;
-            padding: 12px;
+            padding: 15px; /* Larger touch target for thumbs */
             border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 16px; /* 16px exactly prevents iOS from auto-zooming */
+            box-sizing: border-box;
         }
         button.add-btn {
-            padding: 12px 20px;
+            padding: 15px 20px;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
             font-weight: bold;
-        }
-        button.add-btn:hover {
-            background-color: #45a049;
+            touch-action: manipulation; /* Removes tap delay on mobile */
         }
         ul {
             list-style: none;
             padding: 0;
             margin: 0;
+            padding-bottom: 40px; /* Extra space at the bottom */
         }
         li {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
+            padding: 18px 15px; /* Taller items for easy tapping */
             background-color: #f9f9f9;
             border: 1px solid #eee;
-            margin-bottom: 8px;
-            border-radius: 5px;
+            margin-bottom: 10px;
+            border-radius: 8px;
             font-size: 18px;
+            touch-action: manipulation;
         }
-        /* Style for the text so we can cross it out */
         .item-text {
             flex: 1;
             cursor: pointer;
@@ -77,21 +82,52 @@
             text-decoration: line-through;
             color: #aaa;
         }
-        /* Style for the delete button */
         .delete-btn {
             background: none;
             border: none;
             color: #ff4c4c;
-            font-size: 18px;
+            font-size: 24px; /* Much bigger X for thumbs */
             cursor: pointer;
-            padding: 0 5px;
+            padding: 10px 15px; /* Bigger invisible tap area around the X */
         }
-        .delete-btn:hover {
-            color: #cc0000;
+
+        /* --- THE PORTRAIT MODE "LOCK" --- */
+        #landscape-warning {
+            display: none; /* Hidden by default */
+            height: 100vh;
+            width: 100vw;
+            background-color: #222;
+            color: white;
+            text-align: center;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #landscape-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        /* When the phone turns sideways, show the warning and hide the app */
+        @media screen and (orientation: landscape) {
+            #landscape-warning {
+                display: flex;
+            }
+            .container {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
+
+    <div id="landscape-warning">
+        <div id="landscape-icon">📱↻</div>
+        <p>Please rotate your phone to portrait mode to use your list.</p>
+    </div>
 
     <div class="container">
         <h1>🛒 Grocery List</h1>
@@ -106,55 +142,40 @@
     </div>
 
     <script>
-        // This section controls how the app works (the logic)
-        
-        // Function to add a new item
         function addItem() {
             const input = document.getElementById("itemInput");
             const itemText = input.value.trim();
-
-            // Don't add blank items
             if (itemText === "") return;
 
             const list = document.getElementById("groceryList");
             const li = document.createElement("li");
 
-            // Create the text part of the item
             const span = document.createElement("span");
             span.textContent = itemText;
             span.className = "item-text";
-            
-            // Allow users to click the text to cross it off
             span.onclick = function() {
                 this.classList.toggle("crossed-out");
             };
 
-            // Create the delete button
             const deleteBtn = document.createElement("button");
             deleteBtn.innerHTML = "✖";
             deleteBtn.className = "delete-btn";
-            
-            // Allow users to click the X to remove the item
             deleteBtn.onclick = function() {
                 list.removeChild(li);
             };
 
-            // Assemble the list item and add it to the list
             li.appendChild(span);
             li.appendChild(deleteBtn);
             list.appendChild(li);
 
-            // Clear the input box for the next item
             input.value = "";
         }
 
-        // Allow pressing "Enter" on the keyboard to add an item
         document.getElementById("itemInput").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 addItem();
             }
         });
     </script>
-
 </body>
 </html>
