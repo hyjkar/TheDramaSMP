@@ -595,10 +595,18 @@
         <div id="message"></div>
     </div>
 
-    <div id="leaderboard-view" class="view-section">
-        <div style="flex-shrink: 0; width:100%; text-align:center;"><h1>Global Standings</h1><h2 style="margin-bottom: 10px;">Top Fuel Reserves</h2></div>
+<div id="leaderboard-view" class="view-section">
+        <div class="dashboard-header">
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div class="icon-btn" onclick="closeLeaderboard()"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></div>
+                <div style="flex-grow: 1; text-align: center;">
+                    <h1 style="margin:0;">Global Standings</h1>
+                    <h2 style="margin: 2px 0 0 0; color:#777;">Top Fuel Reserves</h2>
+                </div>
+                <div style="width: 36px; height: 36px;"></div>
+            </div>
+        </div>
         <div id="leaderboard-list">Connecting to HQ...</div>
-        <div class="footer-buttons"><button class="primary-btn" onclick="closeLeaderboard()">Back to Command</button></div>
     </div>
 
     <div id="radar-view" class="view-section">
